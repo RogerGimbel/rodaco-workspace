@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeerPair Marketing Plan - Board Presentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css">
+    <style>
+        :root {
+            --amber: #D97706;
+            --amber-light: #F59E0B;
+            --amber-dark: #B45309;
+            --brown-dark: #5C4A3D;
+            --brown-text: #4A3728;
+            --cream: #FAF8F5;
+            --cream-dark: #F5F0E8;
+        }
+        .reveal { font-size: 32px; }
+        .reveal h1, .reveal h2, .reveal h3 { color: var(--amber-dark); font-weight: 700; }
+        .reveal h1 { font-size: 2.2em; margin-bottom: 0.3em; }
+        .reveal h2 { font-size: 1.5em; margin-bottom: 0.4em; }
+        .reveal h3 { font-size: 1.1em; margin-bottom: 0.3em; }
+        .reveal p, .reveal li { color: var(--brown-text); }
+        .reveal section img {
+            max-height: 280px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .reveal .slides section { padding: 20px; }
+        .reveal .slide-background { background: var(--cream); }
+        .highlight { color: var(--amber-dark); font-weight: bold; }
+        .stat-box {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        .stat-box .number { font-size: 1.6em; font-weight: bold; display: block; }
+        .two-column { display: flex; gap: 25px; align-items: flex-start; }
+        .two-column > div { flex: 1; }
+        ul { text-align: left; margin: 0; padding-left: 1.2em; }
+        .reveal ul li { margin: 8px 0; font-size: 0.85em; }
+        .reveal ul ul li { margin: 4px 0; font-size: 0.95em; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.55em; }
+        th, td { padding: 6px 8px; border: 1px solid #ddd; text-align: left; }
+        th { background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%); color: white; }
+        tr:nth-child(even) { background: var(--cream-dark); }
+        .tag { display: inline-block; background: var(--cream-dark); padding: 3px 10px; border-radius: 15px; font-size: 0.7em; margin: 2px; color: var(--brown-dark); }
+        .tag.primary { background: var(--amber); color: white; }
+        .content-box { background: var(--cream-dark); padding: 12px; border-radius: 8px; text-align: left; font-size: 0.6em; border-left: 4px solid var(--amber); }
+        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-2x2 > div { background: var(--cream-dark); padding: 12px; border-radius: 8px; }
+        .grid-2x2 h3 { font-size: 0.8em; margin: 0 0 8px 0; color: var(--amber-dark); }
+        .grid-2x2 ul { font-size: 0.65em; }
+        .grid-2x2 li { margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Cover -->
+            <section data-background="linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%)">
+                <h1 style="color: white; font-size: 2.8em; margin-bottom: 0.1em;">BeerPair</h1>
+                <h3 style="color: rgba(255,255,255,0.9); font-weight: normal; font-size: 1.1em;">Marketing Plan & Go-to-Market Strategy</h3>
+                <img src="cover.png" style="max-height: 220px; margin: 15px 0;">
+                <p style="color: rgba(255,255,255,0.85); font-size: 0.7em;">
+                    <strong>Rodaco</strong> | February 2026
+                </p>
+            </section>
+
+            <!-- Slide 2: Executive Summary -->
+            <section>
+                <h2>Executive Summary</h2>
+                <div class="two-column">
+                    <div style="text-align: center;">
+                        <div class="stat-box">
+                            <span class="number">50+</span>
+                            Ready Templates
+                        </div>
+                        <div class="stat-box">
+                            <span class="number">$0</span>
+                            Marketing Budget
+                        </div>
+                        <div class="stat-box">
+                            <span class="number">22KB</span>
+                            Content Package
+                        </div>
+                    </div>
+                    <div>
+                        <h3>What's Included:</h3>
+                        <ul>
+                            <li>5 Instagram/TikTok carousels</li>
+                            <li>2 Twitter threads</li>
+                            <li>3 Reddit templates</li>
+                            <li>2 partnership emails</li>
+                            <li>2 SEO blog outlines</li>
+                            <li>Product Hunt launch kit</li>
+                            <li>Week 1 content calendar</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Social Media Strategy -->
+            <section>
+                <h2>Social Media Strategy</h2>
+                <div class="two-column">
+                    <div>
+                        <img src="pizza-beer.png">
+                    </div>
+                    <div>
+                        <h3>Content Pillars</h3>
+                        <ul>
+                            <li><span class="highlight">Pizza Pairings</span> - Highest engagement</li>
+                            <li><span class="highlight">Taco Tuesday</span> - Weekly hook</li>
+                            <li><span class="highlight">BBQ Season</span> - Seasonal</li>
+                            <li><span class="highlight">Spicy Food</span> - Science-based</li>
+                            <li><span class="highlight">Brunch + Beer</span> - Lifestyle</li>
+                        </ul>
+                        <p style="font-size: 0.7em; margin-top: 12px; color: var(--brown-dark);">
+                            <strong>Platforms:</strong> Instagram, TikTok, Twitter/X
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: Content Examples -->
+            <section>
+                <h2>Content Examples</h2>
+                <div class="two-column">
+                    <div>
+                        <img src="taco-beer.png">
+                    </div>
+                    <div class="content-box">
+                        <strong style="color: var(--amber-dark); font-size: 1.1em;">TACO TUESDAY just got an upgrade</strong><br><br>
+                        Best beers for your favorite tacos:<br><br>
+                        • Carne Asada → Mexican Lager<br>
+                        • Fish Tacos → Wheat Beer<br>
+                        • Al Pastor → Pilsner<br>
+                        • Carnitas → Amber Ale<br>
+                        • Veggie → Pale Ale<br><br>
+                        <em>Stop guessing. Start pairing perfectly.</em>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: Twitter & Reddit Strategy -->
+            <section>
+                <h2>Twitter & Reddit Strategy</h2>
+                <div class="two-column">
+                    <div>
+                        <img src="social-media.png">
+                    </div>
+                    <div>
+                        <h3>Twitter Threads</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li>"3 beer pairing strategies every food lover should know"</li>
+                            <li>"Why carbonation is the secret weapon"</li>
+                        </ul>
+                        <h3 style="margin-top: 12px;">Reddit Approach</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li><strong>Target:</strong> r/beer, r/craftbeer, r/food</li>
+                            <li><strong>Strategy:</strong> Build karma 3-4 weeks first</li>
+                            <li><strong>Tone:</strong> Value first, soft CTA</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 6: Partnership Outreach -->
+            <section>
+                <h2>Partnership Outreach</h2>
+                <div class="two-column">
+                    <div>
+                        <img src="partnership.png">
+                    </div>
+                    <div>
+                        <h3>Target Partners</h3>
+                        <ul>
+                            <li><span class="highlight">Small Breweries</span><br>
+                                <span style="font-size: 0.8em; color: var(--brown-dark);">Feature their beers in recommendations</span></li>
+                            <li><span class="highlight">Gastropubs</span><br>
+                                <span style="font-size: 0.8em; color: var(--brown-dark);">Custom pairing menus</span></li>
+                            <li><span class="highlight">Micro-Influencers</span><br>
+                                <span style="font-size: 0.8em; color: var(--brown-dark);">5K-50K food/beer creators</span></li>
+                        </ul>
+                        <p style="font-size: 0.7em; margin-top: 10px; color: var(--brown-dark);">
+                            <strong>Cadence:</strong> 5-10 breweries/week
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: Week 1 Content Calendar -->
+            <section>
+                <h2>Week 1 Content Calendar</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Platform</th>
+                            <th>Content</th>
+                            <th>Topic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Mon</strong></td><td>IG + Twitter</td><td>Carousel + Thread</td><td>Pizza Pairings</td></tr>
+                        <tr><td><strong>Tue</strong></td><td>IG + TikTok</td><td>Reel</td><td>App Demo</td></tr>
+                        <tr><td><strong>Wed</strong></td><td>IG Story + Twitter</td><td>Poll + Tip</td><td>Community Engage</td></tr>
+                        <tr><td><strong>Thu</strong></td><td>IG + Twitter</td><td>Carousel + Poll</td><td>Taco Tuesday</td></tr>
+                        <tr><td><strong>Fri</strong></td><td>IG + Twitter</td><td>Feed + Thread</td><td>BBQ + Spicy</td></tr>
+                        <tr><td><strong>Sat</strong></td><td>IG Story + Twitter</td><td>UGC + Feature</td><td>User Spotlight</td></tr>
+                        <tr><td><strong>Sun</strong></td><td>—</td><td>Batch Create</td><td>Next Week Prep</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Slide 8: Product Hunt Launch -->
+            <section>
+                <h2>Product Hunt Launch</h2>
+                <div class="two-column">
+                    <div>
+                        <img src="launch.png">
+                    </div>
+                    <div>
+                        <h3>Tagline Options</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 0.8em;">
+                            <li>"Never choose the wrong beer again"</li>
+                            <li>"The Shazam of beer pairing"</li>
+                            <li>"Scan your meal, get perfect pairings"</li>
+                        </ul>
+                        <h3 style="margin-top: 12px;">Launch Checklist</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li>Post at 12:01 AM PT</li>
+                            <li>Share across all channels</li>
+                            <li>Respond to comments within 30 min</li>
+                            <li>Share milestones throughout day</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 9: KPIs & Analytics -->
+            <section>
+                <h2>KPIs & Analytics</h2>
+                <div class="grid-2x2">
+                    <div>
+                        <h3>Social Media</h3>
+                        <ul>
+                            <li>Follower growth rate</li>
+                            <li>Engagement rate</li>
+                            <li>Link CTR</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>App Metrics</h3>
+                        <ul>
+                            <li>Installs by source</li>
+                            <li>DAU / Retention</li>
+                            <li>Searches per user</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>SEO</h3>
+                        <ul>
+                            <li>Organic traffic</li>
+                            <li>Keyword rankings</li>
+                            <li>Backlinks</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Reddit</h3>
+                        <ul>
+                            <li>Comment karma</li>
+                            <li>Post upvotes</li>
+                            <li>Click-throughs</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 10: Next Steps -->
+            <section data-background="linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%)">
+                <h2 style="color: white;">Next Steps</h2>
+                <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 10px; text-align: left;">
+                    <h3 style="font-size: 0.9em; margin-top: 0;">Deploy When Ready:</h3>
+                    <ul style="font-size: 0.75em;">
+                        <li>Native apps live (Play Store + App Store)</li>
+                        <li>Landing page deployed</li>
+                        <li>App stable and tested</li>
+                    </ul>
+                    <h3 style="font-size: 0.9em; margin-top: 15px;">Immediate Actions:</h3>
+                    <ol style="font-size: 0.75em;">
+                        <li><strong>Start Reddit karma building</strong> (3-4 week lead)</li>
+                        <li><strong>Begin brewery outreach</strong> (5-10/week)</li>
+                        <li><strong>Create Canva templates</strong></li>
+                    </ol>
+                </div>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px; font-size: 0.65em;">
+                    Full plan: <code style="background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">beerpair-marketing-plan.html</code>
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            width: 1280,
+            height: 720,
+            margin: 0.1
+        });
+    </script>
+</body>
+</html>

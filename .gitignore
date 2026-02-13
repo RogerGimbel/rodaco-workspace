@@ -1,0 +1,64 @@
+# Heavy/rebuildable
+node_modules/
+.venv/
+pylib/
+antfarm/
+tmp/
+.cache/
+
+# Browsers/runtime
+.playwright-browsers/
+.npm/
+.npm-cache/
+
+# OpenClaw internals
+.claude/
+.clawdhub/
+.local/
+
+# Binary/media assets
+beerpair-slides/
+beerpair-images/
+camera/
+*.tar.gz
+*.png
+*.pdf
+beerpair-deploy/images/
+mission-control/public/images/
+knowledge/projects/beerpair/*.png
+
+# Large binaries
+bin/gh
+
+# Credentials
+.git-credentials
+
+# Secrets (NEVER commit)
+.env
+.env.enc
+*.enc
+
+# Caches
+.npm-cache/
+.local/
+.clawdhub/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cached API responses / temp data
+prod-grok-backend.json
+*.jsonl
+antfarm/
+skills/x-bookmarks/
+.git-credentials
+
+# Claude chat exports (private data)
+claude-conversations.json
+claude-memories.json
+claude-projects.json

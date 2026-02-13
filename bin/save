@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# /save — git add + commit + push for workspace
+# Usage: save [optional summary message]
+# Always exits 0.
+
+set -euo pipefail
+
+cd /home/node/workspace
+
+# Build summary
+if [ $# -gt 0 ]; then
+    SUMMARY="$*"
+else
+    SUMMARY="checkpoint: $(date '+%Y-%m-%d %H:%M')"
+fi
+
+# Stage everything
+git add -A
+
+# Check if there's anything to commit
+CHANGED=$(git diff --cached --stat --shortstat 2>/dev/null || true)
+
+if [ -z "$CHANGED" ]; then
+    echo "Nothing to commit."
+    exit 0
+fi
+
+# Commit
+git commit -m "save: ${SUMMARY}" --quiet 2>/dev/null || true
+
+# Show what changed
+echo "$CHANGED"
+
+# Push if remote exists
+if git remote | grep -q .; then
+    git push --quiet 2>/dev/null || echo "Push failed (non-fatal)."
+fi
+
+exit 0

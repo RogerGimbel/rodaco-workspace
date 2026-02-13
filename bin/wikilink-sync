@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+
+/**
+ * Wikilink Sync — scans knowledge/ summaries and adds missing [[wikilinks]]
+ * where entities reference each other by name but lack the link syntax.
+ *
+ * Run: node /home/node/workspace/bin/wikilink-sync
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const KNOWLEDGE_DIR = '/home/node/workspace/knowledge';
+const CATEGORIES = ['people', 'projects', 'infrastructure', 'companies'];
+
+// Build entity registry: folder name → display name (from # heading or folder)
+function buildEntityRegistry() {
+  const entities = [];
+  for (const cat of CATEGORIES) {
+    const catDir = path.join(KNOWLEDGE_DIR, cat);
+    if (!fs.existsSync(catDir)) continue;
+    for (const entry of fs.readdirSync(catDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const summaryPath = path.join(catDir, entry.name, 'summary.md');
+      if (!fs.existsSync(summaryPath)) continue;
+      const content = fs.readFileSync(summaryPath, 'utf8');
+      // Extract display name from first # heading
+      const headingMatch = content.match(/^#\s+(.+)$/m);
+      const displayName = headingMatch ? headingMatch[1].trim() : entry.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      entities.push({
+        folder: entry.name,
+        displayName,
+        category: cat,
+        summaryPath,
+      });
+    }
+  }
+  return entities;
+}
+
+// Find plain-text mentions of an entity that aren't already wikilinked
+function addWikilinks(content, entities, selfName) {
+  let updated = content;
+  let changes = 0;
+
+  for (const entity of entities) {
+    if (entity.displayName === selfName) continue; // don't self-link
+
+    const name = entity.displayName;
+    // Match the name NOT already inside [[ ]]
+    // Negative lookbehind for [[ and negative lookahead for ]]
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?<!\\[\\[)\\b(${escaped})\\b(?!\\]\\])`, 'g');
+
+    // But skip if it's already a wikilink target — check surrounding context
+    const lines = updated.split('\n');
+    const newLines = [];
+    for (const line of lines) {
+      // Skip lines that are headings, code blocks, or already have the wikilink
+      if (line.startsWith('#') || line.startsWith('```') || line.startsWith('- **Key Files')) {
+        newLines.push(line);
+        continue;
+      }
+      let newLine = line;
+      // Only replace if not already wikilinked on this line
+      if (newLine.includes(name) && !newLine.includes(`[[${name}]]`)) {
+        const before = newLine;
+        newLine = newLine.replace(regex, `[[${name}]]`);
+        if (newLine !== before) changes++;
+      }
+      newLines.push(newLine);
+    }
+    updated = newLines.join('\n');
+  }
+
+  return { updated, changes };
+}
+
+function main() {
+  const entities = buildEntityRegistry();
+  console.log(`Found ${entities.length} entities:`);
+  entities.forEach(e => console.log(`  - ${e.displayName} (${e.category}/${e.folder})`));
+
+  let totalChanges = 0;
+  let filesModified = 0;
+
+  for (const entity of entities) {
+    const content = fs.readFileSync(entity.summaryPath, 'utf8');
+    const { updated, changes } = addWikilinks(content, entities, entity.displayName);
+    if (changes > 0) {
+      fs.writeFileSync(entity.summaryPath, updated, 'utf8');
+      console.log(`✅ ${entity.displayName}: +${changes} wikilinks`);
+      totalChanges += changes;
+      filesModified++;
+    }
+  }
+
+  // Also scan top-level knowledge .md files
+  for (const file of fs.readdirSync(KNOWLEDGE_DIR)) {
+    if (!file.endsWith('.md')) continue;
+    const filePath = path.join(KNOWLEDGE_DIR, file);
+    const content = fs.readFileSync(filePath, 'utf8');
+    const { updated, changes } = addWikilinks(content, entities, null);
+    if (changes > 0) {
+      fs.writeFileSync(filePath, updated, 'utf8');
+      console.log(`✅ ${file}: +${changes} wikilinks`);
+      totalChanges += changes;
+      filesModified++;
+    }
+  }
+
+  console.log(`\nDone: ${totalChanges} wikilinks added across ${filesModified} files.`);
+}
+
+main();

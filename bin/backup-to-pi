@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# Backup OpenClaw Docker volumes to Pi's 2TB SSD
+# Runs daily via cron inside the container (read-only, no rsync)
+#
+# Strategy:
+#   - tar+ssh stream for workspace and config volumes
+#   - 7-day rotation via day-of-week naming + dated snapshots (14-day prune)
+#   - Integrity verification via gzip -t after each archive
+#
+# Excluded (rebuildable):
+#   - Workspace: node_modules, .venv, pylib, antfarm, .git/objects, browsers, caches
+#   - Config: */qmd (2.9GB embedding index), antfarm workflow memory (220MB),
+#     browser data, sandboxes, sessions
+#   - Both: .env*, *.log, *.tar.gz
+#
+# NOT excluded (critical): memory/, knowledge/, skills/, bin/, mission-control/,
+#   openclaw.json, agent configs, credentials, cron state
+
+set -euo pipefail
+
+BACKUP_BASE="/mnt/media/backups/openclaw"
+WORKSPACE="/home/node/workspace"
+DATE=$(date +%Y-%m-%d)
+DAY=$(date +%A)
+ERRORS=0
+
+log() { echo "[backup $(date +%H:%M)] $*"; }
+err() { echo "[backup $(date +%H:%M)] ERROR: $*" >&2; ERRORS=$((ERRORS + 1)); }
+
+# tar exits 1 for "file changed as we read it" — acceptable for live backups
+run_tar() {
+    "$@" || {
+        rc=$?
+        [ $rc -eq 1 ] || return $rc
+    }
+}
+
+# Check Pi reachability (Tailscale first, then LAN)
+PI_HOST=""
+for host in "100.83.169.87" "10.0.0.20"; do
+    if ssh -o ConnectTimeout=5 -o BatchMode=yes "rogergimbel@${host}" "true" 2>/dev/null; then
+        PI_HOST="rogergimbel@${host}"
+        log "Pi reachable at $host"
+        break
+    fi
+done
+
+if [ -z "$PI_HOST" ]; then
+    err "Pi unreachable — skipping backup"
+    exit 1
+fi
+
+# Ensure backup dirs
+ssh "$PI_HOST" "mkdir -p ${BACKUP_BASE}/{workspace-snapshots,config-snapshots}"
+
+# --- Workspace backup ---
+log "Backing up workspace..."
+run_tar tar cf - -C "$WORKSPACE" \
+    --exclude='node_modules' \
+    --exclude='.venv' \
+    --exclude='pylib' \
+    --exclude='antfarm' \
+    --exclude='.git/objects' \
+    --exclude='.playwright-browsers' \
+    --exclude='tmp' \
+    --exclude='.cache' \
+    --exclude='.npm' \
+    --exclude='.npm-cache' \
+    --exclude='.local' \
+    --exclude='.clawdhub' \
+    --exclude='.claude' \
+    --exclude='camera' \
+    --exclude='beerpair-slides' \
+    --exclude='beerpair-images' \
+    --exclude='*.tar.gz' \
+    --exclude='.env' \
+    --exclude='.env.enc' \
+    --exclude='.git-credentials' \
+    . | ssh "$PI_HOST" "gzip > ${BACKUP_BASE}/workspace-snapshots/workspace-${DATE}.tar.gz"
+
+# Verify archive integrity
+if ssh "$PI_HOST" "gzip -t ${BACKUP_BASE}/workspace-snapshots/workspace-${DATE}.tar.gz 2>/dev/null"; then
+    ssh "$PI_HOST" "cp ${BACKUP_BASE}/workspace-snapshots/workspace-${DATE}.tar.gz ${BACKUP_BASE}/workspace-snapshots/workspace-${DAY}.tar.gz"
+    ssh "$PI_HOST" "find ${BACKUP_BASE}/workspace-snapshots/ -name 'workspace-2*.tar.gz' -mtime +14 -delete 2>/dev/null || true"
+    WS_SIZE=$(ssh "$PI_HOST" "du -sh ${BACKUP_BASE}/workspace-snapshots/workspace-${DATE}.tar.gz | cut -f1")
+    log "Workspace backed up (${WS_SIZE}) ✓ verified"
+else
+    err "Workspace archive CORRUPT — not rotating"
+    ssh "$PI_HOST" "rm -f ${BACKUP_BASE}/workspace-snapshots/workspace-${DATE}.tar.gz"
+fi
+
+# --- Config backup ---
+log "Backing up config..."
+run_tar tar cf - -C /home/node/.openclaw \
+    --exclude='*/qmd' \
+    --exclude='memory/feature-dev' \
+    --exclude='memory/bug-fix' \
+    --exclude='memory/security-audit' \
+    --exclude='browser' \
+    --exclude='sandboxes' \
+    --exclude='sessions' \
+    --exclude='*.log' \
+    . | ssh "$PI_HOST" "gzip > ${BACKUP_BASE}/config-snapshots/config-${DATE}.tar.gz"
+
+if ssh "$PI_HOST" "gzip -t ${BACKUP_BASE}/config-snapshots/config-${DATE}.tar.gz 2>/dev/null"; then
+    ssh "$PI_HOST" "cp ${BACKUP_BASE}/config-snapshots/config-${DATE}.tar.gz ${BACKUP_BASE}/config-snapshots/config-${DAY}.tar.gz"
+    ssh "$PI_HOST" "find ${BACKUP_BASE}/config-snapshots/ -name 'config-2*.tar.gz' -mtime +14 -delete 2>/dev/null || true"
+    CFG_SIZE=$(ssh "$PI_HOST" "du -sh ${BACKUP_BASE}/config-snapshots/config-${DATE}.tar.gz | cut -f1")
+    log "Config backed up (${CFG_SIZE}) ✓ verified"
+else
+    err "Config archive CORRUPT — not rotating"
+    ssh "$PI_HOST" "rm -f ${BACKUP_BASE}/config-snapshots/config-${DATE}.tar.gz"
+fi
+
+# --- Summary ---
+TOTAL=$(ssh "$PI_HOST" "du -sh ${BACKUP_BASE}/ | cut -f1")
+if [ $ERRORS -gt 0 ]; then
+    log "Backup finished with $ERRORS error(s). Total on Pi: ${TOTAL}"
+    exit 1
+else
+    log "Backup complete ✅ Total on Pi: ${TOTAL}"
+fi

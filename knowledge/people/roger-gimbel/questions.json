@@ -1,0 +1,996 @@
+{
+  "version": 1,
+  "totalAsked": 11,
+  "questions": [
+    {
+      "id": 1,
+      "category": "work_style",
+      "text": "When you're deep in a coding session, do you prefer total silence or background music/noise?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 2,
+      "category": "work_style",
+      "text": "What time of day do you feel like your brain is sharpest for coding?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 3,
+      "category": "work_style",
+      "text": "Do you plan your day out or just attack whatever feels most urgent?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 4,
+      "category": "work_style",
+      "text": "When you hit a wall on a problem, what's your go-to move — walk away, push through, or switch tasks?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 5,
+      "category": "work_style",
+      "text": "How do you decide which project gets your attention on any given day?",
+      "weight": 1,
+      "asked": "2026-02-13T02:16:24.670Z",
+      "answered": "2026-02-13T02:22:34.903Z",
+      "answer": "Based on interest and priority"
+    },
+    {
+      "id": 6,
+      "category": "work_style",
+      "text": "What's the longest coding session you've ever done in one sitting?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 7,
+      "category": "work_style",
+      "text": "Do you prototype fast and refactor later, or architect carefully upfront?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 8,
+      "category": "work_style",
+      "text": "What's your ideal work setup — coffee shop, home office, standing desk?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 9,
+      "category": "work_style",
+      "text": "Do you batch similar tasks together or jump between different types of work?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 10,
+      "category": "work_style",
+      "text": "When do you call it a day? Is there a hard stop or do you just go until you're done?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 11,
+      "category": "work_style",
+      "text": "How many browser tabs do you typically have open? Be honest.",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 12,
+      "category": "work_style",
+      "text": "Do you take real breaks or just switch between screens?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 13,
+      "category": "values",
+      "text": "What's the one thing you'd never compromise on in business?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 14,
+      "category": "values",
+      "text": "If Rodaco becomes wildly successful, what does that actually look like to you?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 15,
+      "category": "values",
+      "text": "What's more important to you — financial freedom or doing meaningful work?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 16,
+      "category": "values",
+      "text": "Is there a principle or quote you keep coming back to?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 17,
+      "category": "values",
+      "text": "What's a deal-breaker for you when working with someone?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 18,
+      "category": "values",
+      "text": "What matters more — shipping fast or shipping right?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 19,
+      "category": "values",
+      "text": "What's something most people care about that you genuinely don't?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 20,
+      "category": "values",
+      "text": "If money wasn't a factor, would you still be building software?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 21,
+      "category": "values",
+      "text": "What's the best piece of advice you've ever received?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 22,
+      "category": "values",
+      "text": "Is there something you believe strongly that most people disagree with?",
+      "weight": 1,
+      "asked": "2026-02-13T02:23:24.492Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 23,
+      "category": "values",
+      "text": "How do you define 'enough' — like when would you feel like you've made it?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 24,
+      "category": "preferences",
+      "text": "Coffee or energy drinks? And how many per day, roughly?",
+      "weight": 1,
+      "asked": "2026-02-13T18:00:04.719Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 25,
+      "category": "preferences",
+      "text": "What's your go-to comfort food when you're heads-down on a project?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 26,
+      "category": "preferences",
+      "text": "Are you a morning person or does your brain not boot up until noon?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 27,
+      "category": "preferences",
+      "text": "What's the last show or movie you actually got hooked on?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 28,
+      "category": "preferences",
+      "text": "Do you have a favorite beer style? (Seems relevant given BeerPair 😄)",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 29,
+      "category": "preferences",
+      "text": "What's your ideal weekend look like when you're NOT working?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 30,
+      "category": "preferences",
+      "text": "Do you cook, or are you more of a DoorDash person?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 31,
+      "category": "preferences",
+      "text": "What kind of music do you listen to? Or is it podcasts all the way?",
+      "weight": 1,
+      "asked": "2026-02-13T02:23:24.617Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 32,
+      "category": "preferences",
+      "text": "Mountains or beach? (I know you're in Denver, but hypothetically...)",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 33,
+      "category": "preferences",
+      "text": "What's something you own that you'd never get rid of?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 34,
+      "category": "preferences",
+      "text": "Night owl or early riser — and is it by choice or necessity?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 35,
+      "category": "preferences",
+      "text": "What's your phone wallpaper right now?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 36,
+      "category": "history",
+      "text": "What was the first thing you ever coded, and what was it in?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 37,
+      "category": "history",
+      "text": "How did you end up in Denver? Was it deliberate or did life just take you there?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 38,
+      "category": "history",
+      "text": "What were you doing before Rodaco? Like what's the career path that led here?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 39,
+      "category": "history",
+      "text": "What's the biggest professional failure you've learned from?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 40,
+      "category": "history",
+      "text": "How did you, Dale, and Stuart end up working together?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 41,
+      "category": "history",
+      "text": "What's a skill you picked up that you never expected to need?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 42,
+      "category": "history",
+      "text": "Was there a moment where you thought 'yeah, I'm going all-in on tech'?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 43,
+      "category": "history",
+      "text": "What's the worst job you've ever had?",
+      "weight": 1,
+      "asked": "2026-02-13T02:16:24.603Z",
+      "answered": "2026-02-13T02:22:34.842Z",
+      "answer": "Stuffing insulation in an attic"
+    },
+    {
+      "id": 44,
+      "category": "history",
+      "text": "If you could go back and give 20-year-old you one piece of advice, what would it be?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 45,
+      "category": "history",
+      "text": "What project are you most proud of from before Rodaco?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 46,
+      "category": "history",
+      "text": "Did you study CS formally or are you self-taught?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 47,
+      "category": "goals",
+      "text": "Where do you want Rodaco to be in a year?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 48,
+      "category": "goals",
+      "text": "Is there a product idea you've been sitting on that you haven't started yet?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 49,
+      "category": "goals",
+      "text": "What's something you want to learn this year that you haven't had time for?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 50,
+      "category": "goals",
+      "text": "If BeerPair takes off, what's the dream scenario?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 51,
+      "category": "goals",
+      "text": "Do you want to build a team eventually, or stay lean forever?",
+      "weight": 1,
+      "asked": "2026-02-13T02:16:24.566Z",
+      "answered": "2026-02-13T02:22:34.804Z",
+      "answer": "Lean team forever"
+    },
+    {
+      "id": 52,
+      "category": "goals",
+      "text": "What's your 'I've made it' number? Or is it not about a number?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 53,
+      "category": "goals",
+      "text": "Is there a non-tech goal you're working toward?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 54,
+      "category": "goals",
+      "text": "What's something you want to be known for?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 55,
+      "category": "goals",
+      "text": "If you could snap your fingers and have one thing automated in your life, what would it be?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 56,
+      "category": "goals",
+      "text": "Where do you see yourself living in 5 years? Still Denver?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 57,
+      "category": "goals",
+      "text": "What would you build if you had unlimited dev time for a month?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 58,
+      "category": "communication",
+      "text": "When I update you on something, do you prefer bullet points or a quick summary paragraph?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 59,
+      "category": "communication",
+      "text": "How do you feel about me being proactive vs waiting for instructions?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 60,
+      "category": "communication",
+      "text": "Do you prefer getting all the details upfront, or just the headline with details on request?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 61,
+      "category": "communication",
+      "text": "When something goes wrong, do you want me to tell you immediately or fix it first and then tell you?",
+      "weight": 1,
+      "asked": "2026-02-13T02:23:24.572Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 62,
+      "category": "communication",
+      "text": "Is there a time of day when you'd prefer NOT to get messages from me?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 63,
+      "category": "communication",
+      "text": "How do you feel about emoji in my messages? Too much? Not enough? Just right?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 64,
+      "category": "communication",
+      "text": "When you ask a yes/no question, do you want just the answer or the reasoning too?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 65,
+      "category": "communication",
+      "text": "Should I push back when I think you're making a mistake, or just execute?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 66,
+      "category": "communication",
+      "text": "How blunt do you want me to be? Like, scale of 1-10?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 67,
+      "category": "communication",
+      "text": "Do you like when I suggest things proactively, or does it feel like nagging?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 68,
+      "category": "relationships",
+      "text": "How do you and Dale usually split decisions? Is it 50/50 or does one of you lead?",
+      "weight": 1,
+      "asked": "2026-02-13T02:16:24.701Z",
+      "answered": "2026-02-13T02:22:34.936Z",
+      "answer": "50/50 with Dale since 1995. Roger leads tech, Dale leads business. On Ocean One Marine Dale is 100% owner, Roger helping with tech side. BeerPair is 1/3 each between Roger, Dale, and Stuart. Dale is also very technical and interested in tech side."
+    },
+    {
+      "id": 69,
+      "category": "relationships",
+      "text": "What's Stuart's superpower that complements what you and Dale do?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 70,
+      "category": "relationships",
+      "text": "When you disagree with Dale or Stuart, how does that usually get resolved?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 71,
+      "category": "relationships",
+      "text": "What's the best thing about working with a small team like Rodaco?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 72,
+      "category": "relationships",
+      "text": "What's the hardest part about being a 3-person company?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 73,
+      "category": "relationships",
+      "text": "Do you have a mentor or someone you bounce big decisions off of?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 74,
+      "category": "relationships",
+      "text": "What's your management style? Or do you not think of it that way since you're all partners?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 75,
+      "category": "relationships",
+      "text": "How did the Ocean One Marine relationship come about?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 76,
+      "category": "relationships",
+      "text": "Is there someone in tech you really admire?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 77,
+      "category": "relationships",
+      "text": "Do you prefer working solo or pairing up on problems?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 78,
+      "category": "meta",
+      "text": "What's one thing I do that you find genuinely useful?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 79,
+      "category": "meta",
+      "text": "What's one thing I do that annoys you or that I should stop?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 80,
+      "category": "meta",
+      "text": "Am I too verbose, too terse, or about right?",
+      "weight": 1,
+      "asked": "2026-02-13T02:23:24.414Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 81,
+      "category": "meta",
+      "text": "Is there something you wish I could do that I currently can't?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 82,
+      "category": "meta",
+      "text": "Do you trust me with more autonomy, or do you want me to check in more?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 83,
+      "category": "meta",
+      "text": "How would you describe me to someone who's never used an AI assistant?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 84,
+      "category": "meta",
+      "text": "On a scale of 'useful tool' to 'actual teammate', where do I land for you right now?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 85,
+      "category": "meta",
+      "text": "Is there a task you keep doing manually that you wish you'd delegated to me?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 86,
+      "category": "meta",
+      "text": "Do these questions feel useful or just like busywork?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 87,
+      "category": "meta",
+      "text": "What personality trait of mine works best for you? What should I dial up or down?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 88,
+      "category": "technical",
+      "text": "What's your hot take on AI-generated code? Where's the line between useful and dangerous?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 89,
+      "category": "technical",
+      "text": "What's a technology you think is overhyped right now?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 90,
+      "category": "technical",
+      "text": "What's the worst code you've ever written that somehow worked?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 91,
+      "category": "technical",
+      "text": "Tabs or spaces? (I have to ask.)",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 92,
+      "category": "technical",
+      "text": "What's a language or framework you've been curious about but haven't tried yet?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 93,
+      "category": "technical",
+      "text": "What's your opinion on testing? TDD purist, pragmatic tester, or 'it works on my machine'?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 94,
+      "category": "technical",
+      "text": "If you had to pick one stack for everything forever, what would it be?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 95,
+      "category": "technical",
+      "text": "What's a dev tool you discovered recently that changed your workflow?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 96,
+      "category": "technical",
+      "text": "Do you care about clean code aesthetics, or is 'works correctly' good enough?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 97,
+      "category": "technical",
+      "text": "What's the gnarliest bug you've ever tracked down?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 98,
+      "category": "technical",
+      "text": "How do you feel about TypeScript vs plain JS?",
+      "weight": 1,
+      "asked": "2026-02-13T02:16:24.636Z",
+      "answered": "2026-02-13T02:22:34.873Z",
+      "answer": "Prefers TypeScript over plain JS because of linting - TypeScript ensures code will run, JS can compile but not work"
+    },
+    {
+      "id": 99,
+      "category": "technical",
+      "text": "What's a piece of software you use daily that you think is beautifully designed?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 100,
+      "category": "creative",
+      "text": "What's something outside of tech that inspires your work?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 101,
+      "category": "creative",
+      "text": "If you weren't building software, what would you be doing?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 102,
+      "category": "creative",
+      "text": "What's a hobby or interest people might be surprised to learn you have?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 103,
+      "category": "creative",
+      "text": "What's the most interesting rabbit hole you've gone down recently?",
+      "weight": 1,
+      "asked": "2026-02-13T02:23:24.448Z",
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 104,
+      "category": "creative",
+      "text": "Is there a book, podcast, or talk that genuinely changed how you think?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 105,
+      "category": "creative",
+      "text": "What gets you excited enough to lose track of time?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 106,
+      "category": "creative",
+      "text": "If you could have dinner with anyone — alive or dead — who would it be?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 107,
+      "category": "creative",
+      "text": "What's a problem in the world you wish someone would just solve already?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 108,
+      "category": "creative",
+      "text": "Do you have a side project graveyard? What's in it?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 109,
+      "category": "creative",
+      "text": "What's the most creative use of technology you've ever seen?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    },
+    {
+      "id": 110,
+      "category": "creative",
+      "text": "If you could master one skill instantly, what would you pick?",
+      "weight": 1,
+      "asked": null,
+      "answered": null,
+      "answer": null
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@steipete/bird": "^0.8.0",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.58.0",
+    "summarize": "^1.5.0"
+  }
+}

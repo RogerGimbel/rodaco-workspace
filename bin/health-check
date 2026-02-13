@@ -1,0 +1,94 @@
+#!/bin/bash
+# Internal Health Check Script
+# Run from inside the container to detect issues
+# Returns exit code 0 if healthy, 1+ if issues found
+# Outputs JSON status for the calling agent to parse
+#
+# Usage: health-check [--fix]
+#   --fix  Attempt to self-heal if critical issues found
+
+FIX_MODE=false
+[ "$1" = "--fix" ] && FIX_MODE=true
+
+ISSUES=()
+SEVERITY="ok"  # ok, warn, critical
+
+# 1. Check zombie processes
+ZOMBIE_COUNT=$(ps aux 2>/dev/null | grep -c ' Z ')
+if [ "$ZOMBIE_COUNT" -gt 2 ]; then
+    # With init:true, ANY persistent zombies are abnormal
+    ISSUES+=("zombies:$ZOMBIE_COUNT")
+    SEVERITY="critical"
+elif [ "$ZOMBIE_COUNT" -gt 0 ]; then
+    ISSUES+=("zombies:$ZOMBIE_COUNT")
+    [ "$SEVERITY" = "ok" ] && SEVERITY="warn"
+fi
+
+# 2. Check disk space on writable mounts
+WORKSPACE_USE=$(df /home/node/workspace 2>/dev/null | tail -1 | awk '{print $5}' | tr -d '%')
+if [ -n "$WORKSPACE_USE" ] && [ "$WORKSPACE_USE" -gt 95 ]; then
+    ISSUES+=("disk:${WORKSPACE_USE}%")
+    SEVERITY="critical"
+elif [ -n "$WORKSPACE_USE" ] && [ "$WORKSPACE_USE" -gt 85 ]; then
+    ISSUES+=("disk:${WORKSPACE_USE}%")
+    [ "$SEVERITY" != "critical" ] && SEVERITY="warn"
+fi
+
+# 3. Check tmp space
+TMP_USE=$(df /tmp 2>/dev/null | tail -1 | awk '{print $5}' | tr -d '%')
+if [ -n "$TMP_USE" ] && [ "$TMP_USE" -gt 90 ]; then
+    ISSUES+=("tmp:${TMP_USE}%")
+    [ "$SEVERITY" != "critical" ] && SEVERITY="warn"
+fi
+
+# 4. Check if gateway health endpoint responds
+HEALTH=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://127.0.0.1:18789/health 2>/dev/null)
+if [ "$HEALTH" != "200" ]; then
+    ISSUES+=("gateway:unhealthy:$HEALTH")
+    SEVERITY="critical"
+fi
+
+# 5. Check SSH connectivity to host (for self-heal capability)
+SSH_OK=false
+if ssh -o ConnectTimeout=3 -o BatchMode=yes rogergimbel@100.124.209.59 "echo ok" &>/dev/null; then
+    SSH_OK=true
+fi
+
+# 6. Check for stale lock files
+LOCK_COUNT=$(find /home/node/.openclaw/agents -name "*.jsonl.lock" -mmin +10 2>/dev/null | wc -l)
+if [ "$LOCK_COUNT" -gt 0 ]; then
+    ISSUES+=("stale_locks:$LOCK_COUNT")
+    [ "$SEVERITY" != "critical" ] && SEVERITY="warn"
+fi
+
+# Output JSON
+ISSUES_JSON="["
+FIRST=true
+for i in "${ISSUES[@]}"; do
+    $FIRST && FIRST=false || ISSUES_JSON+=","
+    ISSUES_JSON+="\"$i\""
+done
+ISSUES_JSON+="]"
+cat <<EOF
+{
+  "severity": "$SEVERITY",
+  "zombies": $ZOMBIE_COUNT,
+  "disk_pct": ${WORKSPACE_USE:-0},
+  "tmp_pct": ${TMP_USE:-0},
+  "gateway_health": "$HEALTH",
+  "ssh_to_host": $SSH_OK,
+  "stale_locks": $LOCK_COUNT,
+  "issues": $ISSUES_JSON
+}
+EOF
+
+# Auto-fix if requested and critical
+if [ "$FIX_MODE" = true ] && [ "$SEVERITY" = "critical" ]; then
+    echo "" >&2
+    echo "CRITICAL issues detected. Initiating self-heal..." >&2
+    /home/node/workspace/bin/self-heal "auto: ${ISSUES[*]}"
+    exit 2
+fi
+
+# Exit codes: 0=ok, 1=issues found, 2=self-heal triggered
+[ "$SEVERITY" = "ok" ] && exit 0 || exit 1

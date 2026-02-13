@@ -1,0 +1,40 @@
+#!/bin/bash
+# Self-Heal Script for OpenClaw
+# Called from inside the container to restart itself via SSH to host
+# 
+# Usage: self-heal [reason]
+# 
+# Flow:
+# 1. SSH to Intel MacBook host
+# 2. Schedule a docker restart via nohup (so it survives SSH disconnect)
+# 3. The restart kills this container, which then restarts with init: true
+#
+# IMPORTANT: Memory flush should happen BEFORE calling this script.
+# The calling agent should write to memory/YYYY-MM-DD.md first.
+
+REASON="${1:-manual self-heal}"
+HOST="rogergimbel@100.124.209.59"
+CONTAINER="moltbot-gateway"
+LOG_FILE="/tmp/self-heal.log"
+
+echo "[$(date -Iseconds)] Self-heal triggered: $REASON" >> "$LOG_FILE"
+
+# Verify SSH connectivity first
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes "$HOST" "echo ok" &>/dev/null; then
+    echo "[$(date -Iseconds)] FAILED: Cannot SSH to host" >> "$LOG_FILE"
+    echo "ERROR: Cannot SSH to host. Manual intervention required."
+    exit 1
+fi
+
+# Schedule restart with 3-second delay so this script can exit cleanly
+ssh -o ConnectTimeout=5 "$HOST" "nohup bash -c 'sleep 3 && /usr/local/bin/docker restart $CONTAINER' &>/dev/null &"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "[$(date -Iseconds)] Restart scheduled successfully" >> "$LOG_FILE"
+    echo "Restart scheduled. Container will restart in ~3 seconds."
+else
+    echo "[$(date -Iseconds)] FAILED: SSH command failed (exit $EXIT_CODE)" >> "$LOG_FILE"
+    echo "ERROR: Failed to schedule restart."
+    exit 1
+fi

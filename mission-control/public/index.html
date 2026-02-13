@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Rodaco Mission Control</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">⚡ <span class="header-title-full">Mission Control</span><span class="header-title-short">MC</span></div>
+      <div class="header-version">v2</div>
+      <span class="status-dot" id="status-dot"></span>
+      <span class="header-model" id="header-model-compact">—</span>
+    </div>
+    <div class="header-stats" id="header-stats">
+      <div class="stat">
+        <span class="status-dot desktop-only" id="status-dot-desktop"></span>
+        <span class="stat-value" id="status-text">Connecting...</span>
+      </div>
+      <div class="stat">
+        <span>🤖</span>
+        <span class="stat-value" id="current-model">—</span>
+      </div>
+      <div class="stat">
+        <span>📊</span>
+        <span class="stat-value" id="session-count">—</span>
+        <span class="stat-label">sessions</span>
+      </div>
+      <div class="stat">
+        <span>⏱️</span>
+        <span class="stat-value" id="uptime">—</span>
+      </div>
+    </div>
+    <button class="header-expand-btn" id="header-expand-btn" aria-label="Toggle stats">▼</button>
+  </div>
+
+  <!-- System Metrics Bar -->
+  <div class="system-bar" id="system-bar">
+    <div class="sbar-item" id="sbar-load">
+      <span class="sbar-icon">📈</span>
+      <span class="sbar-label">Load:</span>
+      <span class="sbar-value" id="sbar-load-val">—</span>
+    </div>
+    <div class="sbar-sep">|</div>
+    <div class="sbar-item" id="sbar-ram">
+      <span class="sbar-icon">🧠</span>
+      <span class="sbar-label">RAM:</span>
+      <span class="sbar-value" id="sbar-ram-val">—</span>
+    </div>
+    <div class="sbar-sep">|</div>
+    <div class="sbar-item" id="sbar-disk">
+      <span class="sbar-icon">💾</span>
+      <span class="sbar-label">Disk:</span>
+      <span class="sbar-value" id="sbar-disk-val">—</span>
+    </div>
+    <div class="sbar-sep">|</div>
+    <div class="sbar-item" id="sbar-uptime">
+      <span class="sbar-icon">⏱️</span>
+      <span class="sbar-label">Uptime:</span>
+      <span class="sbar-value" id="sbar-uptime-val">—</span>
+    </div>
+  </div>
+
+  <!-- Desktop/Tablet Tabs (top) -->
+  <div class="tabs tabs-top">
+    <div class="tab active" data-tab="activity">📡 Activity</div>
+    <div class="tab" data-tab="knowledge">🧠 Knowledge</div>
+    <div class="tab" data-tab="memory">📝 Memory</div>
+    <div class="tab" data-tab="ops">🖥️ Ops</div>
+    <div class="tab" data-tab="calendar">📅 Calendar</div>
+    <div class="tab" data-tab="usage">📊 Usage</div>
+    <div class="tab" data-tab="search">🔍 Search</div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-tab="activity">
+      <span class="bottom-nav-icon">📡</span>
+      <span class="bottom-nav-label">Activity</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="knowledge">
+      <span class="bottom-nav-icon">🧠</span>
+      <span class="bottom-nav-label">Knowledge</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="memory">
+      <span class="bottom-nav-icon">📝</span>
+      <span class="bottom-nav-label">Memory</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="ops">
+      <span class="bottom-nav-icon">🖥️</span>
+      <span class="bottom-nav-label">Ops</span>
+    </button>
+    <button class="bottom-nav-item bottom-nav-more" id="bottom-nav-more-btn">
+      <span class="bottom-nav-icon">•••</span>
+      <span class="bottom-nav-label">More</span>
+    </button>
+    <!-- Overflow menu -->
+    <div class="bottom-nav-overflow" id="bottom-nav-overflow">
+      <button class="bottom-nav-overflow-item" data-tab="calendar">📅 Calendar</button>
+      <button class="bottom-nav-overflow-item" data-tab="usage">📊 Usage</button>
+      <button class="bottom-nav-overflow-item" data-tab="search">🔍 Search</button>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Activity Feed -->
+    <div class="tab-panel active" id="panel-activity">
+      <div class="controls">
+        <select id="filter-type">
+          <option value="">All Types</option>
+          <option value="exec">⚙️ Exec</option>
+          <option value="message">💬 Message</option>
+          <option value="file">📄 File</option>
+          <option value="search">🔍 Search</option>
+          <option value="error">❌ Error</option>
+          <option value="tool">🔧 Tool</option>
+        </select>
+        <input type="date" id="filter-from" title="From date">
+        <input type="date" id="filter-to" title="To date">
+        <button id="btn-refresh" title="Refresh now">🔄</button>
+        <span class="refresh-indicator" id="refresh-timer"></span>
+      </div>
+      <div class="event-count" id="event-count"></div>
+      <div class="timeline" id="timeline">
+        <div class="loading">⚡ Loading activity...</div>
+      </div>
+    </div>
+
+    <!-- Knowledge Graph -->
+    <div class="tab-panel" id="panel-knowledge">
+      <div class="kg-layout">
+        <div class="kg-sidebar">
+          <div class="kg-filter">
+            <select id="kg-category-filter">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <div class="kg-stats" id="kg-stats"></div>
+          <div class="kg-list" id="kg-list"></div>
+        </div>
+        <div class="kg-main">
+          <canvas id="kg-canvas"></canvas>
+          <div class="kg-detail" id="kg-detail">
+            <div class="empty-state"><div class="icon">🧠</div><p>Select a node to view details</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memory Timeline -->
+    <div class="tab-panel" id="panel-memory">
+      <div class="mem-header">
+        <div class="mem-stats" id="mem-stats"></div>
+      </div>
+      <div class="mem-layout">
+        <div class="mem-heatmap" id="mem-heatmap"></div>
+        <div class="mem-content" id="mem-content">
+          <div class="empty-state"><div class="icon">📝</div><p>Click a day to view notes</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ops Dashboard -->
+    <div class="tab-panel" id="panel-ops">
+      <div class="ops-grid" id="ops-grid">
+        <div class="loading">🖥️ Loading system status...</div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="tab-panel" id="panel-calendar">
+      <div class="calendar-header">
+        <h2 id="calendar-title">Week of ...</h2>
+        <div class="calendar-nav">
+          <button id="cal-prev">← Prev</button>
+          <button id="cal-today">Today</button>
+          <button id="cal-next">Next →</button>
+        </div>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="job-cards" id="job-cards"></div>
+    </div>
+
+    <!-- Token Usage -->
+    <div class="tab-panel" id="panel-usage">
+      <div class="usage-grid">
+        <div class="usage-card total-card">
+          <div class="usage-card-title">Total Tokens</div>
+          <div class="usage-card-value" id="total-tokens">—</div>
+          <div class="usage-card-sub" id="total-breakdown">—</div>
+        </div>
+        <div class="usage-card">
+          <div class="usage-card-title">Total Cost</div>
+          <div class="usage-card-value" id="total-cost">—</div>
+          <div class="usage-card-sub" id="total-calls">—</div>
+        </div>
+        <div class="usage-card">
+          <div class="usage-card-title">Cache Efficiency</div>
+          <div class="usage-card-value" id="cache-efficiency">—</div>
+          <div class="usage-card-sub" id="cache-detail">—</div>
+        </div>
+      </div>
+      <div class="usage-section">
+        <h3>🔑 API Providers</h3>
+        <div class="provider-grid" id="provider-grid"></div>
+      </div>
+      <div class="usage-section">
+        <h3>📊 Usage by Model</h3>
+        <div class="usage-table-wrap">
+          <table class="usage-table" id="model-table">
+            <thead><tr><th>Model</th><th>Calls</th><th>Input</th><th>Output</th><th>Cache</th><th>Cost</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="usage-section">
+        <h3>📅 Daily Usage (7d)</h3>
+        <div class="daily-chart" id="daily-chart"></div>
+      </div>
+      <div class="usage-section">
+        <h3>🕐 Recent Calls</h3>
+        <div class="usage-table-wrap">
+          <table class="usage-table" id="recent-table">
+            <thead><tr><th>Time</th><th>Model</th><th>In</th><th>Out</th><th>Cache</th><th>Cost</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="tab-panel" id="panel-search">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search memory, knowledge, and notes...">
+        <button id="btn-search">Search</button>
+      </div>
+      <div class="search-summary" id="search-summary"></div>
+      <div class="search-results" id="search-results">
+        <div class="empty-state"><div class="icon">🔍</div><p>Search across all memory and knowledge files</p></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="components/utils.js"></script>
+  <script src="components/system-bar.js"></script>
+  <script src="components/sessions.js"></script>
+  <script src="components/activity.js"></script>
+  <script src="components/knowledge.js"></script>
+  <script src="components/memory.js"></script>
+  <script src="components/ops.js"></script>
+  <script src="components/calendar.js"></script>
+  <script src="components/usage.js"></script>
+  <script src="components/search.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

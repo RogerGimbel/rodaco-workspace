@@ -1,0 +1,92 @@
+#!/bin/bash
+# Email CLI for OpenClaw - Self-contained
+# Usage: bash /home/node/workspace/bin/email <command> [options]
+
+set -e
+
+API_BASE="https://api.agentmail.to/v0"
+INBOX_ID="rodaco@agentmail.to"
+# Note: Key is embedded for reliability. Rotate if compromised.
+API_KEY="${AGENTMAIL_API_KEY:?AGENTMAIL_API_KEY not set}"
+AUTH_HEADER="Authorization: Bearer $API_KEY"
+
+json_format() {
+    node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')), null, 2));"
+}
+
+usage() {
+    cat << 'EOF'
+Email CLI - Send and receive emails
+
+Commands:
+  send <to> <subject> <body>    Send an email
+  list [limit]                  List recent messages (default: 10)
+  read <message_id>             Read a specific message
+  inbox                         Show inbox info
+  help                          Show this help
+
+From: rodaco@agentmail.to
+EOF
+}
+
+cmd_send() {
+    local to="$1"
+    local subject="$2"
+    local body="$3"
+
+    if [ -z "$to" ] || [ -z "$subject" ] || [ -z "$body" ]; then
+        echo "Usage: email send <to> <subject> <body>" >&2
+        exit 1
+    fi
+
+    # Proper JSON escaping via node
+    payload=$(node -e "console.log(JSON.stringify({to:process.argv[1],subject:process.argv[2],body:process.argv[3]}))" "$to" "$subject" "$body")
+
+    response=$(curl -s -X POST "$API_BASE/inboxes/$INBOX_ID/messages/send" \
+        -H "$AUTH_HEADER" \
+        -H "Content-Type: application/json" \
+        -d "$payload")
+
+    if echo "$response" | grep -q "message_id"; then
+        echo "Email sent to: $to"
+    else
+        echo "Failed: $response" >&2
+        exit 1
+    fi
+}
+
+cmd_list() {
+    local limit="${1:-10}"
+    curl -s "$API_BASE/inboxes/$INBOX_ID/messages?limit=$limit" -H "$AUTH_HEADER" | node -e "
+        const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+        (d.messages||[]).forEach(m => {
+            console.log('---');
+            console.log('From:', m.from || 'unknown');
+            console.log('Subject:', m.subject || '(no subject)');
+            console.log('Date:', m.created_at);
+            console.log('ID:', m.message_id);
+        });
+        if(!d.messages?.length) console.log('No messages.');"
+}
+
+cmd_read() {
+    local msg_id="$1"
+    [ -z "$msg_id" ] && { echo "Usage: email read <message_id>" >&2; exit 1; }
+    curl -s "$API_BASE/inboxes/$INBOX_ID/messages/$msg_id" -H "$AUTH_HEADER" | json_format
+}
+
+cmd_inbox() {
+    curl -s "$API_BASE/inboxes/$INBOX_ID" -H "$AUTH_HEADER" | node -e "
+        const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+        console.log('Email:', d.inbox_id);
+        console.log('Name:', d.display_name);"
+}
+
+case "${1:-help}" in
+    send)   shift; cmd_send "$@" ;;
+    list)   shift; cmd_list "$@" ;;
+    read)   shift; cmd_read "$@" ;;
+    inbox)  cmd_inbox ;;
+    help|--help|-h) usage ;;
+    *)      echo "Unknown: $1" >&2; usage; exit 1 ;;
+esac

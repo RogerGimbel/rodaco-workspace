@@ -1,0 +1,2 @@
+#!/bin/bash
+PYTHONPATH=/home/node/workspace/pylib:$PYTHONPATH exec python3 /home/node/workspace/pylib/bin/nano-pdf "$@"
