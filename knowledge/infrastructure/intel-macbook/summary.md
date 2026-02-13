@@ -180,14 +180,49 @@ healthcheck:
   start_period: 90s
 ```
 
-### Cron Jobs (`crontab -l`)
+### Host Crontab (`crontab -l`) — Updated 2026-02-13
 | Schedule | Script | Purpose |
 |----------|--------|---------|
 | `*/2 * * * *` | `telegram-watchdog.sh` | Detect stuck Telegram fetch |
 | `*/5 * * * *` | `health-check.sh` | Basic container-up check |
-| `0 7 * * *` | Morning brief | Daily Telegram briefing |
-| `0 2 * * *` | Overnight build | Auto-pick backlog task |
-| `0 9 * * 0` | Weekly synthesis | Rewrite knowledge summaries |
+| `0 3 * * 0` | Docker image prune | Weekly cleanup of old images |
+| `0 0 * * 0` | Log rotation | Keep health.log under 1000 lines |
+
+Morning brief, overnight build, weekly synthesis, daily backup all migrated to OpenClaw internal cron.
+
+### OpenClaw Internal Cron Jobs
+| Schedule | Job | Purpose |
+|----------|-----|---------|
+| `0 7 * * *` ET | Morning brief | Daily Telegram briefing |
+| `0 2 * * *` ET | Overnight build | Auto-pick backlog task |
+| `0 4 * * *` MT | Daily backup | Pi tar+ssh + GitHub push (600s timeout) |
+| `0 9 * * 0` MT | Weekly synthesis | Rewrite knowledge summaries + MEMORY.md |
+| Various | Get-to-know-you | Mon/Wed/Fri questions to Roger |
+| `0 12 * * *` MT | TestFlight check | OpenClaw iOS app |
+
+### Healer Service (Updated 2026-02-13)
+- **Path:** `~/docker/openclaw/healer/openclaw_healer.py`
+- **LaunchAgent:** `com.openclaw.healer`
+- **Monitors:** container health, zombies, CPU, disk, session file bloat, stuck QMD
+- **Telegram alerts:** via `~/.config/openclaw/telegram.env` (working, verified)
+- **Alert deduplication:** 5-min cooldown on container-not-found and unhealthy alerts, auto-clears on recovery
+- **Cooldown:** 5 min between restarts
+
+### Backup Strategy (Deployed 2026-02-13)
+| Target | Method | Schedule | Retention |
+|--------|--------|----------|-----------|
+| Pi SSD | tar+ssh+gzip (workspace + config) | 4 AM MT daily | 7 day-of-week + 14 dated |
+| GitHub | git push (`RogerGimbel/rodaco-workspace`) | 4 AM MT daily | Full history |
+| Restore docs | `knowledge/infrastructure/intel-macbook/restore-procedure.md` | — | — |
+
+Excludes: QMD index (2.9GB, rebuildable), antfarm memory (220MB), node_modules, .git-credentials
+
+### Power Recovery (Configured 2026-02-13)
+- `pmset restartpowerfailure 1` — auto-restart after power loss
+- `pmset womp 1` — Wake-on-LAN enabled (MAC: 0a:2c:1f:c5:42:79)
+- Docker Desktop auto-starts on login
+- Pi monitors MacBook every 10 min (`macbook-recovery.sh`) with WoL fallback
+- Sleep disabled (`sleep 0`)
 
 ## History
 - [2026-02-13] Added Telegram watchdog cron (telegram-watchdog.sh) — detects stuck Node.js undici fetch pool via log monitoring, auto-restarts container. Fixes issue where Telegram shows "connecting" indefinitely while HTTP healthcheck still passes.

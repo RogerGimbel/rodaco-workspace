@@ -153,8 +153,22 @@ bash /home/node/workspace/bin/email inbox
   - Desktop: unchanged
   - Files: style.css (full rewrite), index.html, app.js, components/activity.js
 
-### Cron Jobs
-- **OpenClaw iOS TestFlight Check** — Daily at noon MT, searches for public TestFlight link for iOS node app
+### Cron Jobs (Updated 2026-02-13)
+
+**OpenClaw Internal Cron:**
+- Morning brief — 7 AM ET daily
+- Overnight build — 2 AM ET daily
+- Daily backup (Pi + GitHub) — 4 AM MT daily (600s timeout, Telegram on failure)
+- Weekly knowledge synthesis — 9 AM MT Sunday (job `fe7d0fce`)
+- Get-to-know-you — Mon 10AM, Wed 2PM, Fri 11AM MT
+- OpenClaw iOS TestFlight check — noon MT daily
+
+**MacBook Host Crontab (4 entries):**
+- Health check (*/5 min), Telegram watchdog (*/2 min), Docker prune (Sun 3 AM), log rotation (Sun midnight)
+- Morning brief, overnight build, weekly synthesis all REMOVED (migrated to OpenClaw cron)
+
+**Pi Crontab (5 entries):**
+- Storage alert (noon), backup to MacBook (3 AM), MacBook recovery (*/10 min), Docker prune (Sun 4 AM), SMART check (Sun 5 AM)
 
 ## Infrastructure
 
@@ -212,10 +226,43 @@ bash /home/node/workspace/bin/email inbox
 - Pironman5: fan mode Balanced (3), dashboard removed, OLED enabled
 - Known Pironman bug: vibration switch toggles fans instead of waking OLED
 
-### 3-Layer Self-Healing
-1. **Autoheal** - Docker container restarts
-2. **Healer Service** - Catches degraded states (locks, bloat, zombies)
-3. **Uptime Kuma** - External monitoring from Pi, Telegram alerts
+### Self-Healing Architecture (Updated 2026-02-13)
+
+**MacBook (4 layers):**
+1. **Docker healthcheck** — HTTP server crash/hang (~1 min detection)
+2. **Autoheal container** — auto-restarts unhealthy containers (~30s)
+3. **Healer service** — zombies, CPU, disk, session bloat, stuck QMD (30s loop, 5-min alert dedup)
+4. **Telegram watchdog** — stuck undici fetch pool (every 2 min)
+
+**Pi (6 components):**
+1. **Autoheal** — unhealthy container restarts
+2. **Healer service** — media stack webhook receiver
+3. **Tailscale watchdog** — auto-reconnect after ISP outages
+4. **Storage alert** — 3-drive monitoring with Telegram alerts (daily)
+5. **SMART check** — drive health monitoring (weekly)
+6. **MacBook recovery** — ping + WoL chain every 10 min
+
+**Cross-machine:**
+- Pi monitors MacBook health → WoL recovery if down (3 attempts, 2-min waits)
+- MacBook `pmset restartpowerfailure 1` → auto-boot after power loss
+- Uptime Kuma on Pi → Telegram alerts for MacBook outages
+
+### Backup Strategy (Deployed 2026-02-13)
+| Direction | What | When | Method |
+|-----------|------|------|--------|
+| MacBook → Pi | Workspace + config volumes | 4 AM MT daily | tar+ssh+gzip, 7 DoW + 14 dated |
+| MacBook → GitHub | Workspace (text only) | 4 AM MT daily | git push (private repo) |
+| Pi → MacBook | Configs, compose, scripts, docs, system state | 3 AM daily | rsync (LAN→Tailscale fallback) |
+
+Restore procedure: `knowledge/infrastructure/intel-macbook/restore-procedure.md`
+
+### Pi Hardening (Deployed 2026-02-13)
+- UFW firewall with Docker-aware DOCKER-USER chain (LAN + Tailscale allowed, WAN blocked)
+- Journal capped at 100MB
+- SMART monitoring on both USB drives (weekly, Telegram alerts)
+- SSH: key-only, no root login
+- Hardware watchdog (15s timeout)
+- Docker live-restore enabled
 
 ### Split DNS & Local Routing (Deployed 2026-02-07)
 

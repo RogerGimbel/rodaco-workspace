@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalAsked": 11,
+  "totalAsked": 12,
   "questions": [
     {
       "id": 1,
@@ -943,7 +943,7 @@
       "category": "creative",
       "text": "What gets you excited enough to lose track of time?",
       "weight": 1,
-      "asked": null,
+      "asked": "2026-02-13T20:00:04.322Z",
       "answered": null,
       "answer": null
     },
