@@ -1,0 +1,16 @@
+{
+  "jobs": {
+    "morning_brief": { "lastRun": null, "status": null, "note": null },
+    "overnight_build": { "lastRun": null, "status": null, "note": null },
+    "daily_backup": { "lastRun": null, "status": null, "note": null },
+    "weekly_synthesis": { "lastRun": null, "status": null, "note": null }
+  },
+  "alerts": {
+    "maxStalenessHours": {
+      "morning_brief": 36,
+      "overnight_build": 36,
+      "daily_backup": 36,
+      "weekly_synthesis": 192
+    }
+  }
+}

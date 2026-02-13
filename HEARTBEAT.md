@@ -12,7 +12,13 @@ Run: `bash /home/node/workspace/mission-control/start.sh`
 ## 3. ACTIVE TASKS
 Read `memory/active-tasks.md` — resume anything stalled or abandoned.
 
-## 4. CHECKPOINT
+## 4. CRON HEALTH
+Read `memory/cron-status.json`. Alert Roger if any job is stale:
+- morning_brief: >36h since lastRun
+- overnight_build: >36h since lastRun
+- daily_backup: >36h since lastRun
+
+## 5. CHECKPOINT
 - Context bloated? → flush to `memory/YYYY-MM-DD.md`
 - Learned something permanent? → write to `MEMORY.md`
 - Major task just completed? → update `memory/active-tasks.md`

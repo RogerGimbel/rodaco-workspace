@@ -1,19 +1,11 @@
 # Active Tasks — Crash Recovery Save File
-# Read this on every restart/heartbeat. Resume anything in progress.
-# Update immediately when starting, spawning, or completing tasks.
 
-## Format
-```
-## [STATUS] Task Name
-- Started: timestamp
-- Sub-agents: session keys (if any)
-- Context: what's needed to resume
-- Next step: exact action to take
-```
-
-## Current Tasks
-
-None active.
+## [WAITING] Agent Self-Improvement Sprint — Phase 1
+- Started: 2026-02-13 ~18:00 MT
+- Plan: memory/2026-02-13-self-improvement-plan.md
+- Phases 2+3: COMPLETE (knowledge cleanup + cron logging)
+- Phase 1: WAITING for Roger interview (GOALS.md + task backlog)
+- Next step: When Roger is ready, interview him about priorities and build GOALS.md
 
 ---
-*Last updated: 2026-02-13 ~17:30 MT*
+*Last updated: 2026-02-13 ~18:30 MT*
