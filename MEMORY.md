@@ -167,8 +167,8 @@ bash /home/node/workspace/bin/email inbox
 - Health check (*/5 min), Telegram watchdog (*/2 min), Docker prune (Sun 3 AM), log rotation (Sun midnight)
 - Morning brief, overnight build, weekly synthesis all REMOVED (migrated to OpenClaw cron)
 
-**Pi Crontab (5 entries):**
-- Storage alert (noon), backup to MacBook (3 AM), MacBook recovery (*/10 min), Docker prune (Sun 4 AM), SMART check (Sun 5 AM)
+**Pi Crontab (7 entries):**
+- Storage alert (noon), backup to MacBook (3 AM), MacBook recovery (*/10 min), Docker prune (Sun 4 AM), SMART check (Sun 5 AM), gluetun watchdog (*/2 min), log rotation (Sun 1 AM)
 
 ## Infrastructure
 
@@ -244,7 +244,8 @@ bash /home/node/workspace/bin/email inbox
 
 **Cross-machine:**
 - Pi monitors MacBook health → WoL recovery if down (3 attempts, 2-min waits)
-- MacBook `pmset restartpowerfailure 1` → auto-boot after power loss
+- MacBook `restartpowerfailure` NOT SUPPORTED (2018 Intel, desktop-only feature)
+- Power failure chain: battery → boots on AC return → Pi WoL if needed
 - Uptime Kuma on Pi → Telegram alerts for MacBook outages
 
 ### Backup Strategy (Deployed 2026-02-13)

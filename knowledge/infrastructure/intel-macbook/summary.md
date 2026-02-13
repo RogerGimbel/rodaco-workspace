@@ -217,12 +217,14 @@ Morning brief, overnight build, weekly synthesis, daily backup all migrated to O
 
 Excludes: QMD index (2.9GB, rebuildable), antfarm memory (220MB), node_modules, .git-credentials
 
-### Power Recovery (Configured 2026-02-13)
-- `pmset restartpowerfailure 1` — auto-restart after power loss
-- `pmset womp 1` — Wake-on-LAN enabled (MAC: 0a:2c:1f:c5:42:79)
-- Docker Desktop auto-starts on login
-- Pi monitors MacBook every 10 min (`macbook-recovery.sh`) with WoL fallback
-- Sleep disabled (`sleep 0`)
+### Power Recovery (Confirmed 2026-02-13)
+- `restartpowerfailure` — **NOT SUPPORTED** on 2018 Intel MacBook (desktop-only feature)
+- `pmset womp 1` — Wake-on-LAN enabled (MAC: `0a:2c:1f:c5:42:79`)
+- Docker Desktop auto-starts on login (login item: "Docker")
+- Auto-login enabled (user: `rogergimbel`)
+- Sleep disabled (`sleep 0`, prevented by caffeinate)
+- Pi monitors every 10 min (`macbook-recovery.sh`) with WoL fallback (3 attempts, 2-min waits)
+- **Power failure chain:** battery absorbs short outages → boots on AC return → Pi WoL if needed
 
 ## History
 - [2026-02-13] Added Telegram watchdog cron (telegram-watchdog.sh) — detects stuck Node.js undici fetch pool via log monitoring, auto-restarts container. Fixes issue where Telegram shows "connecting" indefinitely while HTTP healthcheck still passes.

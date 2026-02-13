@@ -48,9 +48,15 @@
 - [x] Created gluetun dependency watchdog (auto-restarts qBit+SABnzbd)
 - [x] Added Pi log rotation script (weekly, 500 lines + pironman cleanup)
 
-## Roger TODO
-- [ ] `sudo pmset -a restartpowerfailure 1` — didn't take without sudo. Run it again WITH sudo.
-  Verify: `pmset -g | grep restartpowerfailure` should show `1`
+## restartpowerfailure — NOT SUPPORTED
+2018 Intel MacBook does not support `restartpowerfailure` (desktop-only: Mac Mini, iMac, Mac Pro).
+Both `sudo pmset -a restartpowerfailure 1` and `sudo pmset restartpowerfailure 1` fail with "Usage" error.
+
+**Mitigation:** Power failure recovery chain:
+1. Battery absorbs short outages (77% charge, AC attached)
+2. If battery dies → MacBook boots when AC returns (default laptop behavior)
+3. If it doesn't auto-boot → Pi WoL every 10 min (3 attempts, MAC `0a:2c:1f:c5:42:79`)
+4. WoL wakes it → auto-login (`rogergimbel`) → Docker auto-starts → OpenClaw up → Pi confirms healthy
 
 ## Remaining "Yes Manual" Items (Unavoidable)
 1. **USB drive physical failure** — SMART monitoring gives early warning, backup to MacBook protects data, but replacement requires physical access
