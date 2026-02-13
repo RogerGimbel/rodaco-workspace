@@ -1,4 +1,4 @@
-# Heavy/rebuildable
+# === Heavy / Rebuildable ===
 node_modules/
 .venv/
 pylib/
@@ -6,59 +6,50 @@ antfarm/
 tmp/
 .cache/
 
-# Browsers/runtime
+# === Browsers / Runtime ===
 .playwright-browsers/
 .npm/
 .npm-cache/
 
-# OpenClaw internals
+# === OpenClaw Internals ===
 .claude/
 .clawdhub/
 .local/
 
-# Binary/media assets
-beerpair-slides/
-beerpair-images/
-camera/
-*.tar.gz
+# === Large Binaries ===
+bin/gh
 *.png
 *.pdf
+*.tar.gz
+
+# === Media / Image Dirs ===
+beerpair-slides/
+beerpair-images/
 beerpair-deploy/images/
 mission-control/public/images/
 knowledge/projects/beerpair/*.png
+camera/
 
-# Large binaries
-bin/gh
-
-# Credentials
-.git-credentials
-
-# Secrets (NEVER commit)
+# === Secrets (NEVER commit) ===
 .env
 .env.enc
 *.enc
-
-# Caches
-.npm-cache/
-.local/
-.clawdhub/
-.claude/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Cached API responses / temp data
-prod-grok-backend.json
-*.jsonl
-antfarm/
-skills/x-bookmarks/
 .git-credentials
 
-# Claude chat exports (private data)
+# === Claude Chat Exports (private) ===
 claude-conversations.json
 claude-memories.json
 claude-projects.json
+
+# === Noisy / Auto-generated ===
+heartbeat-state.json
+prod-grok-backend.json
+*.jsonl
+*.log
+
+# === Excluded Skills ===
+skills/x-bookmarks/
+
+# === OS ===
+.DS_Store
+Thumbs.db
