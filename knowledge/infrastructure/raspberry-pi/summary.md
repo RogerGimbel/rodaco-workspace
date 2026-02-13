@@ -87,6 +87,8 @@ mkdir -p /mnt/media/presentations/new-project
 | Storage alert | Checks all 3 drives, Telegram alerts at warn/crit thresholds | Daily noon |
 | SMART check | Drive health (bad sectors, life %, errors), Telegram alerts | Weekly Sun 5 AM |
 | MacBook recovery | Ping LAN→Tailscale→WoL chain, Telegram alerts | Every 10 min |
+| Gluetun watchdog | Restarts qBit+SABnzbd when gluetun restarts | Every 2 min |
+| Network watchdog | Reconnects containers that lose media_network | Every 5 min |
 | Docker prune | Clean old images >7d | Weekly Sun 4 AM |
 | Uptime Kuma | Monitors MacBook OpenClaw health endpoint | 120s interval |
 
@@ -110,8 +112,11 @@ mkdir -p /mnt/media/presentations/new-project
 | `0 12 * * *` | `storage-alert.sh` | Drive monitoring + Telegram |
 | `0 3 * * *` | `backup-to-macbook.sh` | Full config backup to MacBook |
 | `*/10 * * * *` | `macbook-recovery.sh` | MacBook health + WoL recovery |
+| `*/5 * * * *` | `network-watchdog.sh` | Reconnect containers to media_network |
+| `*/2 * * * *` | `gluetun-watchdog.sh` | Restart qBit+SABnzbd after gluetun restart |
 | `0 4 * * 0` | `docker image prune` | Weekly image cleanup |
 | `0 5 * * 0` | `smart-check.sh` | Weekly SMART drive health |
+| `0 1 * * 0` | `rotate-logs.sh` | Truncate all custom logs |
 
 ## Related Documents
 - **Full operations guide:** [[Media Stack Operations Guide|media-stack.md]] (same folder)

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalAsked": 12,
+  "totalAsked": 13,
   "questions": [
     {
       "id": 1,
@@ -493,7 +493,7 @@
       "category": "goals",
       "text": "If you could snap your fingers and have one thing automated in your life, what would it be?",
       "weight": 1,
-      "asked": null,
+      "asked": "2026-02-13T22:00:04.070Z",
       "answered": null,
       "answer": null
     },

@@ -167,8 +167,10 @@ bash /home/node/workspace/bin/email inbox
 - Health check (*/5 min), Telegram watchdog (*/2 min), Docker prune (Sun 3 AM), log rotation (Sun midnight)
 - Morning brief, overnight build, weekly synthesis all REMOVED (migrated to OpenClaw cron)
 
-**Pi Crontab (7 entries):**
-- Storage alert (noon), backup to MacBook (3 AM), MacBook recovery (*/10 min), Docker prune (Sun 4 AM), SMART check (Sun 5 AM), gluetun watchdog (*/2 min), log rotation (Sun 1 AM)
+**Pi Crontab (9 entries):**
+- Storage alert (noon), backup to MacBook (3 AM), MacBook recovery (*/10 min)
+- Gluetun watchdog (*/2 min), network watchdog (*/5 min)
+- Docker prune (Sun 4 AM), SMART check (Sun 5 AM), log rotation (Sun 1 AM)
 
 ## Infrastructure
 
