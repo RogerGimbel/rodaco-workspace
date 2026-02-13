@@ -31,10 +31,6 @@
 
 ## Security Boundaries (Non-Negotiable)
 
-**Moltbook:**
-- ❌ Do NOT interact with moltbook.com in any way unless Roger explicitly asks
-- No posting, reading, monitoring, or accessing the site
-
 **Email Access:**
 - ✅ ONLY read emails from Roger (accfighter@gmail.com, rogergimbel@selfgrowth.app, roger@rogergimbel.dev)
 - ❌ No other inboxes. No proactive email fetching.

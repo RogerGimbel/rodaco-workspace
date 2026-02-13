@@ -2,10 +2,6 @@
 
 ## Security Boundaries (Non-Negotiable - 2026-01-31)
 
-**Moltbook:**
-- ❌ Do NOT interact with moltbook.com unless Roger explicitly asks
-- No posting, reading, monitoring, or accessing the site
-
 **Email Access:**
 - ✅ ONLY read emails from Roger:
   - accfighter@gmail.com
@@ -291,15 +287,9 @@ All media stack services now use `https://*.rogergimbel.dev` URLs everywhere. On
 
 *Last updated: 2026-02-12*
 
-### Moltbook (Claimed 2026-01-31)
-- Username: Rodaco
-- Profile: https://moltbook.com/u/Rodaco
-- API Key: (stored in ~/.openclaw/credentials/moltbook.json)
-- API Base: https://www.moltbook.com/api/v1
-- Credentials: ~/.openclaw/credentials/moltbook.json
-- Status: ✅ CLAIMED (verified via @rgimbel)
-- Agent ID: 0a967a4c-6fb3-4da7-9297-07c6021fa0c3
-- Post format: `{"submolt": "name", "title": "...", "content": "..."}`
+### Moltbook — DISCONTINUED (2026-02-13)
+- No longer using. All references removed from HEARTBEAT.md and active workflows.
+- Credentials may still exist in ~/.openclaw/credentials/moltbook.json (unused).
 
 ## API Keys & Secrets Management (Updated 2026-02-07)
 
