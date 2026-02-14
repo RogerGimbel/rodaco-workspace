@@ -24,6 +24,7 @@ Auto-refresh 15s.
 - **Device cards:** Intel MacBook + Raspberry Pi — CPU%, temp (°F), RAM%, disk%
 - **Cron health:** green/red dots per job, last run time, consecutive errors
 - **Project status:** BeerPair + Ocean One quick cards
+- **Token usage:** today's tokens in/out, cost, top model — with link to full usage page
 - **Quick stats:** uptime, active sessions, last backup time
 
 ### 2. OPS `/ops`
@@ -34,11 +35,12 @@ Tabs: Tasks | Goals | Overnight Results
 - Suggested improvements (approve/reject)
 
 ### 3. AGENT `/agent`
-Tabs: Status | Config | Sessions
+Tabs: Status | Config | Sessions | Usage
 - My identity, model, uptime
 - Model arsenal with routing rules
 - Active/recent sub-agent sessions
 - Cron job list with health status
+- **Usage tab:** Token consumption by model, by day, total cost, provider billing status
 
 ### 4. PROJECTS `/projects`
 Tabs: BeerPair | Ocean One Marine
@@ -92,6 +94,23 @@ GET /api/v3/device/pi
 Returns: { same shape as macbook + storage for all 3 drives }
 Source: SSH to rogergimbel@100.83.169.87 — runs: vcgencmd measure_temp,
   top, free, df for /, /mnt/docker, /mnt/media. Cache 30s.
+```
+
+### Usage & Costs
+```
+GET /api/v3/usage
+Returns: {
+  byModel: { [model]: { input, output, cacheRead, cacheWrite, cost, calls } },
+  byDay: { [date]: { input, output, cost } },
+  totals: { input, output, cacheRead, cacheWrite, totalCost },
+  providers: { openai, anthropic, xai, gemini, voyage: { available, usage, key } }
+}
+Source: Session .jsonl files (token counts per request) + provider API usage endpoints.
+Reuse existing logic from mission-control/src/routes/usage.js and costs.js.
+
+GET /api/v3/usage/providers
+Returns: per-provider API usage and billing status (OpenAI, Anthropic, xAI, Gemini, Voyage)
+Source: Provider billing APIs where available
 ```
 
 ### Tasks & Goals
