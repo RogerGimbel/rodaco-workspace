@@ -42,7 +42,7 @@ knowledge/
 ## Sub-Agent Context
 When spawning sub-agents, include relevant KB paths:
 ```
-"Audit BeerPair SEO. Load: knowledge/projects/beerpair/summary.md"
+"Audit [[BeerPair]] SEO. Load: knowledge/projects/beerpair/summary.md"
 "Check Pi health. Load: knowledge/infrastructure/raspberry-pi/summary.md"
 ```
 

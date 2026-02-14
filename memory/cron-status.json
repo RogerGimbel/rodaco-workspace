@@ -1,16 +1,45 @@
 {
-  "jobs": {
-    "morning_brief": { "lastRun": null, "status": null, "note": null },
-    "overnight_build": { "lastRun": null, "status": null, "note": null },
-    "daily_backup": { "lastRun": null, "status": null, "note": null },
-    "weekly_synthesis": { "lastRun": null, "status": null, "note": null }
-  },
-  "alerts": {
-    "maxStalenessHours": {
-      "morning_brief": 36,
-      "overnight_build": 36,
-      "daily_backup": 36,
-      "weekly_synthesis": 192
+  "lastUpdated": "2026-02-14T08:18:00.000Z",
+  "jobs": [
+    {
+      "name": "Morning Brief",
+      "schedule": "7 AM ET daily",
+      "lastRun": "2026-02-13T12:00:00.000Z",
+      "status": "success",
+      "consecutiveErrors": 0,
+      "note": "Daily health + priorities summary"
+    },
+    {
+      "name": "Overnight Build",
+      "schedule": "2 AM MT daily",
+      "lastRun": "2026-02-14T09:00:00.000Z",
+      "status": "partial",
+      "consecutiveErrors": 0,
+      "note": "Mission Control v3 built (deployment blocked), BeerPair tested successfully"
+    },
+    {
+      "name": "Weekly Knowledge Synthesis",
+      "schedule": "9 AM MT Sunday",
+      "lastRun": "2026-02-09T16:00:00.000Z",
+      "status": "success",
+      "consecutiveErrors": 0,
+      "note": "Consolidate memory → knowledge graph"
+    },
+    {
+      "name": "Daily Backup",
+      "schedule": "4 AM MT daily",
+      "lastRun": "2026-02-13T11:00:00.000Z",
+      "status": "success",
+      "consecutiveErrors": 0,
+      "note": "Workspace + config to Pi + GitHub"
+    },
+    {
+      "name": "Get-to-Know-You",
+      "schedule": "Mon 10AM, Wed 2PM, Fri 11AM MT",
+      "lastRun": null,
+      "status": "pending",
+      "consecutiveErrors": 0,
+      "note": "First question fires Fri Feb 14"
     }
-  }
+  ]
 }

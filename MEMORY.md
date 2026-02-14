@@ -95,7 +95,7 @@ bash /home/node/workspace/bin/email inbox
 - **nano-pdf** — PDF editing/reading, v0.2.1 at workspace/pylib (wrapper at workspace/bin/nano-pdf)
 - **canvas** — Display HTML on connected nodes (needs paired iOS/Mac node)
 - **healthcheck** — Host security hardening & audits
-- **summarize** — ARM64 macOS only (won't run on Intel Mac or Linux); using web_fetch/nano-pdf as alternatives
+- **summarize** — v0.11.1 on M5 MacBook (`ssh rogergimbel@100.71.128.20 /opt/homebrew/bin/summarize`). YouTube, podcasts, URLs, local files. `--slides` for visual summaries.
 - **save** — `/save` command: memory flush + fact extraction + git commit (Feb 12)
 - **video-gen** — Grok video generation (`grok-imagine-video`), 8-sec MP4s (Feb 12)
 - **grok-image** — Grok image generation (`grok-imagine-image`, `--pro` for pro) (Feb 12)
@@ -255,13 +255,16 @@ bash /home/node/workspace/bin/email inbox
 
 Restore procedure: `knowledge/infrastructure/intel-macbook/restore-procedure.md`
 
-### Pi Hardening (Deployed 2026-02-13)
+### Pi Hardening (Deployed 2026-02-13, Fixed 2026-02-13 late)
 - UFW firewall with Docker-aware DOCKER-USER chain (LAN + Tailscale allowed, WAN blocked)
+- **CRITICAL:** DOCKER-USER chain MUST have `conntrack --ctstate ESTABLISHED,RELATED -j RETURN` as FIRST rule — without it, containers can't receive response packets from the internet (broke Cloudflare Tunnel, all outbound container traffic)
+- Persisted in `/etc/ufw/after.rules`
 - Journal capped at 100MB
 - SMART monitoring on both USB drives (weekly, Telegram alerts)
 - SSH: key-only, no root login
 - Hardware watchdog (15s timeout)
 - Docker live-restore enabled
+- **Cloudflared MUST be on `media_network`** (not host) — it needs Docker DNS to resolve container names in tunnel ingress config
 
 ### Split DNS & Local Routing (Deployed 2026-02-07)
 

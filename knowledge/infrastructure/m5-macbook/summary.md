@@ -23,6 +23,16 @@
 - Git + GitHub
 - Supabase MCP, Vercel MCP, Context7 MCP
 
+## Network
+- **Hostname**: rgm5
+- **LAN IP**: DHCP
+- **Tailscale IP**: 100.71.128.20
+- **SSH**: `ssh rogergimbel@100.71.128.20` (OpenClaw key authorized)
+- **Exit Node**: rgpi (Pi)
+
+## CLI Tools (accessible via SSH)
+- **summarize** 0.11.1 — `/opt/homebrew/bin/summarize` (YouTube, podcasts, URLs, files; `--slides` for visual)
+
 ## Owner
 - [[Roger Gimbel]] — daily driver for all [[Rodaco]] development
 

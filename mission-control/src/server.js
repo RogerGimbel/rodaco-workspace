@@ -47,6 +47,15 @@ require('./routes/ops')(app);
 require('./routes/sessions')(app);
 require('./routes/costs')(app);
 
+// ─── v3 API (API-first for React frontend) ────────
+try {
+  require('./routes/api-v3')(app);
+  console.log('✅ v3 API loaded successfully');
+} catch (err) {
+  console.error('❌ Failed to load v3 API:', err.message);
+  console.error(err.stack);
+}
+
 // ─── Start ─────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡ Mission Control v2 running on http://0.0.0.0:${PORT}`);

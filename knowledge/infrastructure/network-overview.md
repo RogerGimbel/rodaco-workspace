@@ -11,7 +11,7 @@
 |--------|----------|--------|--------------|-------|
 | [[Raspberry Pi]] 5 | rgpi | 10.0.0.20 | 100.83.169.87 | Media stack server |
 | [[Intel MacBook]] | rogers-macbook-pro.local | 10.0.0.11 | 100.124.209.59 | Tdarr node, OpenClaw |
-| [[M5 MacBook]] | - | DHCP | - | Primary dev machine |
+| [[M5 MacBook]] | rgm5 | DHCP | 100.71.128.20 | Primary dev machine |
 
 ## SSH Access Quick Reference
 
@@ -23,6 +23,9 @@ ssh rogergimbel@100.83.169.87  # Tailscale
 
 # Intel MacBook
 ssh rogergimbel@10.0.0.11
+
+# M5 MacBook
+ssh rogergimbel@100.71.128.20  # Tailscale
 ```
 
 ## Service URLs (Split DNS - deployed 2026-02-07)
