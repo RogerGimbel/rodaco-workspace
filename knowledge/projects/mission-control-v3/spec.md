@@ -21,6 +21,10 @@
 ### 1. HOME `/`
 System health, cron status, project status cards, quick stats.
 Auto-refresh 15s.
+- **Device cards:** Intel MacBook + Raspberry Pi — CPU%, temp (°F), RAM%, disk%
+- **Cron health:** green/red dots per job, last run time, consecutive errors
+- **Project status:** BeerPair + Ocean One quick cards
+- **Quick stats:** uptime, active sessions, last backup time
 
 ### 2. OPS `/ops`
 Tabs: Tasks | Goals | Overnight Results
@@ -70,6 +74,24 @@ Source: memory/cron-status.json + OpenClaw cron API
 GET /api/v3/system-overview
 Returns: { health, cronJobs, activeTaskCount, subAgentCount, lastBackup }
 Source: aggregates multiple sources
+
+GET /api/v3/device/macbook
+Returns: {
+  cpu: { model, cores, usagePercent, loadAvg: { 1m, 5m, 15m } },
+  temperature: { celsius, fahrenheit },
+  ram: { totalGB, usedGB, availableGB, usagePercent },
+  disk: { totalGB, usedGB, availableGB, usagePercent },
+  uptime, hostname
+}
+Source: SSH to rogergimbel@100.124.209.59 — runs: top, sysctl hw.cpufreq,
+  vm_stat, df, uptime. Cache results for 30s to avoid SSH spam.
+  Temperature in Fahrenheit (convert from C). Falls back to container-level
+  os module stats if SSH unavailable.
+
+GET /api/v3/device/pi
+Returns: { same shape as macbook + storage for all 3 drives }
+Source: SSH to rogergimbel@100.83.169.87 — runs: vcgencmd measure_temp,
+  top, free, df for /, /mnt/docker, /mnt/media. Cache 30s.
 ```
 
 ### Tasks & Goals
