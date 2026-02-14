@@ -96,6 +96,15 @@ Source: SSH to rogergimbel@100.83.169.87 — runs: vcgencmd measure_temp,
   top, free, df for /, /mnt/docker, /mnt/media. Cache 30s.
 ```
 
+### Activity Feed
+```
+GET /api/v3/activity?limit=50
+Returns: { events: [{ timestamp, type, summary, source, details }] }
+Source: Session .jsonl files — parse recent tool calls, model switches,
+  messages, cron runs. Same logic as v2 activity.js.
+  Types: message, tool_call, model_switch, cron_run, sub_agent_spawn, error
+```
+
 ### Usage & Costs
 ```
 GET /api/v3/usage
