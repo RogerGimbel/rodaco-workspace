@@ -24,8 +24,9 @@ Food and beer pairing web app. Users input a dish, get craft beer pairing recomm
 - Web app: LIVE
 - Native apps: IN PROGRESS (Despia WebView wrapper for Play Store / App Store)
 - Landing page: REDESIGN IN PROGRESS (outside design company)
-- Marketing: Plan ready, execution on hold until native apps + landing page complete
-- B2B venue strategy from [[Stuart Seligman]] — under review
+- Marketing: B2C + B2B + Integrated strategy COMPLETE, execution on hold until native apps + landing page done
+- B2B GTM Sprint (Feb 12): 17 assets built — pricing (4 tiers $49-$3K), sales funnel, ROI calculator, pitch deck, sell sheet, outbound scripts, 9-email onboarding sequence, brand identity system
+- Marketing presentation live: https://presentations.rogergimbel.dev/beerpair/
 
 ## Key Files
 - Marketing plan: `knowledge/projects/beerpair-free-marketing-plan.md`
@@ -36,3 +37,4 @@ Food and beer pairing web app. Users input a dish, get craft beer pairing recomm
 - [2026-01-29] Confirmed active project
 - [2026-02-01] Web app live at beerpair.com
 - [2026-02-11] Stuart emailed B2B venue marketing plan
+- [2026-02-12] B2B GTM sprint — 17 marketing/sales assets built with Roger & Stuart

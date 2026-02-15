@@ -91,7 +91,7 @@ bash /home/node/workspace/bin/email inbox
 - **marketing-skills** — 34 marketing sub-skills (copywriting, SEO, CRO, etc.)
 - **memory-search** — Semantic memory search
 - **octolens** — Brand mention monitoring
-- **github** — `gh` CLI v2.86.0 at workspace/bin/gh (needs auth token from Roger)
+- **github** — `gh` CLI v2.86.0 at workspace/bin/gh (authenticated as RogerGimbel, token in ~/.config/gh/hosts.yml)
 - **nano-pdf** — PDF editing/reading, v0.2.1 at workspace/pylib (wrapper at workspace/bin/nano-pdf)
 - **canvas** — Display HTML on connected nodes (needs paired iOS/Mac node)
 - **healthcheck** — Host security hardening & audits
@@ -199,7 +199,41 @@ bash /home/node/workspace/bin/email inbox
 - To copy files out: `docker cp moltbot-gateway:/home/node/workspace/<file> <dest>`
 - Container name: `moltbot-gateway`
 
-### OpenClaw (Updated 2026-02-09)
+### Secrets Management (Deployed 2026-02-14)
+- **Method:** SOPS/age encryption → decrypt to tmpfs at container startup
+- **Encrypted file:** `~/docker/openclaw/secrets.enc.yaml` (git-safe)
+- **Age key:** `~/docker/openclaw/age-key.txt` (ONLY plaintext secret on host)
+- **Entrypoint:** `decrypt-secrets.sh` runs before OpenClaw, exports env vars + writes credential files
+- **Decrypted to:** `/tmp/secrets/` (NOT `/run/secrets/` — `/run` is root-owned, node user can't mkdir there)
+- **LESSON:** Container runs as uid 1000. `/run` = root tmpfs (755). `/tmp` = world-writable tmpfs (1777). Always use `/tmp` for user-writable temp files.
+- **Contains:** 15 env vars + GitHub PAT + BeerPair password + Xfinity creds
+- **No more `.env` needed** for secrets (still exists as backup, can be deleted)
+- **Dockerfile:** Added sops v3.9.4 + age v1.2.1 binaries
+- **Bind mounts:** `/opt/secrets/secrets.enc.yaml:ro` + `/opt/secrets/age-key:ro`
+- **Git safety:** `age-key.txt` and `*.bak` added to `.gitignore`
+- **To add a new secret:** decrypt `secrets.enc.yaml` → edit → re-encrypt → rebuild container
+
+### Development Pattern: Agent Browser → Lovable Prompts (Established 2026-02-15)
+- **Pattern:** Browse live web apps with agent-browser, identify issues/improvements, write detailed Lovable prompts for Roger to paste
+- **Works for:** Any Lovable-built frontend with an API backend we control
+- **Steps:** (1) Visit every page, screenshot, check console errors (2) Audit API responses (3) Fix backend issues directly (4) Write copy-paste Lovable prompts with exact API response shapes (5) Feed prompts one at a time
+- **Key:** Include API response shapes in prompts so Lovable knows what data is available
+- **First use:** MC v3 — 23 prompts, full redesign pass in one session
+
+### Mission Control v3 (Updated 2026-02-15)
+- 3-layer resilience: supervisor (auto-restart on crash) → cron watchdog every 5 min (`ac4f86b8`) → heartbeat backup
+- Watchdog auto-restarts if down, alerts Roger if restart fails
+- Common failure: overnight build kills server, forgets to restart
+- Start command: `bash mission-control/start.sh`
+- **Feb 15 overnight:** Added 5 metrics endpoints (costs, performance, session-health, health-score, overnight-history) + 30 Lovable frontend prompts
+
+### OpenClaw (Updated 2026-02-15)
+- Running **2026.2.14** (upgraded from 2026.2.13)
+- Notable: cron skipped-job fix, memory autoCapture now opt-in, 15+ security fixes (path traversal, SSRF, etc.)
+- New: `openclaw message poll` for Telegram polls
+- Memory recall default changed to `searchMode=search` (faster)
+
+### OpenClaw (Archived 2026-02-09)
 - Version: 2026.2.9
 - Config: ~/.openclaw/
 - Tailscale IP: 100.124.209.59
@@ -299,7 +333,7 @@ All media stack services now use `https://*.rogergimbel.dev` URLs everywhere. On
 
 ---
 
-*Last updated: 2026-02-12*
+*Last updated: 2026-02-15*
 
 ### Moltbook — DISCONTINUED (2026-02-13)
 - No longer using. All references removed from HEARTBEAT.md and active workflows.

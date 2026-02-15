@@ -1,0 +1,85 @@
+=== MISSION CONTROL V3 API AUDIT ===
+Timestamp: Sun Feb 15 02:02:13 EST 2026
+
+### HOME PAGE ###
+Testing: /api/v3/health
+  ✓ Status: 200, Size: 302 bytes
+
+Testing: /api/v3/system-overview
+  ✓ Status: 200, Size: 1463 bytes
+
+Testing: /api/v3/cron-status
+  ✓ Status: 200, Size: 2623 bytes
+
+Testing: /api/v3/device/macbook
+  ✓ Status: 200, Size: 375 bytes
+
+Testing: /api/v3/device/pi
+  ✓ Status: 200, Size: 897 bytes
+
+Testing: /api/v3/usage
+  ✓ Status: 200, Size: 851 bytes
+
+### OPS PAGE ###
+Testing: /api/v3/active-tasks
+  ✓ Status: 200, Size: 927 bytes
+
+Testing: /api/v3/goals
+  ✓ Status: 200, Size: 1745 bytes
+
+Testing: /api/v3/overnight-log
+  ✓ Status: 200, Size: 60 bytes
+
+Testing: /api/v3/suggested-tasks
+  ✓ Status: 200, Size: 1204 bytes
+
+Testing: /api/v3/activity
+  ✓ Status: 200, Size: 14371 bytes
+
+### AGENT PAGE ###
+Testing: /api/v3/agent
+  ✓ Status: 200, Size: 841 bytes
+
+Testing: /api/v3/agent/models
+  ✓ Status: 200, Size: 702 bytes
+
+Testing: /api/v3/agent/sessions
+  ✓ Status: 200, Size: 2432 bytes
+
+Testing: /api/v3/agent/cron-jobs
+  ✓ Status: 200, Size: 2968 bytes
+
+Testing: /api/v3/usage/providers
+  ✓ Status: 200, Size: 457 bytes
+
+### PROJECTS PAGE ###
+Testing: /api/v3/projects/beerpair
+  ✓ Status: 200, Size: 4067 bytes
+
+Testing: /api/v3/projects/ocean-one
+  ✓ Status: 200, Size: 846 bytes
+
+### KNOWLEDGE PAGE ###
+Testing: /api/v3/knowledge/graph
+  ✓ Status: 200, Size: 48887 bytes
+
+Testing: /api/v3/knowledge/search?q=beerpair
+  ✓ Status: 200, Size: 7201 bytes
+
+Testing: /api/v3/knowledge/tree
+  ✓ Status: 200, Size: 4713 bytes
+
+Testing: /api/v3/knowledge/timeline
+  ✓ Status: 200, Size: 5475 bytes
+
+### RESEARCH PAGE ###
+Testing: /api/v3/research/openclaw
+  ✓ Status: 200, Size: 1216 bytes
+
+Testing: /api/v3/research/competitive
+  ✓ Status: 200, Size: 446 bytes
+
+Testing: /api/v3/research/marketing
+  ✓ Status: 200, Size: 1413 bytes
+
+=== TEST COMPLETE ===

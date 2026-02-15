@@ -34,7 +34,7 @@ function sshCommand(host, command) {
   const cached = cache.get(`ssh:${host}:${command}`);
   if (cached) return cached;
   try {
-    const result = execSync(`ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${host} "${command}"`, 
+    const result = execSync(`ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${host} "${command}"`,
       { encoding: 'utf8', timeout: 10000 }).trim();
     cache.set(`ssh:${host}:${command}`, result);
     return result;
@@ -45,7 +45,7 @@ function sshCommand(host, command) {
 
 function parseMarkdown(content) {
   const meta = { title: '', tags: [], links: [], sections: [], excerpt: '', frontmatter: {} };
-  
+
   // YAML frontmatter
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (fmMatch) {
@@ -56,31 +56,31 @@ function parseMarkdown(content) {
         const [, key, value] = match;
         meta.frontmatter[key] = value.replace(/^["']|["']$/g, '');
         if (key === 'title') meta.title = meta.frontmatter[key];
-        if (key === 'tags') meta.tags = value.match(/\[([^\]]+)\]/) 
+        if (key === 'tags') meta.tags = value.match(/\[([^\]]+)\]/)
           ? value.match(/\[([^\]]+)\]/)[1].split(',').map(t => t.trim().replace(/["']/g, ''))
           : [value];
       }
     });
   }
-  
+
   // Title from first H1 if not in frontmatter
   if (!meta.title) {
     const h1 = content.match(/^#\s+(.+)$/m);
     if (h1) meta.title = h1[1];
   }
-  
+
   // Wikilinks [[target]]
   const wikilinks = content.matchAll(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g);
   for (const m of wikilinks) meta.links.push(m[1].trim());
-  
+
   // Markdown links to local files
   const mdlinks = content.matchAll(/\[([^\]]+)\]\((?!https?:\/\/)([^)]+\.md)\)/g);
   for (const m of mdlinks) meta.links.push(m[2].replace(/\.md$/, ''));
-  
+
   // Section headers
   const headers = content.matchAll(/^(#{1,3})\s+(.+)$/gm);
   for (const h of headers) meta.sections.push({ level: h[1].length, title: h[2] });
-  
+
   // Excerpt: first non-empty, non-header, non-frontmatter paragraph
   const lines = content.replace(/^---\n[\s\S]*?\n---\n?/, '').split('\n');
   for (const line of lines) {
@@ -90,7 +90,7 @@ function parseMarkdown(content) {
       break;
     }
   }
-  
+
   return meta;
 }
 
@@ -100,17 +100,17 @@ function parseActiveTasks() {
     const tasks = [];
     // Split on ## headings (top-level task blocks)
     const taskBlocks = content.split(/^## (?!#)/m).slice(1);
-    
+
     for (const block of taskBlocks) {
       const lines = block.trim().split('\n');
       const title = lines[0].replace(/\s*\(.*?\)\s*$/, '').trim();
       const task = { title, status: 'active', started: null, priority: null, plan: [], nextStep: '', checklist: [] };
-      
+
       let currentSection = '';
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         const trimmed = line.trim();
-        
+
         // Parse **Key:** value patterns
         if (trimmed.startsWith('**Status:**')) task.status = trimmed.replace('**Status:**', '').trim();
         else if (trimmed.startsWith('**Started:**')) task.started = trimmed.replace('**Started:**', '').trim();
@@ -136,16 +136,16 @@ function parseActiveTasks() {
           if (text && !text.startsWith('**')) task.plan.push(text);
         }
       }
-      
+
       // Derive nextStep from first unchecked item if not explicit
       if (!task.nextStep && task.checklist.length) {
         const next = task.checklist.find(c => !c.done);
         if (next) task.nextStep = next.text;
       }
-      
+
       tasks.push(task);
     }
-    
+
     return tasks;
   } catch {
     return [];
@@ -156,15 +156,15 @@ function parseGoals() {
   try {
     const content = fs.readFileSync(path.join(WORKSPACE, 'GOALS.md'), 'utf8');
     const goals = { role: '', projects: [], antiGoals: [], overnightTasks: [] };
-    
-    // Extract role — handles both "## My Role\nparagraph" and "### Primary Directive: text"
+
+    // Extract role - handles both "## My Role\nparagraph" and "### Primary Directive: text"
     const roleMatch = content.match(/##\s*(?:My )?Role\n([\s\S]*?)(?=\n## )/);
     if (roleMatch) {
       // Get first paragraph (strip markdown bold)
       const firstPara = roleMatch[1].trim().split('\n\n')[0].replace(/\*\*/g, '').trim();
       goals.role = firstPara;
     }
-    
+
     // Extract projects
     const projectsMatch = content.match(/##\s*Active Projects[\s\S]*?((?:###\s+.+[\s\S]*?)+?)(?=##|$)/);
     if (projectsMatch) {
@@ -182,21 +182,21 @@ function parseGoals() {
         });
       }
     }
-    
+
     // Extract anti-goals
     const antiMatch = content.match(/##\s*Anti-Goals[\s\S]*?((?:[-*]\s+.+\n?)+)/);
     if (antiMatch) {
       goals.antiGoals = antiMatch[1].match(/^[-*]\s+(.+)$/gm)
         .map(line => line.replace(/^[-*]\s+/, '').trim());
     }
-    
+
     // Extract overnight tasks
     const overnightMatch = content.match(/##\s*Overnight Build Tasks[\s\S]*?((?:[-*]\s+.+\n?)+)/);
     if (overnightMatch) {
       goals.overnightTasks = overnightMatch[1].match(/^[-*]\s+(.+)$/gm)
         .map(line => line.replace(/^[-*]\s+/, '').trim());
     }
-    
+
     return goals;
   } catch {
     return { role: '', projects: [], antiGoals: [], overnightTasks: [] };
@@ -207,7 +207,7 @@ function parseOvernightLog(date) {
   try {
     const fileName = date || new Date().toISOString().split('T')[0];
     const content = fs.readFileSync(path.join(MEMORY_DIR, `${fileName}.md`), 'utf8');
-    
+
     // Parse ALL sections from the daily note
     const sections = [];
     const sectionMatches = content.split(/^## /m).slice(1);
@@ -217,12 +217,12 @@ function parseOvernightLog(date) {
       const body = sec.substring(titleEnd).trim();
       sections.push({ title, content: body });
     }
-    
+
     // Extract title from H1
     const h1 = content.match(/^# (.+)$/m);
-    
-    return { 
-      date: fileName, 
+
+    return {
+      date: fileName,
       title: h1 ? h1[1].trim() : fileName,
       sections,
       wordCount: content.split(/\s+/).length,
@@ -236,44 +236,44 @@ function parseOvernightLog(date) {
 function parseIdentity() {
   try {
     const identity = fs.readFileSync(path.join(WORKSPACE, 'IDENTITY.md'), 'utf8');
-    const soul = fs.existsSync(path.join(WORKSPACE, 'SOUL.md')) 
+    const soul = fs.existsSync(path.join(WORKSPACE, 'SOUL.md'))
       ? fs.readFileSync(path.join(WORKSPACE, 'SOUL.md'), 'utf8') : '';
-    
+
     const agent = { name: 'Rodaco', model: 'unknown', uptime: process.uptime(), capabilities: [] };
-    
+
     const nameMatch = identity.match(/\*\*Name:\*\*\s*(.+)/);
     if (nameMatch) agent.name = nameMatch[1].trim();
-    
+
     const modelMatch = identity.match(/\*\*Default Model:\*\*\s*(.+)/);
     if (modelMatch) agent.model = modelMatch[1].trim();
-    
+
     const capMatch = identity.match(/##\s*My Capabilities[\s\S]*?((?:###\s+.+[\s\S]*?)+?)(?=##|$)/);
     if (capMatch) {
       const caps = capMatch[1].match(/###\s+(.+)/g);
       if (caps) agent.capabilities = caps.map(c => c.replace(/###\s+/, '').trim());
     }
-    
+
     // Extract personality from SOUL.md
     if (soul) {
       const vibeMatch = soul.match(/##\s*Vibe\n\n([\s\S]*?)(?=\n##|$)/);
       if (vibeMatch) agent.personality = vibeMatch[1].trim().replace(/```/g, '');
-      
+
       // Also extract core truths as traits
       const truthsMatch = soul.match(/##\s*Core Truths\n\n([\s\S]*?)(?=\n##|$)/);
       if (truthsMatch) {
         agent.traits = truthsMatch[1].match(/\*\*([^*]+)\*\*/g)?.map(t => t.replace(/\*\*/g, '')) || [];
       }
     }
-    
+
     // Roles from IDENTITY.md
-    const roleMatches = identity.match(/###\s+(C[A-Z]+)\s*[-—]\s*(.+)/g);
+    const roleMatches = identity.match(/###\s+(C[A-Z]+)\s*[--]\s*(.+)/g);
     if (roleMatches) {
       agent.roles = roleMatches.map(r => {
-        const m = r.match(/###\s+(C[A-Z]+)\s*[-—]\s*(.+)/);
+        const m = r.match(/###\s+(C[A-Z]+)\s*[--]\s*(.+)/);
         return m ? { title: m[1], description: m[2].trim() } : null;
       }).filter(Boolean);
     }
-    
+
     return agent;
   } catch {
     return { name: 'Rodaco', model: 'unknown', uptime: process.uptime(), capabilities: [] };
@@ -284,10 +284,10 @@ function parseModelArsenal() {
   try {
     const identity = fs.readFileSync(path.join(WORKSPACE, 'IDENTITY.md'), 'utf8');
     const models = [];
-    
+
     const arsenalMatch = identity.match(/##\s*Model Arsenal[\s\S]*?\|(.+)\|[\s\S]*?((?:\|.+\|\n)+)/);
     if (!arsenalMatch) return models;
-    
+
     const rows = arsenalMatch[2].trim().split('\n').filter(l => l.includes('|'));
     for (const row of rows) {
       if (row.includes('---')) continue;
@@ -301,7 +301,7 @@ function parseModelArsenal() {
         });
       }
     }
-    
+
     return models;
   } catch {
     return [];
@@ -311,23 +311,23 @@ function parseModelArsenal() {
 function buildKnowledgeGraph() {
   const cached = cache.get('knowledge-graph');
   if (cached) return cached;
-  
+
   const nodes = [];
   const edges = [];
   const nodeMap = {};
-  
+
   const files = walkDir(KNOWLEDGE_DIR, { extensions: ['.md'] });
-  
+
   for (const file of files) {
     try {
       const content = fs.readFileSync(file.path, 'utf8');
       const meta = parseMarkdown(content);
       const relPath = file.path.replace(KNOWLEDGE_DIR + '/', '');
       const id = relPath.replace(/\.md$/, '');
-      
+
       const parts = relPath.split('/');
       const category = parts.length > 1 ? parts[0] : 'root';
-      
+
       const node = {
         id,
         label: meta.title || file.name.replace('.md', ''),
@@ -341,10 +341,10 @@ function buildKnowledgeGraph() {
         mtime: file.mtime,
         wordCount: content.split(/\s+/).length
       };
-      
+
       nodes.push(node);
       nodeMap[id] = node;
-      
+
       // Index by multiple keys for flexible wikilink resolution
       const baseName = file.name.replace('.md', '');
       if (!nodeMap[baseName]) nodeMap[baseName] = node;
@@ -362,12 +362,12 @@ function buildKnowledgeGraph() {
       }
     } catch {}
   }
-  
+
   // Build edges from links
   const edgeSet = new Set();
   for (const node of nodes) {
     for (const link of node.links) {
-      const target = nodeMap[link] || nodeMap[link.toLowerCase()] || 
+      const target = nodeMap[link] || nodeMap[link.toLowerCase()] ||
         nodeMap[link.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')];
       if (target && target.id !== node.id) {
         const key = [node.id, target.id].sort().join('|');
@@ -378,7 +378,7 @@ function buildKnowledgeGraph() {
       }
     }
   }
-  
+
   const graph = { nodes, edges, categories: [...new Set(nodes.map(n => n.category))] };
   cache.set('knowledge-graph', graph);
   return graph;
@@ -387,7 +387,7 @@ function buildKnowledgeGraph() {
 // ─── API v3 Routes ─────────────────────────────────
 module.exports = function(app) {
   console.log('📡 Registering Mission Control v3 API endpoints...');
-  
+
   // CORS for cross-origin frontend access
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/v3')) {
@@ -398,11 +398,11 @@ module.exports = function(app) {
     }
     next();
   });
-  
+
   // ═══════════════════════════════════════════════════
   // SYSTEM & HEALTH
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/health', (req, res) => {
     console.log('v3/health hit');
     const health = {
@@ -411,39 +411,39 @@ module.exports = function(app) {
       memoryUsage: process.memoryUsage(),
       timestamp: new Date().toISOString()
     };
-    
+
     // Container health from /proc
     try {
       const loadAvg = fs.readFileSync('/proc/loadavg', 'utf8').trim().split(' ');
       health.loadAvg = { '1m': parseFloat(loadAvg[0]), '5m': parseFloat(loadAvg[1]), '15m': parseFloat(loadAvg[2]) };
     } catch {}
-    
+
     try {
       const df = execSync('df -h / | tail -1', { encoding: 'utf8' });
       const parts = df.trim().split(/\s+/);
       health.disk = { total: parts[1], used: parts[2], available: parts[3], usePct: parts[4] };
     } catch {}
-    
+
     res.json(health);
   });
-  
+
   app.get('/api/v3/cron-status', async (req, res) => {
     try {
       let jobs = [];
-      
+
       // Primary: live data from OpenClaw CLI
       try {
         const cronJson = execSync('openclaw cron list --json 2>/dev/null || echo "[]"', { encoding: 'utf8', timeout: 15000 });
         const parsed = JSON.parse(cronJson);
         const jobList = parsed.jobs || parsed || [];
-        
+
         // Also load cron-status.json for human-written notes
         let notes = {};
         try {
           const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
           (cronStatus.jobs || []).forEach(j => { if (j.name) notes[j.name] = j.note; });
         } catch {}
-        
+
         jobs = jobList.map(j => ({
           id: j.id,
           name: j.name,
@@ -463,13 +463,13 @@ module.exports = function(app) {
           jobs = cronStatus.jobs || [];
         } catch {}
       }
-      
+
       res.json({ jobs, timestamp: new Date().toISOString() });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/system-overview', async (req, res) => {
     try {
       const overview = {
@@ -480,8 +480,8 @@ module.exports = function(app) {
         lastBackup: null,
         timestamp: new Date().toISOString()
       };
-      
-      // Health check (via CLI — gateway HTTP serves SPA on all routes)
+
+      // Health check (via CLI - gateway HTTP serves SPA on all routes)
       try {
         const healthJson = execSync('openclaw health --json 2>/dev/null', { encoding: 'utf8', timeout: 15000 });
         const parsed = JSON.parse(healthJson);
@@ -489,7 +489,7 @@ module.exports = function(app) {
       } catch {
         overview.health = { status: 'unknown', error: 'health check failed' };
       }
-      
+
       // Cron jobs
       try {
         const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
@@ -504,7 +504,7 @@ module.exports = function(app) {
           overview.lastBackupNote = backupJob.note || null;
         }
       } catch {}
-      
+
       // Active tasks
       try {
         const tasks = parseActiveTasks();
@@ -512,13 +512,13 @@ module.exports = function(app) {
         overview.activeTaskCount = tasks.length;
         overview.activeTasks = tasks.map(t => ({ title: t.title, status: t.status, nextStep: t.nextStep }));
       } catch {}
-      
+
       // Sub-agents
       try {
         const sessions = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl'));
         overview.subAgentCount = sessions.length;
       } catch {}
-      
+
       // Last backup (already extracted from cron-status above, this is a fallback)
       if (!overview.lastBackup) {
         try {
@@ -527,13 +527,13 @@ module.exports = function(app) {
           if (match) overview.lastBackup = match[1];
         } catch {}
       }
-      
+
       res.json(overview);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/device/macbook', async (req, res) => {
     const device = {
       cpu: { model: 'unknown', cores: 0, usagePercent: 0, loadAvg: {} },
@@ -543,23 +543,23 @@ module.exports = function(app) {
       uptime: 0,
       hostname: 'rogers-macbook-pro'
     };
-    
+
     const host = 'rogergimbel@100.124.209.59';
-    
+
     // CPU info
     const cpuModel = sshCommand(host, 'sysctl -n machdep.cpu.brand_string');
     if (cpuModel) device.cpu.model = cpuModel;
-    
+
     const cpuCores = sshCommand(host, 'sysctl -n hw.ncpu');
     if (cpuCores) device.cpu.cores = parseInt(cpuCores);
-    
+
     // CPU usage via top
     const topOutput = sshCommand(host, "top -l 2 -n 0 | grep 'CPU usage' | tail -1");
     if (topOutput) {
       const match = topOutput.match(/(\d+\.\d+)% user/);
       if (match) device.cpu.usagePercent = parseFloat(match[1]);
     }
-    
+
     // Load average
     const uptime = sshCommand(host, 'uptime');
     if (uptime) {
@@ -574,10 +574,10 @@ module.exports = function(app) {
       const uptimeMatch = uptime.match(/up\s+(.+?),\s+\d+\s+user/);
       if (uptimeMatch) device.uptime = uptimeMatch[1].trim();
     }
-    
-    // Temperature — macOS Intel has no easy temp CLI; report null
+
+    // Temperature - macOS Intel has no easy temp CLI; report null
     device.temperature = null;
-    
+
     // RAM
     const vmStat = sshCommand(host, 'vm_stat');
     if (vmStat) {
@@ -587,17 +587,17 @@ module.exports = function(app) {
       const inactive = (vmStat.match(/Pages inactive:\s+(\d+)/) || [0, 0])[1];
       const speculative = (vmStat.match(/Pages speculative:\s+(\d+)/) || [0, 0])[1];
       const wired = (vmStat.match(/Pages wired down:\s+(\d+)/) || [0, 0])[1];
-      
+
       const freeBytes = (parseInt(free) + parseInt(speculative)) * pageSize;
       const usedBytes = (parseInt(active) + parseInt(inactive) + parseInt(wired)) * pageSize;
       const totalBytes = freeBytes + usedBytes;
-      
+
       device.ram.totalGB = parseFloat((totalBytes / 1024 / 1024 / 1024).toFixed(2));
       device.ram.usedGB = parseFloat((usedBytes / 1024 / 1024 / 1024).toFixed(2));
       device.ram.availableGB = parseFloat((freeBytes / 1024 / 1024 / 1024).toFixed(2));
       device.ram.usagePercent = parseFloat(((usedBytes / totalBytes) * 100).toFixed(1));
     }
-    
+
     // Disk (macOS: df -g returns 1G-blocks as integers)
     const df = sshCommand(host, 'df -g /');
     if (df) {
@@ -610,11 +610,11 @@ module.exports = function(app) {
         device.disk.usagePercent = parseInt(parts[4]) || 0;
       }
     }
-    
+
     device.status = 'online';
     res.json(device);
   });
-  
+
   app.get('/api/v3/device/pi', async (req, res) => {
     const device = {
       cpu: { model: 'Raspberry Pi 5', cores: 4, usagePercent: 0, loadAvg: {} },
@@ -628,9 +628,9 @@ module.exports = function(app) {
       uptime: 0,
       hostname: 'media-pi'
     };
-    
+
     const host = 'rogergimbel@100.83.169.87';
-    
+
     // Temperature
     const temp = sshCommand(host, 'vcgencmd measure_temp');
     if (temp) {
@@ -640,14 +640,14 @@ module.exports = function(app) {
         device.temperature.fahrenheit = Math.round(device.temperature.celsius * 9/5 + 32);
       }
     }
-    
+
     // CPU usage via top
     const topOutput = sshCommand(host, "top -bn1 | grep 'Cpu(s)'");
     if (topOutput) {
       const match = topOutput.match(/([\d.]+)\s*us/);
       if (match) device.cpu.usagePercent = parseFloat(match[1]);
     }
-    
+
     // Load average
     const uptime = sshCommand(host, 'uptime');
     if (uptime) {
@@ -662,7 +662,7 @@ module.exports = function(app) {
       const uptimeMatch = uptime.match(/up\s+(.+?),\s+\d+\s+user/);
       if (uptimeMatch) device.uptime = uptimeMatch[1].trim();
     }
-    
+
     // RAM
     const free = sshCommand(host, 'free -m');
     if (free) {
@@ -676,8 +676,8 @@ module.exports = function(app) {
         device.ram.usagePercent = parseFloat(((parseInt(parts[2]) / parseInt(parts[1])) * 100).toFixed(1));
       }
     }
-    
-    // Disk (three drives — use df -BG for numeric gigabytes)
+
+    // Disk (three drives - use df -BG for numeric gigabytes)
     const df = sshCommand(host, 'df -BG');
     if (df) {
       const parseDfLine = (line) => {
@@ -686,47 +686,47 @@ module.exports = function(app) {
         return { totalGB: parseFloat(parts[1]), usedGB: parseFloat(parts[2]), availableGB: parseFloat(parts[3]), usagePercent: parseInt(parts[4]) };
       };
       const lines = df.split('\n');
-      
+
       const rootLine = lines.find(l => l.match(/\s+\/$/));
       if (rootLine) device.storage.root = parseDfLine(rootLine);
-      
+
       const dockerLine = lines.find(l => l.includes('/mnt/docker'));
       if (dockerLine) device.storage.docker = parseDfLine(dockerLine);
-      
+
       const mediaLine = lines.find(l => l.includes('/mnt/media'));
       if (mediaLine) device.storage.media = parseDfLine(mediaLine);
     }
-    
+
     // Also provide a top-level disk field (use media drive as primary)
     device.disk = device.storage.media || device.storage.root || { totalGB: 0, usedGB: 0, availableGB: 0, usagePercent: 0 };
     // Provide drives array for frontend that wants all drives
     device.drives = Object.entries(device.storage).map(([name, data]) => ({ name, mount: name === 'root' ? '/' : `/mnt/${name}`, ...data }));
-    
+
     device.status = 'online';
     res.json(device);
   });
-  
+
   // ═══════════════════════════════════════════════════
   // ACTIVITY FEED
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/activity', (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 50;
       const files = getSessionFiles(10);
       const events = [];
-      
+
       for (const file of files) {
         const fileEvents = parseSessionEvents(file.path);
         events.push(...fileEvents);
       }
-      
+
       events.sort((a, b) => {
         const ta = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime();
         const tb = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime();
         return tb - ta;
       });
-      
+
       const mapped = events.slice(0, limit).map(e => ({
         timestamp: typeof e.timestamp === 'number' ? new Date(e.timestamp).toISOString() : e.timestamp,
         type: e.type,
@@ -735,17 +735,17 @@ module.exports = function(app) {
         source: e.sessionId,
         details: { model: e.model }
       }));
-      
+
       res.json({ events: mapped, total: events.length });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // USAGE & COSTS
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/usage', async (req, res) => {
     try {
       const files = getSessionFiles(30);
@@ -754,15 +754,15 @@ module.exports = function(app) {
         byDay: {},
         totals: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalCost: 0 }
       };
-      
+
       for (const file of files) {
         const entries = parseSessionUsage(file.path);
-        
+
         for (const u of entries) {
           const day = typeof u.timestamp === 'number'
             ? new Date(u.timestamp).toISOString().split('T')[0]
             : typeof u.timestamp === 'string' ? u.timestamp.split('T')[0] : 'unknown';
-          
+
           if (!usage.byModel[u.model]) {
             usage.byModel[u.model] = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, calls: 0 };
           }
@@ -772,12 +772,12 @@ module.exports = function(app) {
           usage.byModel[u.model].cacheWrite += u.cacheWrite;
           usage.byModel[u.model].cost += u.cost;
           usage.byModel[u.model].calls++;
-          
+
           if (!usage.byDay[day]) usage.byDay[day] = { input: 0, output: 0, cost: 0 };
           usage.byDay[day].input += u.input;
           usage.byDay[day].output += u.output;
           usage.byDay[day].cost += u.cost;
-          
+
           usage.totals.input += u.input;
           usage.totals.output += u.output;
           usage.totals.cacheRead += u.cacheRead;
@@ -785,17 +785,22 @@ module.exports = function(app) {
           usage.totals.totalCost += u.cost;
         }
       }
-      
+
+      // Convert byDay from object to sorted array for frontend .slice() compatibility
+      usage.byDay = Object.entries(usage.byDay)
+        .map(([date, data]) => ({ date, ...data }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
       res.json(usage);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/usage/providers', async (req, res) => {
     try {
       const providers = {};
-      
+
       const keys = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'XAI_API_KEY', 'GEMINI_API_KEY', 'VOYAGE_API_KEY'];
       for (const key of keys) {
         const value = process.env[key];
@@ -806,24 +811,24 @@ module.exports = function(app) {
           usage: null
         };
       }
-      
+
       // Try to fetch OpenAI usage
       if (providers.openai.available) {
         const url = 'https://api.openai.com/v1/usage?date=' + new Date().toISOString().split('T')[0];
         const result = await apiGet(url, { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` });
         if (result.status === 200) providers.openai.usage = result.data;
       }
-      
+
       res.json(providers);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // TASKS & GOALS
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/active-tasks', (req, res) => {
     try {
       const tasks = parseActiveTasks();
@@ -832,7 +837,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/goals', (req, res) => {
     try {
       const goals = parseGoals();
@@ -841,7 +846,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/overnight-log', (req, res) => {
     try {
       const date = req.query.date;
@@ -851,7 +856,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/suggested-tasks', (req, res) => {
     try {
       const suggestedPath = path.join(MEMORY_DIR, 'suggested-tasks.json');
@@ -864,14 +869,14 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.post('/api/v3/suggested-tasks/:id/approve', (req, res) => {
     try {
       const taskId = req.params.id;
       const suggestedPath = path.join(MEMORY_DIR, 'suggested-tasks.json');
       const data = JSON.parse(fs.readFileSync(suggestedPath, 'utf8'));
       const task = data.tasks.find(t => t.id === taskId);
-      
+
       if (task) {
         task.status = 'approved';
         task.approvedAt = new Date().toISOString();
@@ -884,14 +889,14 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.post('/api/v3/suggested-tasks/:id/reject', (req, res) => {
     try {
       const taskId = req.params.id;
       const suggestedPath = path.join(MEMORY_DIR, 'suggested-tasks.json');
       const data = JSON.parse(fs.readFileSync(suggestedPath, 'utf8'));
       const task = data.tasks.find(t => t.id === taskId);
-      
+
       if (task) {
         task.status = 'rejected';
         task.rejectedAt = new Date().toISOString();
@@ -904,11 +909,11 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // AGENT
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/agent', (req, res) => {
     try {
       const agent = parseIdentity();
@@ -917,7 +922,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/agent/models', (req, res) => {
     try {
       const models = parseModelArsenal();
@@ -926,7 +931,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/agent/sessions', async (req, res) => {
     try {
       // Use local session files directly (gateway HTTP returns SPA)
@@ -951,7 +956,7 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/agent/cron-jobs', async (req, res) => {
     try {
       // Use CLI (gateway HTTP returns SPA)
@@ -983,11 +988,11 @@ module.exports = function(app) {
       }
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // PROJECTS
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/projects/beerpair', (req, res) => {
     try {
       const project = {
@@ -1005,52 +1010,52 @@ module.exports = function(app) {
         keyFiles: [],
         description: ''
       };
-      
+
       // Read from knowledge/projects/beerpair/summary.md
       const summaryPath = path.join(KNOWLEDGE_DIR, 'projects/beerpair/summary.md');
       if (fs.existsSync(summaryPath)) {
         const content = fs.readFileSync(summaryPath, 'utf8');
-        
+
         // Description
         const descMatch = content.match(/## Description\n([\s\S]*?)(?=\n## )/);
         if (descMatch) project.description = descMatch[1].trim();
-        
+
         // Phase/Status
         const phaseMatch = content.match(/\*\*Phase\*\*:\s*(.+)/);
         if (phaseMatch) project.status = phaseMatch[1].trim();
-        
+
         // URL
         const urlMatch = content.match(/\*\*URL\*\*:\s*(https?:\/\/\S+)/);
         if (urlMatch) project.url = urlMatch[1].trim();
-        
+
         // Credits from MEMORY.md
         const creditsMatch = content.match(/Credits:\s*(\d+)\/(\d+)/);
         if (creditsMatch) {
           project.credits.used = parseInt(creditsMatch[1]);
           project.credits.total = parseInt(creditsMatch[2]);
         }
-        
+
         // Tech stack
         const techMatch = content.match(/## Tech Stack\n([\s\S]*?)(?=\n## )/);
         if (techMatch) {
           project.techStack = (techMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
             .map(l => l.replace(/^[-*]\s+/, '').trim());
         }
-        
+
         // Team
         const teamMatch = content.match(/## Team\n([\s\S]*?)(?=\n## )/);
         if (teamMatch) {
           project.team = (teamMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
             .map(l => l.replace(/^[-*]\s+/, '').replace(/\[\[|\]\]/g, '').trim());
         }
-        
+
         // Current Work
         const workMatch = content.match(/## Current Work\n([\s\S]*?)(?=\n## |$)/);
         if (workMatch) {
           project.currentWork = (workMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
             .map(l => l.replace(/^[-*]\s+/, '').trim());
         }
-        
+
         // History
         const histMatch = content.match(/## History\n([\s\S]*?)(?=\n## |$)/);
         if (histMatch) {
@@ -1060,7 +1065,7 @@ module.exports = function(app) {
               return m ? { date: m[1], event: m[2].trim() } : { date: null, event: l.replace(/^[-*]\s+/, '').trim() };
             });
         }
-        
+
         // Key Files
         const filesMatch = content.match(/## Key Files\n([\s\S]*?)(?=\n## |$)/);
         if (filesMatch) {
@@ -1068,22 +1073,22 @@ module.exports = function(app) {
             .map(l => l.replace(/^[-*]\s+/, '').trim());
         }
       }
-      
-      // Marketing assets — list files in beerpair knowledge dir
+
+      // Marketing assets - list files in beerpair knowledge dir
       const beerDir = path.join(KNOWLEDGE_DIR, 'projects/beerpair');
       if (fs.existsSync(beerDir)) {
         project.marketingAssets = fs.readdirSync(beerDir)
           .filter(f => f !== 'summary.md' && !f.startsWith('.'))
           .map(f => ({
             name: f,
-            type: f.endsWith('.png') || f.endsWith('.jpg') ? 'image' : 
-                  f.endsWith('.pdf') ? 'pdf' : 
+            type: f.endsWith('.png') || f.endsWith('.jpg') ? 'image' :
+                  f.endsWith('.pdf') ? 'pdf' :
                   f.endsWith('.md') ? 'document' : 'file',
             path: `knowledge/projects/beerpair/${f}`
           }));
       }
-      
-      // Test results from memory files — match broader patterns
+
+      // Test results from memory files - match broader patterns
       const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
         try {
@@ -1094,7 +1099,7 @@ module.exports = function(app) {
             testMatch.forEach(section => {
               const dateMatch = file.match(/(\d{4}-\d{2}-\d{2})/);
               const resultCount = section.match(/(\d+)\s*(?:pairing|result)/i);
-              const statusMatch = section.match(/[—–-]\s*(✅\s*\w+|SUCCESS|FAIL|PASS)/i);
+              const statusMatch = section.match(/[---]\s*(✅\s*\w+|SUCCESS|FAIL|PASS)/i);
               project.testResults.push({
                 date: dateMatch ? dateMatch[1] : 'unknown',
                 status: statusMatch ? statusMatch[1].trim() : 'completed',
@@ -1105,18 +1110,18 @@ module.exports = function(app) {
           }
         } catch {}
       }
-      
+
       res.json(project);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/projects/beerpair/test-results', (req, res) => {
     try {
       const tests = [];
       const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => f.endsWith('.md')).sort().reverse();
-      
+
       for (const file of memoryFiles) {
         try {
           const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
@@ -1131,31 +1136,31 @@ module.exports = function(app) {
                 issues: [],
                 notes: []
               };
-              
+
               const imageMatch = section.match(/Image:\s*(.+)/);
               if (imageMatch) test.image = imageMatch[1].trim();
-              
+
               const resultMatch = section.match(/(\d+)\s+result/);
               if (resultMatch) test.resultCount = parseInt(resultMatch[1]);
-              
+
               const issuesMatch = section.match(/Issues:([\s\S]*?)(?=\n\*\*|$)/);
               if (issuesMatch) {
                 test.issues = issuesMatch[1].match(/^[-*]\s+(.+)$/gm)
                   ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
               }
-              
+
               tests.push(test);
             });
           }
         } catch {}
       }
-      
+
       res.json({ tests });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/projects/ocean-one', (req, res) => {
     try {
       const project = {
@@ -1171,17 +1176,17 @@ module.exports = function(app) {
         contentGaps: [],
         expansionNotes: []
       };
-      
+
       // Read from knowledge/chat-history/ocean-one.md
       const historyPath = path.join(KNOWLEDGE_DIR, 'chat-history/ocean-one.md');
       if (fs.existsSync(historyPath)) {
         const content = fs.readFileSync(historyPath, 'utf8');
-        
+
         // Parse conversation entries
         const convBlocks = content.split(/^## \d{4}-\d{2}-\d{2}/m).slice(1);
-        const dateHeaders = content.match(/^## (\d{4}-\d{2}-\d{2})\s*—\s*(.+)$/gm) || [];
+        const dateHeaders = content.match(/^## (\d{4}-\d{2}-\d{2})\s*-\s*(.+)$/gm) || [];
         dateHeaders.forEach((header, i) => {
-          const m = header.match(/^## (\d{4}-\d{2}-\d{2})\s*—\s*(.+)$/);
+          const m = header.match(/^## (\d{4}-\d{2}-\d{2})\s*-\s*(.+)$/);
           if (m) {
             const block = convBlocks[i] || '';
             const keyPoints = (block.match(/^[-*]\s+(.+)$/gm) || [])
@@ -1195,14 +1200,14 @@ module.exports = function(app) {
             });
           }
         });
-        
+
         // SEO section
         const seoMatch = content.match(/##\s*SEO[\s\S]*?((?:[-*]\s+.+\n?)+)/);
         if (seoMatch) {
           project.seoFindings = seoMatch[1].match(/^[-*]\s+(.+)$/gm)
             ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
         }
-        
+
         // Content Gaps
         const gapsMatch = content.match(/##\s*Content Gaps[\s\S]*?((?:[-*]\s+.+\n?)+)/);
         if (gapsMatch) {
@@ -1218,7 +1223,7 @@ module.exports = function(app) {
         const descMatch = content.match(/## Description\n([\s\S]*?)(?=\n## )/);
         if (descMatch) project.description = descMatch[1].trim();
       }
-      
+
       // Check memory files for Ocean One discussions
       const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
@@ -1236,17 +1241,17 @@ module.exports = function(app) {
           }
         } catch {}
       }
-      
+
       res.json(project);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // KNOWLEDGE
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/knowledge/graph', (req, res) => {
     try {
       const graph = buildKnowledgeGraph();
@@ -1255,15 +1260,15 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/knowledge/search', (req, res) => {
     try {
       const query = req.query.q;
       if (!query) return res.status(400).json({ error: 'Query required' });
-      
+
       const knowledgeResults = searchFiles(query, KNOWLEDGE_DIR);
       const memoryResults = searchFiles(query, MEMORY_DIR);
-      
+
       const results = [...knowledgeResults, ...memoryResults].map(r => ({
         path: r.file,
         matchCount: r.matchCount,
@@ -1271,27 +1276,27 @@ module.exports = function(app) {
         score: r.matchCount,
         mtime: r.mtime
       }));
-      
+
       res.json({ results });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/knowledge/entity', (req, res) => {
     try {
       const entityPath = req.query.path;
       if (!entityPath) return res.status(400).json({ error: 'path query parameter required' });
       const fullPath = path.join(KNOWLEDGE_DIR, entityPath + '.md');
-      
+
       if (!fs.existsSync(fullPath)) {
         return res.status(404).json({ error: 'Entity not found' });
       }
-      
+
       const content = fs.readFileSync(fullPath, 'utf8');
       const meta = parseMarkdown(content);
       const stat = fs.statSync(fullPath);
-      
+
       res.json({
         content,
         metadata: {
@@ -1305,18 +1310,18 @@ module.exports = function(app) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/knowledge/tree', (req, res) => {
     try {
       function buildTree(dir, depth = 0) {
         if (depth > 5) return null;
         const entries = fs.readdirSync(dir, { withFileTypes: true });
         const tree = { name: path.basename(dir), type: 'directory', children: [] };
-        
+
         for (const entry of entries) {
           if (entry.name.startsWith('.')) continue;
           const fullPath = path.join(dir, entry.name);
-          
+
           if (entry.isDirectory()) {
             const subtree = buildTree(fullPath, depth + 1);
             if (subtree) tree.children.push(subtree);
@@ -1328,17 +1333,17 @@ module.exports = function(app) {
             });
           }
         }
-        
+
         return tree;
       }
-      
+
       const tree = buildTree(KNOWLEDGE_DIR);
       res.json({ tree });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/knowledge/timeline', (req, res) => {
     try {
       const days = [];
@@ -1347,13 +1352,13 @@ module.exports = function(app) {
         .sort()
         .reverse()
         .slice(0, 90); // Last 90 days
-      
+
       for (const file of memoryFiles) {
         try {
           const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
           const wordCount = content.split(/\s+/).length;
           const sections = content.match(/^##\s+(.+)$/gm)?.map(h => h.replace(/^##\s+/, '')) || [];
-          
+
           days.push({
             date: file.replace('.md', ''),
             wordCount,
@@ -1362,30 +1367,30 @@ module.exports = function(app) {
           });
         } catch {}
       }
-      
+
       res.json({ days });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   // ═══════════════════════════════════════════════════
   // RESEARCH
   // ═══════════════════════════════════════════════════
-  
+
   app.get('/api/v3/research/openclaw', (req, res) => {
     try {
       const entries = [];
       const researchPath = path.join(MEMORY_DIR, 'openclaw-research.md');
-      
+
       if (fs.existsSync(researchPath)) {
         const content = fs.readFileSync(researchPath, 'utf8');
         const blocks = content.split(/^##\s+/m).slice(1);
-        
+
         for (const block of blocks) {
           const lines = block.trim().split('\n');
           const dateMatch = lines[0].match(/(\d{4}-\d{2}-\d{2})/);
-          
+
           entries.push({
             date: dateMatch ? dateMatch[1] : 'unknown',
             title: lines[0].replace(/\d{4}-\d{2}-\d{2}/, '').trim(),
@@ -1394,17 +1399,17 @@ module.exports = function(app) {
           });
         }
       }
-      
+
       res.json({ entries });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/research/competitive', (req, res) => {
     try {
       const analyses = [];
-      
+
       // Primary: dedicated competitive-research.md
       const compPath = path.join(MEMORY_DIR, 'competitive-research.md');
       if (fs.existsSync(compPath)) {
@@ -1413,7 +1418,7 @@ module.exports = function(app) {
         for (const block of blocks) {
           const lines = block.trim().split('\n');
           const dateMatch = lines[0].match(/(\d{4}-\d{2}-\d{2})/);
-          const titlePart = lines[0].replace(/\d{4}-\d{2}-\d{2}\s*—?\s*/, '').trim();
+          const titlePart = lines[0].replace(/\d{4}-\d{2}-\d{2}\s*-?\s*/, '').trim();
           const competitorMatch = block.match(/\*\*Competitor:\*\*\s*(.+)/);
           const findingsMatch = block.match(/\*\*Findings:\*\*\s*(.+)/);
           analyses.push({
@@ -1424,7 +1429,7 @@ module.exports = function(app) {
           });
         }
       }
-      
+
       // Fallback: scan daily notes for ## Competitive Analysis sections
       const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
@@ -1444,17 +1449,17 @@ module.exports = function(app) {
           }
         } catch {}
       }
-      
+
       res.json({ analyses });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  
+
   app.get('/api/v3/research/marketing', (req, res) => {
     try {
       const ideas = [];
-      
+
       // Primary: dedicated marketing-ideas.md
       const mktPath = path.join(MEMORY_DIR, 'marketing-ideas.md');
       if (fs.existsSync(mktPath)) {
@@ -1471,7 +1476,7 @@ module.exports = function(app) {
             const items = catLines.slice(1)
               .filter(l => /^[-*]\s+\*\*/.test(l.trim()))
               .map(l => {
-                const m = l.match(/\*\*(.+?)\*\*\s*[—–-]\s*(.+)/);
+                const m = l.match(/\*\*(.+?)\*\*\s*[---]\s*(.+)/);
                 return m ? { title: m[1].trim(), description: m[2].trim(), project, category, status: 'idea' }
                        : { title: l.replace(/^[-*]\s+/, '').trim(), description: '', project, category, status: 'idea' };
               });
@@ -1479,7 +1484,7 @@ module.exports = function(app) {
           }
         }
       }
-      
+
       // Fallback: scan daily notes for ## Marketing Idea sections
       const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
@@ -1500,8 +1505,315 @@ module.exports = function(app) {
           }
         } catch {}
       }
-      
+
       res.json({ ideas });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─────────────────────────────────────────────────────
+  // METRICS ENDPOINTS (Added 2026-02-15)
+  // ─────────────────────────────────────────────────────
+
+  app.get('/api/v3/metrics/costs', (req, res) => {
+    try {
+      const usage = cache.get('usage') || parseSessionUsage(30);
+
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      let today = 0, week = 0, month = 0;
+      const byProvider = {};
+
+      if (usage.byDay) {
+        usage.byDay.forEach(day => {
+          if (day.date === todayStr) today += day.cost || 0;
+          if (day.date >= weekAgo) week += day.cost || 0;
+          if (day.date >= monthAgo) month += day.cost || 0;
+        });
+      }
+
+      if (usage.byModel) {
+        usage.byModel.forEach(model => {
+          const provider = model.model.split('/')[0];
+          byProvider[provider] = (byProvider[provider] || 0) + (model.cost || 0);
+        });
+      }
+
+      const prevWeek = usage.byDay
+        ?.filter(d => d.date < weekAgo && d.date >= new Date(new Date(weekAgo) - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .reduce((sum, d) => sum + (d.cost || 0), 0) || 0;
+
+      const trend = prevWeek > 0 ? `${week > prevWeek ? '+' : ''}${((week - prevWeek) / prevWeek * 100).toFixed(1)}% vs last week` : null;
+
+      res.json({
+        today: parseFloat(today.toFixed(2)),
+        week: parseFloat(week.toFixed(2)),
+        month: parseFloat(month.toFixed(2)),
+        byProvider,
+        trend,
+        timestamp: now.toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/metrics/performance', (req, res) => {
+    try {
+      const sessionFiles = getSessionFiles(7);
+      const events = [];
+
+      for (const file of sessionFiles.slice(0, 5)) {
+        try {
+          const content = fs.readFileSync(file.path, 'utf8');
+          const lines = content.trim().split('\n');
+          for (const line of lines.slice(-100)) {
+            try {
+              const evt = JSON.parse(line);
+              if (evt.timestamp && evt.tool) events.push(evt);
+            } catch {}
+          }
+        } catch {}
+      }
+
+      const toolTimes = {};
+      events.forEach(evt => {
+        if (evt.elapsedMs && evt.tool) {
+          if (!toolTimes[evt.tool]) toolTimes[evt.tool] = [];
+          toolTimes[evt.tool].push(evt.elapsedMs);
+        }
+      });
+
+      const avgTimes = Object.entries(toolTimes).map(([tool, times]) => ({
+        tool,
+        avg: parseFloat((times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)),
+        p95: parseFloat(times.sort((a, b) => a - b)[Math.floor(times.length * 0.95)] || 0)
+      })).sort((a, b) => b.avg - a.avg);
+
+      const errorsLast24h = events.filter(e =>
+        e.type === 'error' &&
+        new Date(e.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+      ).length;
+
+      const slowestTool = avgTimes[0] || { tool: 'none', avg: 0 };
+      const fastestTool = avgTimes[avgTimes.length - 1] || { tool: 'none', avg: 0 };
+
+      res.json({
+        avgResponseTime: avgTimes.length > 0 ? parseFloat((avgTimes.reduce((sum, t) => sum + t.avg, 0) / avgTimes.length).toFixed(1)) : 0,
+        p95ResponseTime: avgTimes.length > 0 ? parseFloat(avgTimes.reduce((max, t) => Math.max(max, t.p95), 0).toFixed(1)) : 0,
+        errorsLast24h,
+        toolPerformance: avgTimes.slice(0, 10),
+        slowestTool: slowestTool.tool,
+        fastestTool: fastestTool.tool,
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/metrics/session-health', (req, res) => {
+    try {
+      const sessionFiles = getSessionFiles(1);
+      let sessionFileSize = 0;
+      let sessionFileSizeMB = 0;
+
+      if (sessionFiles.length > 0) {
+        const stats = fs.statSync(sessionFiles[0].path);
+        sessionFileSize = stats.size;
+        sessionFileSizeMB = parseFloat((sessionFileSize / 1024 / 1024).toFixed(2));
+      }
+
+      const lockFiles = execSync('find /home/node/.openclaw -name "*.lock" 2>/dev/null', { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+      const lockStatus = lockFiles.length === 0 ? 'healthy' : `${lockFiles.length} lock files present`;
+
+      let zombieProcesses = 0;
+      try {
+        const zombies = execSync('ps aux | grep defunct | grep -v grep | wc -l', { encoding: 'utf8' }).trim();
+        zombieProcesses = parseInt(zombies) || 0;
+      } catch {}
+
+      const heapStats = process.memoryUsage();
+      const heapUsagePercent = parseFloat((heapStats.heapUsed / heapStats.heapTotal * 100).toFixed(1));
+
+      const logSize = fs.existsSync('/tmp/mission-control.log') ? fs.statSync('/tmp/mission-control.log').size : 0;
+
+      res.json({
+        sessionFileSize: `${sessionFileSizeMB} MB`,
+        sessionFileSizeBytes: sessionFileSize,
+        lockStatus,
+        zombieProcesses,
+        heapUsage: `${heapUsagePercent}%`,
+        heapUsageBytes: heapStats.heapUsed,
+        heapTotal: heapStats.heapTotal,
+        logFileSize: `${(logSize / 1024).toFixed(1)} KB`,
+        warnings: [
+          ...(sessionFileSizeMB > 2 ? ['Session file exceeds 2 MB - consider rotation'] : []),
+          ...(lockFiles.length > 0 ? ['Lock files detected - possible stale locks'] : []),
+          ...(zombieProcesses > 3 ? ['Zombie processes detected'] : []),
+          ...(heapUsagePercent > 80 ? ['Heap usage above 80%'] : [])
+        ],
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/system/health-score', (req, res) => {
+    try {
+      const components = {};
+      let alerts = [];
+
+      // API health (always 100 if we're responding)
+      components.api = 100;
+
+      // Gateway health
+      const gwHealth = cache.get('gateway-health') || { status: 'ok' };
+      components.gateway = gwHealth.status === 'ok' ? 100 : 50;
+
+      // MacBook health
+      try {
+        const macbook = JSON.parse(cache.get('device-macbook') || '{}');
+        let macbookScore = 100;
+        if (macbook.cpuPercent > 90) macbookScore -= 20;
+        if (macbook.ramPercent > 85) macbookScore -= 20;
+        if (macbook.diskPercent > 80) macbookScore -= 20;
+        components.macbook = Math.max(macbookScore, 0);
+
+        if (macbook.cpuPercent > 90) alerts.push({ level: 'warning', component: 'macbook', message: `CPU usage high (${macbook.cpuPercent}%)` });
+        if (macbook.ramPercent > 85) alerts.push({ level: 'warning', component: 'macbook', message: `RAM usage high (${macbook.ramPercent}%)` });
+      } catch {
+        components.macbook = 80;
+      }
+
+      // Pi health
+      try {
+        const pi = JSON.parse(cache.get('device-pi') || '{}');
+        let piScore = 100;
+        if (pi.cpuPercent > 80) piScore -= 15;
+        if (pi.temp > 140) piScore -= 25;
+        else if (pi.temp > 120) piScore -= 10;
+        if (pi.ramPercent > 80) piScore -= 15;
+        components.pi = Math.max(piScore, 0);
+
+        if (pi.temp > 120) alerts.push({ level: pi.temp > 140 ? 'critical' : 'warning', component: 'pi', message: `Temperature elevated (${pi.temp}°F)` });
+        if (pi.cpuPercent > 80) alerts.push({ level: 'warning', component: 'pi', message: `CPU usage high (${pi.cpuPercent}%)` });
+      } catch {
+        components.pi = 80;
+      }
+
+      // Cron health
+      try {
+        const cronStatus = JSON.parse(cache.get('cron-status') || '{}');
+        const total = cronStatus.jobs?.length || 0;
+        const failing = cronStatus.jobs?.filter(j => j.lastError).length || 0;
+        components.cron = total > 0 ? Math.round((total - failing) / total * 100) : 100;
+
+        if (failing > 0) alerts.push({ level: 'warning', component: 'cron', message: `${failing} cron job(s) failing` });
+      } catch {
+        components.cron = 90;
+      }
+
+      // Backups health — check cron jobs directly for last backup run
+      try {
+        let lastBackup = null;
+        // Try reading cron-status.json for backup job
+        try {
+          const cronStatusFile = require('fs').readFileSync('/home/node/workspace/memory/cron-status.json', 'utf8');
+          const cronData = JSON.parse(cronStatusFile);
+          const backupEntry = Array.isArray(cronData.jobs)
+            ? cronData.jobs.find(j => /backup/i.test(j.id || j.name || ''))
+            : cronData.jobs?.daily_backup;
+          if (backupEntry?.lastRun) {
+            lastBackup = new Date(backupEntry.lastRun);
+          }
+        } catch {}
+        // Fallback: check cron job list from gateway
+        if (!lastBackup) {
+          const cronStatus = JSON.parse(cache.get('cron-status') || '{}');
+          const backupJob = cronStatus.jobs?.find(j => /backup/i.test(j.name));
+          if (backupJob?.lastRun) lastBackup = new Date(backupJob.lastRun);
+        }
+        const hoursSinceBackup = lastBackup ? (Date.now() - lastBackup.getTime()) / 1000 / 60 / 60 : null;
+        if (hoursSinceBackup === null) {
+          components.backups = 70;
+          alerts.push({ level: 'warning', component: 'backups', message: 'Backup status unknown' });
+        } else {
+          components.backups = hoursSinceBackup < 25 ? 100 : hoursSinceBackup < 48 ? 80 : 50;
+          if (hoursSinceBackup > 25) alerts.push({ level: hoursSinceBackup > 48 ? 'critical' : 'warning', component: 'backups', message: `Last backup ${Math.round(hoursSinceBackup)}h ago` });
+        }
+      } catch {
+        components.backups = 90;
+      }
+
+      const overall = Math.round(Object.values(components).reduce((sum, score) => sum + score, 0) / Object.keys(components).length);
+
+      res.json({
+        overall,
+        components,
+        alerts,
+        status: overall >= 90 ? 'excellent' : overall >= 75 ? 'good' : overall >= 60 ? 'fair' : 'needs attention',
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/overnight-history', (req, res) => {
+    try {
+      const builds = [];
+
+      // Scan daily notes for "Overnight Build" sections
+      const memoryFiles = fs.readdirSync(MEMORY_DIR)
+        .filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
+        .sort()
+        .reverse()
+        .slice(0, 30);
+
+      for (const file of memoryFiles) {
+        try {
+          const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
+          const date = file.replace('.md', '');
+
+          // Look for ## Overnight Build section
+          const section = content.match(/##\s*Overnight Build[\s\S]*?(?=\n##|$)/i);
+          if (!section) continue;
+
+          const sectionText = section[0];
+          const lines = sectionText.split('\n');
+
+          const summary = lines.slice(1, 4).join(' ').trim().substring(0, 200);
+          const duration = sectionText.match(/Duration:\s*(\d+)\s*min/i)?.[1] ||
+                          sectionText.match(/(\d+)\s*minutes?/i)?.[1] || 'unknown';
+          const tasksMatch = sectionText.match(/(\d+)\s*tasks?\s*completed/i);
+          const filesMatch = sectionText.match(/(\d+)\s*files?\s*changed/i);
+          const modelMatch = sectionText.match(/Model:\s*([\w-]+)/i);
+          const costMatch = sectionText.match(/Cost:\s*\$?([\d.]+)/i);
+
+          builds.push({
+            date,
+            duration: duration !== 'unknown' ? `${duration} minutes` : duration,
+            tasksCompleted: tasksMatch ? parseInt(tasksMatch[1]) : 0,
+            filesChanged: filesMatch ? parseInt(filesMatch[1]) : 0,
+            modelUsed: modelMatch?.[1] || 'unknown',
+            cost: costMatch ? parseFloat(costMatch[1]) : 0,
+            summary
+          });
+        } catch {}
+      }
+
+      res.json({
+        builds,
+        totalBuilds: builds.length,
+        avgDuration: builds.length > 0 ? builds.reduce((sum, b) => sum + (parseInt(b.duration) || 0), 0) / builds.length : 0,
+        totalCost: builds.reduce((sum, b) => sum + b.cost, 0)
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

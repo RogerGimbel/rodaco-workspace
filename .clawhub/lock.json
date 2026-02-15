@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "marketing-skills": {
+      "version": "0.1.2",
+      "installedAt": 1769795527030
+    },
+    "octolens": {
+      "version": "1.0.0",
+      "installedAt": 1769795548476
+    },
+    "late-api": {
+      "version": "0.1.0",
+      "installedAt": 1769795573886
+    },
+    "bird": {
+      "version": "1.0.0",
+      "installedAt": 1769795591440
+    },
+    "grok": {
+      "version": "1.0.3",
+      "installedAt": 1771171410875
+    }
+  }
+}

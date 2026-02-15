@@ -1,45 +1,28 @@
 {
-  "lastUpdated": "2026-02-14T12:00:00.000Z",
+  "lastUpdate": "2026-02-15T12:00:00.000Z",
   "jobs": [
     {
+      "id": "morning_brief",
       "name": "Morning Brief",
       "schedule": "7 AM ET daily",
-      "lastRun": "2026-02-14T12:00:00.000Z",
-      "status": "success",
-      "consecutiveErrors": 0,
-      "note": "Delivered: backup OK, MC v3 blocked, BeerPair excellent, Valentine's Day"
+      "lastRun": "2026-02-15T12:00:00.000Z",
+      "status": "healthy",
+      "note": "Delivered. Overnight build success, SOPS deploy, MC v3 audit complete."
     },
     {
+      "id": "overnight_build",
       "name": "Overnight Build",
-      "schedule": "2 AM MT daily",
-      "lastRun": "2026-02-14T09:00:00.000Z",
-      "status": "partial",
-      "consecutiveErrors": 0,
-      "note": "Mission Control v3 built (deployment blocked), BeerPair tested successfully"
+      "schedule": "2 AM ET daily",
+      "lastRun": "2026-02-15T07:23:00.000Z",
+      "status": "healthy",
+      "lastResult": "Mission Control v3 audit complete - 5 API endpoints added, 30 Lovable prompts created"
     },
     {
-      "name": "Weekly Knowledge Synthesis",
-      "schedule": "9 AM MT Sunday",
-      "lastRun": "2026-02-09T16:00:00.000Z",
-      "status": "success",
-      "consecutiveErrors": 0,
-      "note": "Consolidate memory → knowledge graph"
-    },
-    {
+      "id": "daily_backup",
       "name": "Daily Backup",
       "schedule": "4 AM MT daily",
       "lastRun": "2026-02-14T11:01:00.000Z",
-      "status": "ok",
-      "consecutiveErrors": 0,
-      "note": "Pi: workspace 85M + config 141M (verified), GitHub: 10 files pushed. Total on Pi: 896M"
-    },
-    {
-      "name": "Get-to-Know-You",
-      "schedule": "Mon 10AM, Wed 2PM, Fri 11AM MT",
-      "lastRun": null,
-      "status": "pending",
-      "consecutiveErrors": 0,
-      "note": "First question fires Fri Feb 14"
+      "status": "healthy"
     }
   ]
 }

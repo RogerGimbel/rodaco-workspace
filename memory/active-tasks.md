@@ -1,53 +1,33 @@
 # Active Tasks
 
-## Mission Control v3 — IN PROGRESS (2026-02-14)
-**Status:** ~90% done — API complete, frontend needs visual walkthrough
-**Started:** 2026-02-13
-
-### What's Done
-- [x] Full API layer built: 35 endpoints in `mission-control/src/routes/api-v3.js` (1400+ lines)
-- [x] Frontend: Lovable React app at https://rodaco-mc.lovable.app (6 pages)
-- [x] API base URL: https://mission.rogergimbel.dev → port 3333 on MacBook
-- [x] Security fix: removed API key prefix leakage from `/usage/providers`
-- [x] Enriched `/projects/beerpair` — 24 assets, tech stack, team, history, test results
-- [x] Enriched `/projects/ocean-one` — description, services, conversations
-- [x] Fixed `/active-tasks` — parses checkboxes, subsections, auto-derives nextStep
-- [x] Fixed `/system-overview` — real activeTaskCount + task summaries
-- [x] Created seed data: suggested-tasks.json, openclaw-research.md, competitive-research.md, marketing-ideas.md
-- [x] Fixed all 3 research endpoint parsers
-- [x] Home page and Projects page working in frontend
-- [x] Comprehensive Lovable prompt generated with all 25 endpoint response shapes
-- [x] API reference saved to `knowledge/projects/mission-control-v3/api-reference.md`
-
-### What's Left
-- [ ] Roger pastes comprehensive Lovable prompt (all 6 pages, all endpoint shapes) into Lovable
-- [ ] Visual walkthrough of all 6 pages (Ops, Agent, Knowledge, Research especially)
-- [ ] Feed Lovable any remaining layout/display issues found during walkthrough
-- [ ] Consider adding auto-refresh polling (spec says 15s for home page)
-- [ ] Usage token counts may need investigation (input ~1K vs output ~98K seems off)
-
-### Key Files
-- API: `mission-control/src/routes/api-v3.js`
-- Server: `mission-control/src/server.js`
-- Spec: `knowledge/projects/mission-control-v3/spec.md`
-- API Reference: `knowledge/projects/mission-control-v3/api-reference.md`
-- Lovable Prompt: `knowledge/projects/mission-control-v3/lovable-prompt.md`
-- Frontend: https://rodaco-mc.lovable.app (Lovable project)
-- API URL in frontend: `https://mission.rogergimbel.dev`
-- Restart: `pkill -f supervisor; sleep 2; bash mission-control/start.sh`
+## 🔐 SOPS/age Secrets Hardening — ✅ COMPLETE (2026-02-14)
+Deployed. All secrets encrypted at rest via SOPS/age, decrypted to `/tmp/secrets/` (tmpfs) at startup.
 
 ---
 
-## BeerPair Native Apps
-**Status:** In progress (Despia WebView wrapper)
-**Started:** 2026-02-12
+## 🖥️ Mission Control v3 — Round 2 Lovable Prompts IN PROGRESS
 
----
+**Goal:** Fix visual bugs and enhance MC v3 frontend via Lovable prompts
+**Status:** FEEDING PROMPTS TO ROGER ONE AT A TIME
+**Progress tracker:** `mission-control/lovable-prompts/audit-round2-progress.md`
+**Full prompts:** `mission-control/lovable-prompts/2026-02-15-round2-audit.md`
 
-## Pi Media Stack — Fixes Applied (2026-02-14)
-**Status:** RESOLVED
-- Fixed Homepage dashboard (`admin.rogergimbel.dev`) qBit/SABnzbd API errors
-- Root cause: UFW firewall hardening (Feb 13) blocked container→host loopback traffic
-- Homepage was using host IP `10.0.0.20:8090/8183` instead of Docker DNS
-- Fix: Changed Homepage config to use `gluetun:8081` (qBit) and `gluetun:8080` (SABnzbd)
-- File changed: `/mnt/media/config/homepage/services.yaml`
+### How to resume
+1. Read `mission-control/lovable-prompts/audit-round2-progress.md` for current position
+2. Read `mission-control/lovable-prompts/2026-02-15-round2-audit.md` for the actual prompt text
+3. Send the next unchecked prompt to Roger
+4. After Roger confirms done, check the box and send the next one
+
+### Queue (12 Lovable prompts)
+- [ ] Fix 2 — Home page second row layout / cron jobs overflow
+- [ ] Fix 8 — Pi disk color thresholds (ROOT red at 55%)
+- [ ] Fix 1 — Backup alert display
+- [ ] Fix 3 — Active tasks count showing completed as active
+- [ ] Fix 4 — Hide "cost: unknown" on model cards
+- [ ] Fix 7 — Overnight history "unknown" fields
+- [ ] Enhancement 14 — Rodaco status hero card
+- [ ] Enhancement 9 — Usage/Activity sections on Home
+- [ ] Enhancement 11 — Research Kanban card polish
+- [ ] Fix 5-6 — Sessions + session health warnings
+- [ ] Enhancement 10 — Knowledge graph verification
+- [ ] Enhancement 12-13 — Animations + MacBook card

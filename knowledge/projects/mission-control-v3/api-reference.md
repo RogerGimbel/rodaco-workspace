@@ -45,3 +45,12 @@
 - `/api/v3/research/openclaw` — platform research entries
 - `/api/v3/research/competitive` — competitor analyses
 - `/api/v3/research/marketing` — marketing ideas backlog by project/category
+
+### METRICS (NEW - 2026-02-15)
+- `/api/v3/metrics/costs` — cost breakdown: today, week, month, by provider, trend
+- `/api/v3/metrics/performance` — API performance: avg/p95 response times, errors, tool performance
+- `/api/v3/metrics/session-health` — session health: file size, locks, zombies, heap usage, warnings
+
+### SYSTEM (NEW - 2026-02-15)
+- `/api/v3/system/health-score` — overall system health score + component scores + alerts
+- `/api/v3/overnight-history` — historical overnight builds with duration, tasks, costs

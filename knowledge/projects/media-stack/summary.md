@@ -35,3 +35,5 @@
 ## History
 - [2026-01-15] Installed Pironman 5-MAX case for cooling
 - [2026-01-29] Confirmed stable, monitoring only
+- [2026-02-13] Full resilience hardening — UFW firewall, SMART monitoring, Docker data-root migrated to SanDisk USB, disabled unnecessary services
+- [2026-02-14] Fixed Homepage dashboard (container→host loopback blocked by UFW, switched to Docker DNS)

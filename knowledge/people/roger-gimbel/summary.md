@@ -34,8 +34,9 @@
 - [[Ocean One Marine]]: Dale is 100% owner, Roger helping with tech
 - [[BeerPair]]: 1/3 each (Roger, Dale, Stuart)
 
-## Personal History
+## Personal
 - Worst job ever: stuffing insulation in an attic
+- If he could automate one thing in life: house cleaning (not a tech answer — a real life answer)
 
 ## Devices (Tailscale)
 - [[M5 MacBook]] (daily driver)
