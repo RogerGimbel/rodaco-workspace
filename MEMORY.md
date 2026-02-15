@@ -171,7 +171,9 @@ bash /home/node/workspace/bin/email inbox
 ## Infrastructure
 
 ### Mission Control Dashboard
-- URL: http://100.124.209.59:3333
+- **API:** http://100.124.209.59:3333 (backend, port 3333)
+- **Frontend:** https://rodaco-mc.lovable.app (Lovable-hosted Vite+React app)
+  - Routes: / (Home), /ops (Ops), /knowledge (Knowledge Graph), /memory (Memory Timeline), /projects (Projects), /research (Research)
 - Server: `/home/node/workspace/mission-control/server.js`
 - **Supervised** via `mission-control/supervisor.sh` (auto-restart on crash, circuit breaker 10/5min)
 - Started by heartbeat via `mission-control/start.sh` (checks if already running)
@@ -206,12 +208,19 @@ bash /home/node/workspace/bin/email inbox
 - Sops key: ~/.config/sops/age/keys.txt (Intel MacBook)
 - To decrypt: `SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops decrypt --input-type dotenv --output-type dotenv .env.enc > .env`
 
-### Mission Control Dashboard
-- URL: http://100.124.209.59:3333
-- Server: `/home/node/workspace/mission-control/server.js`
+### Mission Control Dashboard (v3 — Updated 2026-02-14)
+- **API Backend:** http://100.124.209.59:3333 (35 endpoints in `api-v3.js`)
+- **API Public URL:** https://mission.rogergimbel.dev (Caddy on Pi → MacBook:3333)
+- **Frontend:** https://rodaco-mc.lovable.app (Vite + React, built in Lovable)
+- **Frontend env var:** `VITE_API_URL=https://mission.rogergimbel.dev`
+- Server: `mission-control/src/server.js`
+- API routes: `mission-control/src/routes/api-v3.js` (~1400 lines)
+- Spec: `knowledge/projects/mission-control-v3/spec.md`
+- API Reference: `knowledge/projects/mission-control-v3/api-reference.md`
 - **Supervised** via `mission-control/supervisor.sh` (auto-restart on crash, circuit breaker 10/5min)
-- Started by heartbeat via `mission-control/start.sh` (checks if already running)
+- Started by heartbeat via `mission-control/start.sh`
 - Logs: `/tmp/mission-control.log`
+- **Status (Feb 14):** API complete, Home + Projects pages working, remaining 4 pages need Lovable prompt pasted
 
 ### Pi Storage Architecture (Updated 2026-02-13)
 - **SD Card (/):** 58GB, ~56% used — OS only
@@ -265,6 +274,8 @@ Restore procedure: `knowledge/infrastructure/intel-macbook/restore-procedure.md`
 - Hardware watchdog (15s timeout)
 - Docker live-restore enabled
 - **Cloudflared MUST be on `media_network`** (not host) — it needs Docker DNS to resolve container names in tunnel ingress config
+- **LESSON (Feb 14):** UFW DOCKER-USER rules block container→host loopback. Homepage dashboard used host IP `10.0.0.20:8090/8183` to reach qBit/SABnzbd — broke after firewall hardening. Fix: use Docker DNS (`gluetun:8081`, `gluetun:8080`) instead. Always prefer container-to-container networking over published port loopback.
+- **Homepage dashboard** (`admin.rogergimbel.dev`) is served by the `homepage` container (port 3000), NOT Homarr (port 7575). Caddy routes: `admin.rogergimbel.dev → homepage:3000`, `homarr.rogergimbel.dev → homarr:7575`
 
 ### Split DNS & Local Routing (Deployed 2026-02-07)
 

@@ -98,21 +98,49 @@ function parseActiveTasks() {
   try {
     const content = fs.readFileSync(path.join(MEMORY_DIR, 'active-tasks.md'), 'utf8');
     const tasks = [];
-    const taskBlocks = content.split(/^##\s+/m).slice(1);
+    // Split on ## headings (top-level task blocks)
+    const taskBlocks = content.split(/^## (?!#)/m).slice(1);
     
     for (const block of taskBlocks) {
       const lines = block.trim().split('\n');
-      const title = lines[0].trim();
-      const task = { title, status: 'active', started: null, plan: [], nextStep: '' };
+      const title = lines[0].replace(/\s*\(.*?\)\s*$/, '').trim();
+      const task = { title, status: 'active', started: null, priority: null, plan: [], nextStep: '', checklist: [] };
       
       let currentSection = '';
       for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line.startsWith('**Status:**')) task.status = line.replace('**Status:**', '').trim();
-        else if (line.startsWith('**Started:**')) task.started = line.replace('**Started:**', '').trim();
-        else if (line.startsWith('**Next:**')) task.nextStep = line.replace('**Next:**', '').trim();
-        else if (line.startsWith('**Plan:**')) currentSection = 'plan';
-        else if (currentSection === 'plan' && line.startsWith('-')) task.plan.push(line.substring(1).trim());
+        const line = lines[i];
+        const trimmed = line.trim();
+        
+        // Parse **Key:** value patterns
+        if (trimmed.startsWith('**Status:**')) task.status = trimmed.replace('**Status:**', '').trim();
+        else if (trimmed.startsWith('**Started:**')) task.started = trimmed.replace('**Started:**', '').trim();
+        else if (trimmed.startsWith('**Priority:**')) task.priority = trimmed.replace('**Priority:**', '').trim();
+        else if (trimmed.startsWith('**Next:**') || trimmed.startsWith('**Next Step:**')) {
+          task.nextStep = trimmed.replace(/\*\*Next(?:\s+Step)?:\*\*/, '').trim();
+        }
+        // Detect subsections (### Phase, ### Step, etc.)
+        else if (trimmed.startsWith('### ')) {
+          currentSection = trimmed.replace('### ', '').trim();
+        }
+        // Checkboxes: - [x] or - [ ]
+        else if (/^- \[(x| )\]/.test(trimmed)) {
+          const done = trimmed.startsWith('- [x]');
+          const text = trimmed.replace(/^- \[.\]\s*/, '').trim();
+          task.checklist.push({ text, done, section: currentSection || null });
+          // Also add to plan for backward compat
+          task.plan.push((done ? '✅ ' : '⬜ ') + text);
+        }
+        // Regular bullet items in a section
+        else if (/^[-*]\s+\d+\./.test(trimmed) || /^[-*]\s+/.test(trimmed)) {
+          const text = trimmed.replace(/^[-*]\s+/, '').trim();
+          if (text && !text.startsWith('**')) task.plan.push(text);
+        }
+      }
+      
+      // Derive nextStep from first unchecked item if not explicit
+      if (!task.nextStep && task.checklist.length) {
+        const next = task.checklist.find(c => !c.done);
+        if (next) task.nextStep = next.text;
       }
       
       tasks.push(task);
@@ -129,9 +157,13 @@ function parseGoals() {
     const content = fs.readFileSync(path.join(WORKSPACE, 'GOALS.md'), 'utf8');
     const goals = { role: '', projects: [], antiGoals: [], overnightTasks: [] };
     
-    // Extract role
-    const roleMatch = content.match(/##\s*Role[\s\S]*?###\s*Primary Directive[:\s]*(.+?)(?=\n\n|\n###)/);
-    if (roleMatch) goals.role = roleMatch[1].trim();
+    // Extract role — handles both "## My Role\nparagraph" and "### Primary Directive: text"
+    const roleMatch = content.match(/##\s*(?:My )?Role\n([\s\S]*?)(?=\n## )/);
+    if (roleMatch) {
+      // Get first paragraph (strip markdown bold)
+      const firstPara = roleMatch[1].trim().split('\n\n')[0].replace(/\*\*/g, '').trim();
+      goals.role = firstPara;
+    }
     
     // Extract projects
     const projectsMatch = content.match(/##\s*Active Projects[\s\S]*?((?:###\s+.+[\s\S]*?)+?)(?=##|$)/);
@@ -176,37 +208,28 @@ function parseOvernightLog(date) {
     const fileName = date || new Date().toISOString().split('T')[0];
     const content = fs.readFileSync(path.join(MEMORY_DIR, `${fileName}.md`), 'utf8');
     
-    const log = { date: fileName, task: '', findings: [], issues: [], nextActions: [] };
-    
-    // Find overnight build section
-    const overnightMatch = content.match(/##\s*Overnight Build[\s\S]*?(?=\n##|$)/);
-    if (!overnightMatch) return log;
-    
-    const section = overnightMatch[0];
-    const taskMatch = section.match(/\*\*Task:\*\*\s*(.+)/);
-    if (taskMatch) log.task = taskMatch[1].trim();
-    
-    const findingsMatch = section.match(/\*\*Findings:\*\*([\s\S]*?)(?=\*\*|$)/);
-    if (findingsMatch) {
-      log.findings = findingsMatch[1].match(/^[-*]\s+(.+)$/gm)
-        ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
+    // Parse ALL sections from the daily note
+    const sections = [];
+    const sectionMatches = content.split(/^## /m).slice(1);
+    for (const sec of sectionMatches) {
+      const titleEnd = sec.indexOf('\n');
+      const title = sec.substring(0, titleEnd).trim();
+      const body = sec.substring(titleEnd).trim();
+      sections.push({ title, content: body });
     }
     
-    const issuesMatch = section.match(/\*\*Issues:\*\*([\s\S]*?)(?=\*\*|$)/);
-    if (issuesMatch) {
-      log.issues = issuesMatch[1].match(/^[-*]\s+(.+)$/gm)
-        ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
-    }
+    // Extract title from H1
+    const h1 = content.match(/^# (.+)$/m);
     
-    const nextMatch = section.match(/\*\*Next:\*\*([\s\S]*?)(?=\n##|$)/);
-    if (nextMatch) {
-      log.nextActions = nextMatch[1].match(/^[-*]\s+(.+)$/gm)
-        ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
-    }
-    
-    return log;
+    return { 
+      date: fileName, 
+      title: h1 ? h1[1].trim() : fileName,
+      sections,
+      wordCount: content.split(/\s+/).length,
+      raw: content.length > 10000 ? content.substring(0, 10000) + '...' : content
+    };
   } catch {
-    return { date, task: '', findings: [], issues: [], nextActions: [] };
+    return { date: date || new Date().toISOString().split('T')[0], title: '', sections: [], wordCount: 0 };
   }
 }
 
@@ -232,8 +255,23 @@ function parseIdentity() {
     
     // Extract personality from SOUL.md
     if (soul) {
-      const vibeMatch = soul.match(/##\s*Vibe[\s\S]*?(.+?)(?=\n##|$)/);
-      if (vibeMatch) agent.personality = vibeMatch[1].trim();
+      const vibeMatch = soul.match(/##\s*Vibe\n\n([\s\S]*?)(?=\n##|$)/);
+      if (vibeMatch) agent.personality = vibeMatch[1].trim().replace(/```/g, '');
+      
+      // Also extract core truths as traits
+      const truthsMatch = soul.match(/##\s*Core Truths\n\n([\s\S]*?)(?=\n##|$)/);
+      if (truthsMatch) {
+        agent.traits = truthsMatch[1].match(/\*\*([^*]+)\*\*/g)?.map(t => t.replace(/\*\*/g, '')) || [];
+      }
+    }
+    
+    // Roles from IDENTITY.md
+    const roleMatches = identity.match(/###\s+(C[A-Z]+)\s*[-—]\s*(.+)/g);
+    if (roleMatches) {
+      agent.roles = roleMatches.map(r => {
+        const m = r.match(/###\s+(C[A-Z]+)\s*[-—]\s*(.+)/);
+        return m ? { title: m[1], description: m[2].trim() } : null;
+      }).filter(Boolean);
     }
     
     return agent;
@@ -256,9 +294,9 @@ function parseModelArsenal() {
       const cells = row.split('|').map(c => c.trim()).filter(c => c);
       if (cells.length >= 3) {
         models.push({
-          alias: cells[0],
+          alias: cells[0].replace(/`/g, ''),
           model: cells[1],
-          bestFor: cells[2],
+          bestFor: cells[2].replace(/\*\*/g, ''),
           cost: cells[3] || 'unknown'
         });
       }
@@ -391,32 +429,40 @@ module.exports = function(app) {
   
   app.get('/api/v3/cron-status', async (req, res) => {
     try {
-      // Read from memory/cron-status.json first
       let jobs = [];
-      try {
-        const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
-        jobs = cronStatus.jobs || [];
-      } catch {}
       
-      // Augment with live OpenClaw cron API if available
+      // Primary: live data from OpenClaw CLI
       try {
-        const gateway = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-        const token = process.env.OPENCLAW_GATEWAY_TOKEN || '';
-        const cronList = await apiGet(`${gateway}/api/cron/list`, { 'Authorization': `Bearer ${token}` });
+        const cronJson = execSync('openclaw cron list --json 2>/dev/null || echo "[]"', { encoding: 'utf8', timeout: 15000 });
+        const parsed = JSON.parse(cronJson);
+        const jobList = parsed.jobs || parsed || [];
         
-        if (cronList.status === 200 && cronList.data.jobs) {
-          const liveJobs = cronList.data.jobs.map(j => ({
-            id: j.id,
-            name: j.name,
-            schedule: j.schedule,
-            lastRun: j.state?.lastRunAtMs ? new Date(j.state.lastRunAtMs).toISOString() : null,
-            status: j.state?.lastStatus || 'unknown',
-            enabled: j.enabled !== false,
-            consecutiveErrors: j.state?.consecutiveErrors || 0
-          }));
-          jobs = liveJobs;
-        }
-      } catch {}
+        // Also load cron-status.json for human-written notes
+        let notes = {};
+        try {
+          const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
+          (cronStatus.jobs || []).forEach(j => { if (j.name) notes[j.name] = j.note; });
+        } catch {}
+        
+        jobs = jobList.map(j => ({
+          id: j.id,
+          name: j.name,
+          schedule: j.schedule?.expr || j.schedule || '',
+          timezone: j.schedule?.tz || '',
+          lastRun: j.state?.lastRunAtMs ? new Date(j.state.lastRunAtMs).toISOString() : null,
+          nextRun: j.state?.nextRunAtMs ? new Date(j.state.nextRunAtMs).toISOString() : null,
+          status: j.state?.lastStatus || 'unknown',
+          enabled: j.enabled !== false,
+          consecutiveErrors: j.state?.consecutiveErrors || 0,
+          note: notes[j.name] || null
+        }));
+      } catch {
+        // Fallback: cron-status.json
+        try {
+          const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
+          jobs = cronStatus.jobs || [];
+        } catch {}
+      }
       
       res.json({ jobs, timestamp: new Date().toISOString() });
     } catch (err) {
@@ -435,12 +481,14 @@ module.exports = function(app) {
         timestamp: new Date().toISOString()
       };
       
-      // Health check
+      // Health check (via CLI — gateway HTTP serves SPA on all routes)
       try {
-        const gateway = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-        const healthRes = await apiGet(`${gateway}/health`);
-        overview.health = healthRes.status === 200 ? healthRes.data : { status: 'unhealthy' };
-      } catch {}
+        const healthJson = execSync('openclaw health --json 2>/dev/null', { encoding: 'utf8', timeout: 15000 });
+        const parsed = JSON.parse(healthJson);
+        overview.health = { status: parsed.ok ? 'ok' : 'unhealthy', channels: parsed.channels, durationMs: parsed.durationMs };
+      } catch {
+        overview.health = { status: 'unknown', error: 'health check failed' };
+      }
       
       // Cron jobs
       try {
@@ -449,12 +497,20 @@ module.exports = function(app) {
         overview.cronJobs.total = jobs.length;
         overview.cronJobs.healthy = jobs.filter(j => j.consecutiveErrors === 0).length;
         overview.cronJobs.failing = jobs.filter(j => j.consecutiveErrors > 0).length;
+        // Extract last backup time from Daily Backup job
+        const backupJob = jobs.find(j => /backup/i.test(j.name));
+        if (backupJob && backupJob.lastRun) {
+          overview.lastBackup = backupJob.lastRun;
+          overview.lastBackupNote = backupJob.note || null;
+        }
       } catch {}
       
       // Active tasks
       try {
         const tasks = parseActiveTasks();
-        overview.activeTaskCount = tasks.filter(t => t.status === 'active').length;
+        // Count all tasks (they're all active if they're in the file)
+        overview.activeTaskCount = tasks.length;
+        overview.activeTasks = tasks.map(t => ({ title: t.title, status: t.status, nextStep: t.nextStep }));
       } catch {}
       
       // Sub-agents
@@ -463,12 +519,14 @@ module.exports = function(app) {
         overview.subAgentCount = sessions.length;
       } catch {}
       
-      // Last backup
-      try {
-        const backupLog = execSync('ls -lt /home/node/workspace/backups/*.tar.gz 2>/dev/null | head -1', { encoding: 'utf8' });
-        const match = backupLog.match(/(\w{3}\s+\d+\s+\d+:\d+)/);
-        if (match) overview.lastBackup = match[1];
-      } catch {}
+      // Last backup (already extracted from cron-status above, this is a fallback)
+      if (!overview.lastBackup) {
+        try {
+          const backupLog = execSync('ls -lt /home/node/workspace/backups/*.tar.gz 2>/dev/null | head -1', { encoding: 'utf8' });
+          const match = backupLog.match(/(\w{3}\s+\d+\s+\d+:\d+)/);
+          if (match) overview.lastBackup = match[1];
+        } catch {}
+      }
       
       res.json(overview);
     } catch (err) {
@@ -517,15 +575,8 @@ module.exports = function(app) {
       if (uptimeMatch) device.uptime = uptimeMatch[1].trim();
     }
     
-    // Temperature (convert C to F)
-    const temp = sshCommand(host, 'sudo powermetrics --samplers smc -i1 -n1 2>/dev/null | grep "CPU die temperature"');
-    if (temp) {
-      const match = temp.match(/([\d.]+)\s*C/);
-      if (match) {
-        device.temperature.celsius = parseFloat(match[1]);
-        device.temperature.fahrenheit = Math.round(device.temperature.celsius * 9/5 + 32);
-      }
-    }
+    // Temperature — macOS Intel has no easy temp CLI; report null
+    device.temperature = null;
     
     // RAM
     const vmStat = sshCommand(host, 'vm_stat');
@@ -541,25 +592,26 @@ module.exports = function(app) {
       const usedBytes = (parseInt(active) + parseInt(inactive) + parseInt(wired)) * pageSize;
       const totalBytes = freeBytes + usedBytes;
       
-      device.ram.totalGB = (totalBytes / 1024 / 1024 / 1024).toFixed(2);
-      device.ram.usedGB = (usedBytes / 1024 / 1024 / 1024).toFixed(2);
-      device.ram.availableGB = (freeBytes / 1024 / 1024 / 1024).toFixed(2);
-      device.ram.usagePercent = ((usedBytes / totalBytes) * 100).toFixed(1);
+      device.ram.totalGB = parseFloat((totalBytes / 1024 / 1024 / 1024).toFixed(2));
+      device.ram.usedGB = parseFloat((usedBytes / 1024 / 1024 / 1024).toFixed(2));
+      device.ram.availableGB = parseFloat((freeBytes / 1024 / 1024 / 1024).toFixed(2));
+      device.ram.usagePercent = parseFloat(((usedBytes / totalBytes) * 100).toFixed(1));
     }
     
-    // Disk
-    const df = sshCommand(host, 'df -h /');
+    // Disk (macOS: df -g returns 1G-blocks as integers)
+    const df = sshCommand(host, 'df -g /');
     if (df) {
       const lines = df.split('\n');
       if (lines.length > 1) {
         const parts = lines[1].trim().split(/\s+/);
-        device.disk.totalGB = parts[1];
-        device.disk.usedGB = parts[2];
-        device.disk.availableGB = parts[3];
-        device.disk.usagePercent = parts[4];
+        device.disk.totalGB = parseInt(parts[1]) || 0;
+        device.disk.usedGB = parseInt(parts[2]) || 0;
+        device.disk.availableGB = parseInt(parts[3]) || 0;
+        device.disk.usagePercent = parseInt(parts[4]) || 0;
       }
     }
     
+    device.status = 'online';
     res.json(device);
   });
   
@@ -618,37 +670,39 @@ module.exports = function(app) {
       const memLine = lines.find(l => l.startsWith('Mem:'));
       if (memLine) {
         const parts = memLine.split(/\s+/);
-        device.ram.totalGB = (parseInt(parts[1]) / 1024).toFixed(2);
-        device.ram.usedGB = (parseInt(parts[2]) / 1024).toFixed(2);
-        device.ram.availableGB = (parseInt(parts[6]) / 1024).toFixed(2);
-        device.ram.usagePercent = ((parseInt(parts[2]) / parseInt(parts[1])) * 100).toFixed(1);
+        device.ram.totalGB = parseFloat((parseInt(parts[1]) / 1024).toFixed(2));
+        device.ram.usedGB = parseFloat((parseInt(parts[2]) / 1024).toFixed(2));
+        device.ram.availableGB = parseFloat((parseInt(parts[6]) / 1024).toFixed(2));
+        device.ram.usagePercent = parseFloat(((parseInt(parts[2]) / parseInt(parts[1])) * 100).toFixed(1));
       }
     }
     
-    // Disk (three drives)
-    const df = sshCommand(host, 'df -h');
+    // Disk (three drives — use df -BG for numeric gigabytes)
+    const df = sshCommand(host, 'df -BG');
     if (df) {
+      const parseDfLine = (line) => {
+        if (!line) return null;
+        const parts = line.trim().split(/\s+/);
+        return { totalGB: parseFloat(parts[1]), usedGB: parseFloat(parts[2]), availableGB: parseFloat(parts[3]), usagePercent: parseInt(parts[4]) };
+      };
       const lines = df.split('\n');
       
       const rootLine = lines.find(l => l.match(/\s+\/$/));
-      if (rootLine) {
-        const parts = rootLine.trim().split(/\s+/);
-        device.storage.root = { totalGB: parts[1], usedGB: parts[2], availableGB: parts[3], usagePercent: parts[4] };
-      }
+      if (rootLine) device.storage.root = parseDfLine(rootLine);
       
       const dockerLine = lines.find(l => l.includes('/mnt/docker'));
-      if (dockerLine) {
-        const parts = dockerLine.trim().split(/\s+/);
-        device.storage.docker = { totalGB: parts[1], usedGB: parts[2], availableGB: parts[3], usagePercent: parts[4] };
-      }
+      if (dockerLine) device.storage.docker = parseDfLine(dockerLine);
       
       const mediaLine = lines.find(l => l.includes('/mnt/media'));
-      if (mediaLine) {
-        const parts = mediaLine.trim().split(/\s+/);
-        device.storage.media = { totalGB: parts[1], usedGB: parts[2], availableGB: parts[3], usagePercent: parts[4] };
-      }
+      if (mediaLine) device.storage.media = parseDfLine(mediaLine);
     }
     
+    // Also provide a top-level disk field (use media drive as primary)
+    device.disk = device.storage.media || device.storage.root || { totalGB: 0, usedGB: 0, availableGB: 0, usagePercent: 0 };
+    // Provide drives array for frontend that wants all drives
+    device.drives = Object.entries(device.storage).map(([name, data]) => ({ name, mount: name === 'root' ? '/' : `/mnt/${name}`, ...data }));
+    
+    device.status = 'online';
     res.json(device);
   });
   
@@ -748,7 +802,7 @@ module.exports = function(app) {
         const provider = key.replace('_API_KEY', '').toLowerCase();
         providers[provider] = {
           available: !!value,
-          key: value ? value.substring(0, 8) + '...' : null,
+          configured: !!value,
           usage: null
         };
       }
@@ -875,22 +929,24 @@ module.exports = function(app) {
   
   app.get('/api/v3/agent/sessions', async (req, res) => {
     try {
-      const gateway = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-      const token = process.env.OPENCLAW_GATEWAY_TOKEN || '';
-      const result = await apiGet(`${gateway}/api/sessions/list`, { 'Authorization': `Bearer ${token}` });
-      
-      if (result.status === 200) {
-        res.json(result.data);
-      } else {
-        // Fallback to local session files
-        const files = getSessionFiles(20);
-        const sessions = files.map(f => ({
-          id: f.name.replace('.jsonl', ''),
-          path: f.path,
-          mtime: new Date(f.mtime).toISOString()
-        }));
-        res.json({ active: sessions.slice(0, 5), recent: sessions });
-      }
+      // Use local session files directly (gateway HTTP returns SPA)
+      const files = getSessionFiles(50);
+      const sessions = files.map(f => {
+        const name = f.name.replace('.jsonl', '');
+        const isIsolated = name.includes('isolated') || name.includes('cron');
+        return {
+          key: name,
+          kind: isIsolated ? 'isolated' : 'main',
+          startedAt: new Date(f.mtime).toISOString(),
+          size: f.size || 0
+        };
+      });
+      const recent = sessions.slice(0, 20);
+      const active = sessions.filter(s => {
+        const age = Date.now() - new Date(s.startedAt).getTime();
+        return age < 3600000; // active in last hour
+      });
+      res.json({ active, recent, total: sessions.length });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -898,26 +954,33 @@ module.exports = function(app) {
   
   app.get('/api/v3/agent/cron-jobs', async (req, res) => {
     try {
-      const gateway = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-      const token = process.env.OPENCLAW_GATEWAY_TOKEN || '';
-      const result = await apiGet(`${gateway}/api/cron/list`, { 'Authorization': `Bearer ${token}` });
-      
-      if (result.status === 200 && result.data.jobs) {
-        const jobs = result.data.jobs.map(j => ({
-          id: j.id,
-          name: j.name,
-          schedule: j.schedule,
-          enabled: j.enabled !== false,
-          lastRun: j.state?.lastRunAtMs ? new Date(j.state.lastRunAtMs).toISOString() : null,
-          lastStatus: j.state?.lastStatus || 'unknown',
-          consecutiveErrors: j.state?.consecutiveErrors || 0
-        }));
-        res.json({ jobs });
-      } else {
+      // Use CLI (gateway HTTP returns SPA)
+      const cronJson = execSync('openclaw cron list --json 2>/dev/null || echo "[]"', { encoding: 'utf8', timeout: 15000 });
+      const parsed = JSON.parse(cronJson);
+      const jobList = parsed.jobs || parsed || [];
+      const jobs = jobList.map(j => ({
+        id: j.id,
+        name: j.name,
+        schedule: j.schedule?.expr || j.schedule || '',
+        timezone: j.schedule?.tz || '',
+        enabled: j.enabled !== false,
+        sessionTarget: j.sessionTarget || 'isolated',
+        lastRun: j.state?.lastRunAtMs ? new Date(j.state.lastRunAtMs).toISOString() : null,
+        nextRun: j.state?.nextRunAtMs ? new Date(j.state.nextRunAtMs).toISOString() : null,
+        lastStatus: j.state?.lastStatus || 'unknown',
+        lastDurationMs: j.state?.lastDurationMs || 0,
+        consecutiveErrors: j.state?.consecutiveErrors || 0,
+        lastError: j.state?.lastError || null
+      }));
+      res.json({ jobs });
+    } catch (err) {
+      // Fallback to cron-status.json
+      try {
+        const cronStatus = JSON.parse(fs.readFileSync(path.join(MEMORY_DIR, 'cron-status.json'), 'utf8'));
+        res.json({ jobs: cronStatus.jobs || [] });
+      } catch {
         res.json({ jobs: [] });
       }
-    } catch (err) {
-      res.status(500).json({ error: err.message });
     }
   });
   
@@ -930,43 +993,113 @@ module.exports = function(app) {
       const project = {
         name: 'BeerPair',
         status: 'active',
+        url: 'https://beerpair.com',
         credits: { used: 0, total: 10 },
         testResults: [],
         appStoreStatus: 'in-progress',
-        marketingAssets: []
+        marketingAssets: [],
+        techStack: [],
+        team: [],
+        currentWork: [],
+        history: [],
+        keyFiles: [],
+        description: ''
       };
       
       // Read from knowledge/projects/beerpair/summary.md
       const summaryPath = path.join(KNOWLEDGE_DIR, 'projects/beerpair/summary.md');
       if (fs.existsSync(summaryPath)) {
         const content = fs.readFileSync(summaryPath, 'utf8');
-        const meta = parseMarkdown(content);
-        project.summary = meta.excerpt;
         
-        // Extract credits if mentioned
+        // Description
+        const descMatch = content.match(/## Description\n([\s\S]*?)(?=\n## )/);
+        if (descMatch) project.description = descMatch[1].trim();
+        
+        // Phase/Status
+        const phaseMatch = content.match(/\*\*Phase\*\*:\s*(.+)/);
+        if (phaseMatch) project.status = phaseMatch[1].trim();
+        
+        // URL
+        const urlMatch = content.match(/\*\*URL\*\*:\s*(https?:\/\/\S+)/);
+        if (urlMatch) project.url = urlMatch[1].trim();
+        
+        // Credits from MEMORY.md
         const creditsMatch = content.match(/Credits:\s*(\d+)\/(\d+)/);
         if (creditsMatch) {
           project.credits.used = parseInt(creditsMatch[1]);
           project.credits.total = parseInt(creditsMatch[2]);
         }
         
-        // Extract status
-        const statusMatch = content.match(/\*\*Status:\*\*\s*(.+)/);
-        if (statusMatch) project.status = statusMatch[1].trim();
+        // Tech stack
+        const techMatch = content.match(/## Tech Stack\n([\s\S]*?)(?=\n## )/);
+        if (techMatch) {
+          project.techStack = (techMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
+            .map(l => l.replace(/^[-*]\s+/, '').trim());
+        }
+        
+        // Team
+        const teamMatch = content.match(/## Team\n([\s\S]*?)(?=\n## )/);
+        if (teamMatch) {
+          project.team = (teamMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
+            .map(l => l.replace(/^[-*]\s+/, '').replace(/\[\[|\]\]/g, '').trim());
+        }
+        
+        // Current Work
+        const workMatch = content.match(/## Current Work\n([\s\S]*?)(?=\n## |$)/);
+        if (workMatch) {
+          project.currentWork = (workMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
+            .map(l => l.replace(/^[-*]\s+/, '').trim());
+        }
+        
+        // History
+        const histMatch = content.match(/## History\n([\s\S]*?)(?=\n## |$)/);
+        if (histMatch) {
+          project.history = (histMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
+            .map(l => {
+              const m = l.match(/\[(\d{4}-\d{2}-\d{2})\]\s*(.+)/);
+              return m ? { date: m[1], event: m[2].trim() } : { date: null, event: l.replace(/^[-*]\s+/, '').trim() };
+            });
+        }
+        
+        // Key Files
+        const filesMatch = content.match(/## Key Files\n([\s\S]*?)(?=\n## |$)/);
+        if (filesMatch) {
+          project.keyFiles = (filesMatch[1].match(/^[-*]\s+(.+)$/gm) || [])
+            .map(l => l.replace(/^[-*]\s+/, '').trim());
+        }
       }
       
-      // Test results from memory files
-      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => f.endsWith('.md')).sort().reverse().slice(0, 30);
+      // Marketing assets — list files in beerpair knowledge dir
+      const beerDir = path.join(KNOWLEDGE_DIR, 'projects/beerpair');
+      if (fs.existsSync(beerDir)) {
+        project.marketingAssets = fs.readdirSync(beerDir)
+          .filter(f => f !== 'summary.md' && !f.startsWith('.'))
+          .map(f => ({
+            name: f,
+            type: f.endsWith('.png') || f.endsWith('.jpg') ? 'image' : 
+                  f.endsWith('.pdf') ? 'pdf' : 
+                  f.endsWith('.md') ? 'document' : 'file',
+            path: `knowledge/projects/beerpair/${f}`
+          }));
+      }
+      
+      // Test results from memory files — match broader patterns
+      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
         try {
           const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
-          const testMatch = content.match(/##\s*BeerPair Test[\s\S]*?(?=\n##|$)/g);
+          // Match various BeerPair test section headers
+          const testMatch = content.match(/###?\s*BeerPair.*?Test[\s\S]*?(?=\n##[^#]|\n---|\n\*\*\*|$)/gi);
           if (testMatch) {
             testMatch.forEach(section => {
               const dateMatch = file.match(/(\d{4}-\d{2}-\d{2})/);
+              const resultCount = section.match(/(\d+)\s*(?:pairing|result)/i);
+              const statusMatch = section.match(/[—–-]\s*(✅\s*\w+|SUCCESS|FAIL|PASS)/i);
               project.testResults.push({
                 date: dateMatch ? dateMatch[1] : 'unknown',
-                summary: section.substring(0, 300)
+                status: statusMatch ? statusMatch[1].trim() : 'completed',
+                resultCount: resultCount ? parseInt(resultCount[1]) : null,
+                summary: section.substring(0, 500).trim()
               });
             });
           }
@@ -1028,6 +1161,12 @@ module.exports = function(app) {
       const project = {
         name: 'Ocean One Marine',
         status: 'active',
+        description: 'General contracting company in South Florida specializing in marine construction (docks, sea walls, boat lifts). Rodaco is building automation solutions for them.',
+        industry: 'Marine Construction',
+        location: 'South Florida',
+        services: ['Docks', 'Sea Walls', 'Boat Lifts'],
+        automationGoals: [],
+        conversations: [],
         seoFindings: [],
         contentGaps: [],
         expansionNotes: []
@@ -1038,17 +1177,64 @@ module.exports = function(app) {
       if (fs.existsSync(historyPath)) {
         const content = fs.readFileSync(historyPath, 'utf8');
         
+        // Parse conversation entries
+        const convBlocks = content.split(/^## \d{4}-\d{2}-\d{2}/m).slice(1);
+        const dateHeaders = content.match(/^## (\d{4}-\d{2}-\d{2})\s*—\s*(.+)$/gm) || [];
+        dateHeaders.forEach((header, i) => {
+          const m = header.match(/^## (\d{4}-\d{2}-\d{2})\s*—\s*(.+)$/);
+          if (m) {
+            const block = convBlocks[i] || '';
+            const keyPoints = (block.match(/^[-*]\s+(.+)$/gm) || [])
+              .map(l => l.replace(/^[-*]\s+/, '').trim()).filter(l => l.length > 10);
+            const msgMatch = block.match(/\*(\d+) messages\*/);
+            project.conversations.push({
+              date: m[1],
+              topic: m[2].trim(),
+              messageCount: msgMatch ? parseInt(msgMatch[1]) : null,
+              keyPoints: keyPoints.slice(0, 5)
+            });
+          }
+        });
+        
+        // SEO section
         const seoMatch = content.match(/##\s*SEO[\s\S]*?((?:[-*]\s+.+\n?)+)/);
         if (seoMatch) {
           project.seoFindings = seoMatch[1].match(/^[-*]\s+(.+)$/gm)
             ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
         }
         
+        // Content Gaps
         const gapsMatch = content.match(/##\s*Content Gaps[\s\S]*?((?:[-*]\s+.+\n?)+)/);
         if (gapsMatch) {
           project.contentGaps = gapsMatch[1].match(/^[-*]\s+(.+)$/gm)
             ?.map(l => l.replace(/^[-*]\s+/, '').trim()) || [];
         }
+      }
+
+      // Also check knowledge/companies for Ocean One entity
+      const companyPath = path.join(KNOWLEDGE_DIR, 'companies/ocean-one-marine/summary.md');
+      if (fs.existsSync(companyPath)) {
+        const content = fs.readFileSync(companyPath, 'utf8');
+        const descMatch = content.match(/## Description\n([\s\S]*?)(?=\n## )/);
+        if (descMatch) project.description = descMatch[1].trim();
+      }
+      
+      // Check memory files for Ocean One discussions
+      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
+      for (const file of memoryFiles) {
+        try {
+          const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
+          const oceanMatch = content.match(/###?\s*Ocean One[\s\S]*?(?=\n##[^#]|\n---|\n\*\*\*|$)/gi);
+          if (oceanMatch) {
+            oceanMatch.forEach(section => {
+              const dateMatch = file.match(/(\d{4}-\d{2}-\d{2})/);
+              project.expansionNotes.push({
+                date: dateMatch ? dateMatch[1] : 'unknown',
+                note: section.substring(0, 300).trim()
+              });
+            });
+          }
+        } catch {}
       }
       
       res.json(project);
@@ -1218,18 +1404,39 @@ module.exports = function(app) {
   app.get('/api/v3/research/competitive', (req, res) => {
     try {
       const analyses = [];
-      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => f.endsWith('.md')).sort().reverse().slice(0, 30);
       
+      // Primary: dedicated competitive-research.md
+      const compPath = path.join(MEMORY_DIR, 'competitive-research.md');
+      if (fs.existsSync(compPath)) {
+        const content = fs.readFileSync(compPath, 'utf8');
+        const blocks = content.split(/^##\s+/m).slice(1);
+        for (const block of blocks) {
+          const lines = block.trim().split('\n');
+          const dateMatch = lines[0].match(/(\d{4}-\d{2}-\d{2})/);
+          const titlePart = lines[0].replace(/\d{4}-\d{2}-\d{2}\s*—?\s*/, '').trim();
+          const competitorMatch = block.match(/\*\*Competitor:\*\*\s*(.+)/);
+          const findingsMatch = block.match(/\*\*Findings:\*\*\s*(.+)/);
+          analyses.push({
+            date: dateMatch ? dateMatch[1] : 'unknown',
+            title: titlePart,
+            competitor: competitorMatch ? competitorMatch[1].trim() : titlePart,
+            findings: findingsMatch ? findingsMatch[1].trim() : lines.slice(1).join('\n').trim()
+          });
+        }
+      }
+      
+      // Fallback: scan daily notes for ## Competitive Analysis sections
+      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
         try {
           const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
           const sections = content.match(/##\s*Competitive Analysis[\s\S]*?(?=\n##|$)/g);
-          
           if (sections) {
             sections.forEach(section => {
               const competitorMatch = section.match(/\*\*Competitor:\*\*\s*(.+)/);
               analyses.push({
                 date: file.replace('.md', ''),
+                title: 'Competitive Analysis',
                 competitor: competitorMatch ? competitorMatch[1].trim() : 'unknown',
                 findings: section.substring(0, 500)
               });
@@ -1247,25 +1454,47 @@ module.exports = function(app) {
   app.get('/api/v3/research/marketing', (req, res) => {
     try {
       const ideas = [];
-      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => f.endsWith('.md')).sort().reverse().slice(0, 30);
       
+      // Primary: dedicated marketing-ideas.md
+      const mktPath = path.join(MEMORY_DIR, 'marketing-ideas.md');
+      if (fs.existsSync(mktPath)) {
+        const content = fs.readFileSync(mktPath, 'utf8');
+        // Parse ## Project > ### Category > bullet items
+        const projectBlocks = content.split(/^## /m).slice(1);
+        for (const pBlock of projectBlocks) {
+          const pLines = pBlock.trim().split('\n');
+          const project = pLines[0].trim();
+          const categories = pBlock.split(/^### /m).slice(1);
+          for (const cat of categories) {
+            const catLines = cat.trim().split('\n');
+            const category = catLines[0].trim();
+            const items = catLines.slice(1)
+              .filter(l => /^[-*]\s+\*\*/.test(l.trim()))
+              .map(l => {
+                const m = l.match(/\*\*(.+?)\*\*\s*[—–-]\s*(.+)/);
+                return m ? { title: m[1].trim(), description: m[2].trim(), project, category, status: 'idea' }
+                       : { title: l.replace(/^[-*]\s+/, '').trim(), description: '', project, category, status: 'idea' };
+              });
+            ideas.push(...items);
+          }
+        }
+      }
+      
+      // Fallback: scan daily notes for ## Marketing Idea sections
+      const memoryFiles = fs.readdirSync(MEMORY_DIR).filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md')).sort().reverse().slice(0, 30);
       for (const file of memoryFiles) {
         try {
           const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
           const sections = content.match(/##\s*Marketing Idea[\s\S]*?(?=\n##|$)/g);
-          
           if (sections) {
             sections.forEach(section => {
               const titleMatch = section.match(/##\s*Marketing Idea[:\s]*(.+)/);
-              const platformMatch = section.match(/\*\*Platform:\*\*\s*(.+)/);
-              const statusMatch = section.match(/\*\*Status:\*\*\s*(.+)/);
-              
               ideas.push({
-                date: file.replace('.md', ''),
                 title: titleMatch ? titleMatch[1].trim() : 'Untitled',
-                platform: platformMatch ? platformMatch[1].trim() : 'unknown',
-                status: statusMatch ? statusMatch[1].trim() : 'idea',
-                content: section.substring(0, 300)
+                description: section.substring(0, 300),
+                project: 'unknown',
+                category: 'general',
+                status: 'idea'
               });
             });
           }

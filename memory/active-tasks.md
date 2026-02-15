@@ -1,44 +1,53 @@
 # Active Tasks
 
-## Mission Control v3 API — Debug Deployment
-**Status:** Code complete, deployment blocked
-**Started:** 2026-02-14 2:00 AM
-**Next:** Debug route registration issue (server exits immediately after start)
+## Mission Control v3 — IN PROGRESS (2026-02-14)
+**Status:** ~90% done — API complete, frontend needs visual walkthrough
+**Started:** 2026-02-13
 
-**Completed:**
-- ✅ Built all 35 v3 API endpoints (44KB, 1300 lines)
-- ✅ Mounted in server.js with error handling
-- ✅ Fixed Express route syntax issues (wildcards → query params)
+### What's Done
+- [x] Full API layer built: 35 endpoints in `mission-control/src/routes/api-v3.js` (1400+ lines)
+- [x] Frontend: Lovable React app at https://rodaco-mc.lovable.app (6 pages)
+- [x] API base URL: https://mission.rogergimbel.dev → port 3333 on MacBook
+- [x] Security fix: removed API key prefix leakage from `/usage/providers`
+- [x] Enriched `/projects/beerpair` — 24 assets, tech stack, team, history, test results
+- [x] Enriched `/projects/ocean-one` — description, services, conversations
+- [x] Fixed `/active-tasks` — parses checkboxes, subsections, auto-derives nextStep
+- [x] Fixed `/system-overview` — real activeTaskCount + task summaries
+- [x] Created seed data: suggested-tasks.json, openclaw-research.md, competitive-research.md, marketing-ideas.md
+- [x] Fixed all 3 research endpoint parsers
+- [x] Home page and Projects page working in frontend
+- [x] Comprehensive Lovable prompt generated with all 25 endpoint response shapes
+- [x] API reference saved to `knowledge/projects/mission-control-v3/api-reference.md`
 
-**Blocked By:**
-- Server starts successfully, registers routes, then exits with code 0
-- Supervisor circuit breaker triggered (10 restarts in 5 min)
-- Routes return 404 when server briefly online
+### What's Left
+- [ ] Roger pastes comprehensive Lovable prompt (all 6 pages, all endpoint shapes) into Lovable
+- [ ] Visual walkthrough of all 6 pages (Ops, Agent, Knowledge, Research especially)
+- [ ] Feed Lovable any remaining layout/display issues found during walkthrough
+- [ ] Consider adding auto-refresh polling (spec says 15s for home page)
+- [ ] Usage token counts may need investigation (input ~1K vs output ~98K seems off)
 
-**Debug Plan:**
-1. Check for port conflicts on 3333
-2. Review supervisor.sh logic
-3. Test server in isolation (no supervisor)
-4. Check for signal handlers or shutdown triggers
-5. Review Express middleware order
+### Key Files
+- API: `mission-control/src/routes/api-v3.js`
+- Server: `mission-control/src/server.js`
+- Spec: `knowledge/projects/mission-control-v3/spec.md`
+- API Reference: `knowledge/projects/mission-control-v3/api-reference.md`
+- Lovable Prompt: `knowledge/projects/mission-control-v3/lovable-prompt.md`
+- Frontend: https://rodaco-mc.lovable.app (Lovable project)
+- API URL in frontend: `https://mission.rogergimbel.dev`
+- Restart: `pkill -f supervisor; sleep 2; bash mission-control/start.sh`
 
 ---
 
 ## BeerPair Native Apps
 **Status:** In progress (Despia WebView wrapper)
 **Started:** 2026-02-12
-**Last Update:** Web app testing successful (2026-02-14)
-
-**Web App Status:** ✅ Fully functional
-- Text search works flawlessly
-- 12-pairing generation excellent quality
-- Flavor radar graphs rendering properly
-- Pro Plan active (unlimited pairings)
-
-**Native App Blockers:**
-- Photo upload needs testing (blocked in headless browser)
-- Waiting on Despia wrapper completion
 
 ---
 
-*Last updated: 2026-02-14 3:18 AM*
+## Pi Media Stack — Fixes Applied (2026-02-14)
+**Status:** RESOLVED
+- Fixed Homepage dashboard (`admin.rogergimbel.dev`) qBit/SABnzbd API errors
+- Root cause: UFW firewall hardening (Feb 13) blocked container→host loopback traffic
+- Homepage was using host IP `10.0.0.20:8090/8183` instead of Docker DNS
+- Fix: Changed Homepage config to use `gluetun:8081` (qBit) and `gluetun:8080` (SABnzbd)
+- File changed: `/mnt/media/config/homepage/services.yaml`

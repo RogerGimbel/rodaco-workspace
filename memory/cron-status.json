@@ -1,13 +1,13 @@
 {
-  "lastUpdated": "2026-02-14T08:18:00.000Z",
+  "lastUpdated": "2026-02-14T12:00:00.000Z",
   "jobs": [
     {
       "name": "Morning Brief",
       "schedule": "7 AM ET daily",
-      "lastRun": "2026-02-13T12:00:00.000Z",
+      "lastRun": "2026-02-14T12:00:00.000Z",
       "status": "success",
       "consecutiveErrors": 0,
-      "note": "Daily health + priorities summary"
+      "note": "Delivered: backup OK, MC v3 blocked, BeerPair excellent, Valentine's Day"
     },
     {
       "name": "Overnight Build",
@@ -28,10 +28,10 @@
     {
       "name": "Daily Backup",
       "schedule": "4 AM MT daily",
-      "lastRun": "2026-02-13T11:00:00.000Z",
-      "status": "success",
+      "lastRun": "2026-02-14T11:01:00.000Z",
+      "status": "ok",
       "consecutiveErrors": 0,
-      "note": "Workspace + config to Pi + GitHub"
+      "note": "Pi: workspace 85M + config 141M (verified), GitHub: 10 files pushed. Total on Pi: 896M"
     },
     {
       "name": "Get-to-Know-You",

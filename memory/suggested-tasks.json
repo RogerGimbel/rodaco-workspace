@@ -1,0 +1,50 @@
+{
+  "tasks": [
+    {
+      "id": "st-001",
+      "title": "Set up BeerPair error monitoring (Sentry or LogRocket)",
+      "category": "infrastructure",
+      "reasoning": "App is live with real users — need crash/error visibility before scaling",
+      "effort": "medium",
+      "priority": "high",
+      "status": "pending"
+    },
+    {
+      "id": "st-002",
+      "title": "Create Ocean One Marine automation requirements doc",
+      "category": "project",
+      "reasoning": "Dale needs a concrete scope doc to align on what Rodaco builds for O1M",
+      "effort": "medium",
+      "priority": "medium",
+      "status": "pending"
+    },
+    {
+      "id": "st-003",
+      "title": "Add BeerPair SEO meta tags and OpenGraph images",
+      "category": "marketing",
+      "reasoning": "Site is live but lacks social sharing metadata — free traffic opportunity",
+      "effort": "low",
+      "priority": "high",
+      "status": "pending"
+    },
+    {
+      "id": "st-004",
+      "title": "Set up daily automated BeerPair smoke tests",
+      "category": "infrastructure",
+      "reasoning": "Automated testing catches regressions before users do",
+      "effort": "medium",
+      "priority": "medium",
+      "status": "pending"
+    },
+    {
+      "id": "st-005",
+      "title": "Create Rodaco company pitch deck for investor meetings",
+      "category": "business",
+      "reasoning": "Dale and Stuart may need this for partnership/funding conversations",
+      "effort": "high",
+      "priority": "low",
+      "status": "pending"
+    }
+  ],
+  "lastUpdated": "2026-02-14"
+}
