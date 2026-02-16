@@ -20,10 +20,18 @@
 - **Media**: Jellyfin, Jellyseerr, Tdarr
 - **Automation**: Sonarr, Radarr, Lidarr, Prowlarr, Bazarr
 - **Downloads**: qBittorrent, SABnzbd (via Gluetun VPN)
-- **Infra**: Homepage, Portainer, Uptime Kuma, Netdata, Home Assistant, Caddy, Cloudflared
+- **Infra**: Homepage, Portainer, Uptime Kuma, Netdata, Home Assistant, Caddy
+- **Removed**: Cloudflared (tunnel removed 2026-02-16, all access via Tailscale)
 
-## Key URLs
-- Admin: https://admin.rogergimbel.dev (Homepage, NOT Homarr)
+## Network Access
+**All services Tailscale-only (2026-02-16).** Every port bound to `100.83.169.87`.
+- dnsmasq listens on both LAN (10.0.0.20:53) and Tailscale (100.83.169.87:53)
+- Split DNS: explicit subdomain entries (NOT wildcard) → Tailscale IP
+- Root `rogergimbel.dev` passes through to public DNS (Roger's public website)
+- hassio_observer port 4357 blocked via iptables (non-tailscale0 DROP, persisted @reboot crontab)
+
+## Key URLs (Tailscale required)
+- Admin: https://admin.rogergimbel.dev (Homepage)
 - Jellyfin: https://jellyfin.rogergimbel.dev
 - Requests: https://requests.rogergimbel.dev
 - Presentations: https://presentations.rogergimbel.dev
@@ -44,6 +52,7 @@
 - **← MacBook**: daily 4 AM (OpenClaw workspace tar+ssh)
 
 ## History
+- [2026-02-16] **Tailscale lockdown**: All ports bound to Tailscale IP, Cloudflare tunnel removed, dnsmasq switched to explicit subdomains, iptables for hassio_observer
 - [2026-02-14] Fixed Homepage dashboard (use Docker DNS, not host IP loopback)
 - [2026-02-13] Full hardening: UFW, SMART, Docker migration to SanDisk, disabled services
 - [2026-02-07] Split DNS deployed (dnsmasq + Caddy DNS-01)

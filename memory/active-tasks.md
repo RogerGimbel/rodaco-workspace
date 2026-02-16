@@ -1,124 +1,68 @@
 # Active Tasks
 
-## 🌐 Agent Browser → MC v3 Dashboard — ON HOLD (2026-02-15)
+## 🏗️ Rodaco Infrastructure Overhaul
+**Started:** 2026-02-16
+**Goal:** Serve all dashboards/UIs on Tailscale only, enable self-management, eliminate need for Claude Code SSH for routine ops.
 
-**Goal:** Get agent-browser to browse the Lovable-hosted Mission Control v3 frontend with live API data populated, so we can visually audit/walk through the app programmatically.
+### Architecture Summary
+- Tailscale = auth layer (no login screens, no public URLs)
+- Watchtower = auto-updates
+- Host management agent = controlled host access from inside container
+- All services (OpenClaw, MC dashboard, Pi stack) on tailnet only
 
-**Status:** ON HOLD — root cause identified, multiple fix options documented
+### Build Order
 
-### Root Cause Analysis
-- The Lovable frontend is at `https://rodaco-mc.lovable.app` with `VITE_API_URL=https://mission.rogergimbel.dev`
-- The headless Chromium in the container runs on the **public internet** (outbound IP `98.43.88.216`), NOT on Tailscale
-- `mission.rogergimbel.dev` goes through Cloudflare → Caddy on Pi → MacBook:3333
-- Cloudflare blocks HeadlessChrome (User-Agent: `HeadlessChrome/145.0.0.0`) — likely Bot Fight Mode
-- Browser also **can't reach localhost** (different network namespace from shell)
-- Mixed content (HTTPS page → HTTP localhost) is blocked even with `--disable-web-security`
-- Self-signed HTTPS proxy on localhost also fails because browser can't reach localhost at all
+- [x] **Step 1: Tailscale-only gateway access** ✅ 2026-02-16
+  - Docker Desktop for Mac doesn't support network_mode: host (Linux VM limitation)
+  - Solution: bound port to Tailscale IP only: "100.124.209.59:18789:18789"
+  - Gateway accessible via Tailscale (200), NOT from localhost (connection refused)
+  - native tailscale.mode: "serve" not usable from inside Docker container
+  - NOTE: gateway.bind stays "lan" — security comes from Docker port binding to Tailscale IP
 
-### What We Already Tried
-1. ❌ Direct browsing — all API calls return status 0
-2. ❌ HTTP proxy on localhost:3334 (force IPv4) — browser can't reach localhost
-3. ❌ HTTPS proxy on localhost:3335 (self-signed cert) — browser can't reach localhost
-4. ❌ `--ignore-https-errors` + `--disable-web-security` + `--allow-running-insecure-content` — still can't reach localhost
-5. ❌ fetch/XHR monkey-patch to redirect API calls — destination unreachable regardless
-6. ✅ Confirmed: browser CAN reach public internet (httpbin.org works)
-7. ✅ Confirmed: curl through Cloudflare IPs works (not a Caddy/origin issue)
+- [x] **Step 2: Auto-updates** ✅ 2026-02-16
+  - Watchtower NOT needed — image is locally built (moltbot:local), not from registry
+  - OpenClaw has built-in `gateway update.run` / `openclaw update` for npm/git updates
+  - Rodaco can self-update via gateway tool — no external tools needed
+  - Docker image rebuilds (rare) still need Claude Code
 
-### Caching Fix (DONE ✅)
-- Fixed uncached `execSync` call in `/api/v3/agent/cron-jobs` (line 980 of `api-v3.js`)
-- Now uses `cachedExec()` with 60s TTL like all other CLI calls
-- All `openclaw` CLI invocations now go through the cache
+- [x] **Step 3: Host management agent** ✅ 2026-02-16
+  - Python 3 script at ~/docker/openclaw/host-agent/host_agent.py (v1.0.0)
+  - Launchd: com.openclaw.host-agent (PID 80161, KeepAlive)
+  - Listens on 100.124.209.59:18790 (Tailscale only)
+  - 13 commands: docker-ps/restart/logs, compose-read/write/apply/discard/pull/up, tailscale-status, system-info, openclaw-update, host-agent-version
+  - Compose writes staged with approval flow
+  - Audit log at ~/docker/openclaw/host-agent/audit.log
+  - Verified working from inside container ✅
 
-### Options to Pursue (Pick One)
+- [x] **Step 4: Mission Control dashboard — Tailscale lockdown** ✅ 2026-02-16
+  - Port 3333 already bound to Tailscale IP (done in Step 1 compose change)
+  - mission.rogergimbel.dev only resolves via split DNS (Pi) — not publicly routable
+  - No Cloudflare tunnel exposes port 3333
+  - Lovable frontend (rodaco-mc.lovable.app) is public but useless without API access
+  - VITE_API_URL stays as https://mission.rogergimbel.dev (TLS via Caddy, split DNS private)
+  - **Future (Option A):** Export Lovable frontend, self-host on tailnet for fully private setup
+  - Control plane features (future): restart gateway, trigger tasks, change config, run commands
 
-**Option A: Whitelist HeadlessChrome in Cloudflare**
-- Add a Cloudflare WAF rule to skip bot checks for `mission.rogergimbel.dev`
-- Fastest fix if Roger has Cloudflare dashboard access
-- Risk: slightly reduces bot protection on that subdomain
+- [x] **Step 5: Pi stack lockdown to tailnet-only** ✅ 2026-02-16
+  - All 26 port bindings changed from 0.0.0.0 → 100.83.169.87 (Tailscale IP)
+  - dnsmasq updated: *.rogergimbel.dev → 100.83.169.87 (was 10.0.0.20 LAN)
+  - Cloudflare tunnel (cloudflared) stopped and removed — no more public access
+  - Smoke test passed: Jellyfin, Sonarr, Radarr, Jellyseerr, Uptime Kuma all responding via Tailscale
+  - Backup at docker-compose.yml.pre-tailscale-lockdown
+  - NOTE: hassio_observer still on 0.0.0.0:4357 (managed by HA supervisor, not our compose)
+  - TODO: Clean up Caddy :8888/:8890 blocks (tunnel ingress no longer needed)
 
-**Option B: DNS-only subdomain (bypass Cloudflare proxy)**
-- Create `mc-direct.rogergimbel.dev` pointing to Pi's public IP with Cloudflare proxy OFF (grey cloud)
-- Browser hits origin directly, no bot checks
-- Need to set up TLS on Caddy for this subdomain
+### Key Decisions (Reference)
+- Docker Socket Proxy (Tecnativa) pattern if agent needs Docker access — NOT raw socket
+- Watchtower handles updates, not socket access from inside container
+- Host management agent: allowlist-only, parameterized, audit-logged, Tailscale-bound
+- Compose writes approved with Telegram confirmation
+- OpenClaw native: `gateway.tailscale.mode: "serve"` + `gateway.auth.allowTailscale: true`
+- Read-only dashboard first → control plane later
 
-**Option C: Chrome Relay (use Roger's real browser)**
-- Use `browser` tool with `profile="chrome"` — connects to Roger's actual Chrome via relay extension
-- Works immediately since Roger's Chrome is on Tailscale
-- Downside: requires Roger to have Chrome open with the relay tab attached
-
-**Option D: Serve Lovable frontend locally (back burner)**
-- Clone the Lovable GitHub repo, run `VITE_API_URL=http://localhost:3333 npm run dev`
-- Both frontend and API on localhost, no network issues
-- Downside: changes dev patterns, need to keep local copy in sync with Lovable
-
-### How to Resume
-1. Read this task
-2. Pick an option with Roger
-3. For Option A: Roger goes to Cloudflare dashboard → WAF → create rule
-4. For Option B: Roger creates DNS record, we configure Caddy
-5. For Option C: Roger opens Chrome, clicks relay button, we browse
-6. For Option D: Get Lovable GitHub repo URL, clone, run locally
-
-## 🔐 SOPS/age Secrets Hardening — ✅ COMPLETE (2026-02-14)
-Deployed. All secrets encrypted at rest via SOPS/age, decrypted to `/tmp/secrets/` (tmpfs) at startup.
-
----
-
-## 🖥️ Mission Control v3 — Round 2 Lovable Prompts IN PROGRESS
-
-**Goal:** Fix visual bugs and enhance MC v3 frontend via Lovable prompts
-**Status:** FEEDING PROMPTS TO ROGER ONE AT A TIME
-**Progress tracker:** `mission-control/lovable-prompts/audit-round2-progress.md`
-**Full prompts:** `mission-control/lovable-prompts/2026-02-15-round2-audit.md`
-
-### How to resume
-1. Read `mission-control/lovable-prompts/audit-round4-progress.md` for current position (LATEST)
-2. Read `mission-control/lovable-prompts/2026-02-15-round3-audit.md` for the actual prompt text
-3. Send the next unchecked prompt to Roger
-4. After Roger confirms done, check the box and send the next one
-
-### Queue (12 Lovable prompts)
-- [ ] Fix 2 — Home page second row layout / cron jobs overflow
-- [ ] Fix 8 — Pi disk color thresholds (ROOT red at 55%)
-- [ ] Fix 1 — Backup alert display
-- [ ] Fix 3 — Active tasks count showing completed as active
-- [ ] Fix 4 — Hide "cost: unknown" on model cards
-- [ ] Fix 7 — Overnight history "unknown" fields
-- [ ] Enhancement 14 — Rodaco status hero card
-- [ ] Enhancement 9 — Usage/Activity sections on Home
-- [ ] Enhancement 11 — Research Kanban card polish
-- [ ] Fix 5-6 — Sessions + session health warnings
-- [ ] Enhancement 10 — Knowledge graph verification
-- [ ] Enhancement 12-13 — Animations + MacBook card
-
----
-
-## 🌙 Mission Control v3 — Overnight Build (2026-02-16) — ✅ COMPLETE
-
-**Goal:** Full API audit + backend improvements + Lovable prompts  
-**Status:** ✅ Complete at 2:23 AM  
-**Duration:** 23 minutes
-
-### What Was Done
-
-#### Backend Enhancements
-✅ Enhanced overnight-history parser (flexible patterns, auto-extracts highlights)  
-✅ Created 4 new creative endpoints:
-- `/api/v3/wins` - Recent achievements
-- `/api/v3/tools/top` - Tool usage stats + error rates
-- `/api/v3/projects/velocity` - Project momentum (📈📉→)
-- `/api/v3/knowledge/growth` - Knowledge base expansion
-
-✅ All endpoints tested and working  
-✅ No breaking changes to existing API
-
-#### Documentation Created
-✅ Comprehensive Lovable prompts (`lovable-prompts/2026-02-16-overnight-build.md`)  
-✅ Full API audit report (`audit/2026-02-16-api-audit.md`)  
-✅ Memory entry (`memory/2026-02-16.md`)
-
-### Files Changed
-- `mission-control/src/routes/api-v3.js` (+200 lines)
-- 3 new documentation files
-
-**Status:** Ready for Roger to apply Lovable prompts
+### Roger's Devices (all Tailscale, always on)
+- iPhone (always with him)
+- M5 MacBook (travels, primary mgmt workstation w/ Claude Code)
+- Intel MacBook (home, runs OpenClaw, 100.124.209.59)
+- Samsung S10 (home)
+- Raspberry Pi (exit node, 100.83.169.87)
