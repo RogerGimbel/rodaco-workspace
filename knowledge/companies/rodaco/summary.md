@@ -44,7 +44,7 @@
 - [2026-02-01] [[BeerPair]] web app live
 - [2026-02-11] Mission Control v2 shipped
 - [2026-02-11] Obsidian vault connected via iCloud
-- [2026-02-12] BeerPair B2B GTM sprint — 17 assets built (pricing, sales funnel, pitch deck, etc.)
+- [2026-02-12] [[BeerPair]] B2B GTM sprint — 17 assets built (pricing, sales funnel, pitch deck, etc.)
 - [2026-02-13] Mission Control v3 started — API-first architecture with 35 endpoints
 - [2026-02-14] SOPS/age secrets hardening deployed on Intel MacBook
 - [2026-02-15] Mission Control v3 — 5 new metrics endpoints, cron watchdog for auto-recovery

@@ -18,8 +18,8 @@
 ## Notes
 - No active development as of Feb 2026
 - MVP feature list not yet defined
-- Team bandwidth consumed by BeerPair B2B launch prep and infrastructure hardening
+- Team bandwidth consumed by [[BeerPair]] B2B launch prep and infrastructure hardening
 
 ## History
 - [2026-01-29] Listed as Q1 primary objective
-- [2026-02-15] Status: no progress, deprioritized in favor of BeerPair + infra work
+- [2026-02-15] Status: no progress, deprioritized in favor of [[BeerPair]] + infra work
