@@ -54,6 +54,9 @@ updated: 2026-02-16
 - **Agent-browser screenshots:** ALWAYS save to default /tmp path, then copy to workspace. Writing directly to workspace Docker volume causes OOM SIGKILL (swap full). Snapshots (text) always work.
 - **MC build deploy:** `cd rodaco-mc && npm run build` then `rm -rf mission-control/public/assets && cp -r rodaco-mc/dist/* mission-control/public/`
 - **Light mode theming:** Never use `text-white/`, `bg-white/`, `border-white/` — use `text-foreground/`, `bg-muted/`, `border-border` for theme-aware colors.
+- **CURRENT.md is THE crash recovery file.** Update it at every context threshold (50%+). Must include: current step, files in flight, build/deploy state, server status.
+- **Cron job crash recovery:** Overnight builds must check `git diff --stat` first and read task files for `[x]` state before starting work.
+- **active-tasks.md is DEPRECATED.** Use `memory/tasks/CURRENT.md` as the single source of truth.
 
 ## 🔗 Deep Reference (in knowledge/)
 For full details on any topic above, check:

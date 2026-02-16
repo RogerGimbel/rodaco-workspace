@@ -10,8 +10,12 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 
 **⚠️ BOOT SEQUENCE — NON-NEGOTIABLE. Do this BEFORE answering the first message:**
 1. Read `MEMORY.md` — your hot context (tools, projects, preferences, infra)
-2. Read `memory/active-tasks.md` — resume anything in progress
+2. Read `memory/tasks/CURRENT.md` — THE source of truth for what's in progress
+   - Check the `Updated` timestamp. If >24h old, treat as stale context (read but don't assume active)
+   - If status is ACTIVE, you're resuming a task. Pick up where it left off.
+   - If status is IDLE, you're free for new work.
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+4. Run `git diff --stat` to detect uncommitted changes from a previous session/crash
 
 If you skip this and answer from vibes, you WILL forget things you already know (agent-browser, local URLs, auth tokens, GitHub access). This has happened. Don't repeat it.
 
@@ -39,9 +43,16 @@ This is your crash recovery file. After any interruption, read this FIRST.
 
 **After every 3-4 tool calls in a long task**, check your context usage:
 - Run `session_status` (quick, lightweight)
-- If context > 60%: checkpoint immediately + write CURRENT.md
-- If context > 75%: checkpoint + alert Roger ("Context getting heavy, checkpointing now")
+- If context > 50%: checkpoint to daily notes
+- If context > 60%: checkpoint + update `memory/tasks/CURRENT.md` with current step, files in flight, build/deploy state
+- If context > 75%: checkpoint + alert Roger ("Context getting heavy, checkpointing now") + ensure CURRENT.md is fully up-to-date
 - If context > 85%: stop new work, do a full memory flush, suggest `/compact`
+
+**Pre-compaction CURRENT.md write is CRITICAL.** Before compaction, CURRENT.md must reflect:
+- What task you're on and which step
+- Which files have been edited but not yet built/deployed
+- Whether the API server is stopped or running
+- Any half-completed operations
 
 The pre-compaction memory flush is enabled in OpenClaw config, but don't rely on it alone — it fires late and gets one shot. Proactive is better than reactive.
 
