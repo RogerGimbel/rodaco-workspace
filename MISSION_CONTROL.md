@@ -144,10 +144,13 @@ Scheduled cron job that periodically asks Roger thoughtful personal/professional
   - Don't ask if Roger seems busy/stressed (recent messages indicate urgency)
   - Don't ask more than once per day
   - If Roger says "not now" or ignores, back off for a few days
-- [ ] **4.6** Create review mechanism:
+- [x] **4.6** Create review mechanism:
   - Monthly: generate "What I've learned about Roger" summary
   - Identify gaps in understanding (categories with few answers)
   - Weight future questions toward gap areas
+  - Script: `bin/monthly-review.sh`, output: `knowledge/people/roger-gimbel/reviews/`
+  - Cron: 1st of each month at 2 PM MT
+  - Gap categories auto-weighted 2x in questions.json
 - [x] **4.7** Tested: ask.sh picks random question, record-answer.sh stores response
 - [ ] **4.8** Consider extending to Dale and Stuart (lighter version, business-focused questions only)
 

@@ -13,9 +13,10 @@
       "id": "overnight_build",
       "name": "Overnight Build",
       "schedule": "2 AM ET daily",
-      "lastRun": "2026-02-15T07:23:00.000Z",
+      "lastRun": "2026-02-16T07:23:00.000Z",
       "status": "healthy",
-      "lastResult": "Mission Control v3 audit complete - 5 API endpoints added, 30 Lovable prompts created"
+      "consecutiveErrors": 0,
+      "lastResult": "✅ MC v3 Full Audit - 4 new endpoints, enhanced overnight-history parser, 10 Lovable prompts, 2 audit docs"
     },
     {
       "id": "daily_backup",

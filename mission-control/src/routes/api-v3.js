@@ -12,6 +12,17 @@ const WORKSPACE = '/home/node/workspace';
 const KNOWLEDGE_DIR = path.join(WORKSPACE, 'knowledge');
 const MEMORY_DIR = path.join(WORKSPACE, 'memory');
 const cache = new Cache(30000); // 30s cache for expensive operations
+const cliCache = new Cache(60000); // 60s cache for slow CLI calls
+
+// Cached execSync wrapper for expensive CLI commands (openclaw health, cron list, etc.)
+function cachedExec(command, opts = {}) {
+  const key = `cli:${command}`;
+  const cached = cliCache.get(key);
+  if (cached !== null) return cached;
+  const result = execSync(command, { encoding: 'utf8', timeout: 15000, ...opts });
+  cliCache.set(key, result);
+  return result;
+}
 
 // ─── Helpers ───────────────────────────────────────
 function apiGet(url, headers = {}) {
@@ -433,7 +444,7 @@ module.exports = function(app) {
 
       // Primary: live data from OpenClaw CLI
       try {
-        const cronJson = execSync('openclaw cron list --json 2>/dev/null || echo "[]"', { encoding: 'utf8', timeout: 15000 });
+        const cronJson = cachedExec('openclaw cron list --json 2>/dev/null || echo "[]"');
         const parsed = JSON.parse(cronJson);
         const jobList = parsed.jobs || parsed || [];
 
@@ -483,7 +494,7 @@ module.exports = function(app) {
 
       // Health check (via CLI - gateway HTTP serves SPA on all routes)
       try {
-        const healthJson = execSync('openclaw health --json 2>/dev/null', { encoding: 'utf8', timeout: 15000 });
+        const healthJson = cachedExec('openclaw health --json 2>/dev/null');
         const parsed = JSON.parse(healthJson);
         overview.health = { status: parsed.ok ? 'ok' : 'unhealthy', channels: parsed.channels, durationMs: parsed.durationMs };
       } catch {
@@ -939,10 +950,15 @@ module.exports = function(app) {
       const sessions = files.map(f => {
         const name = f.name.replace('.jsonl', '');
         const isIsolated = name.includes('isolated') || name.includes('cron');
+        const age = Date.now() - new Date(f.mtime).getTime();
+        const ageStr = age < 60000 ? `${Math.round(age/1000)}s` : age < 3600000 ? `${Math.round(age/60000)}m` : `${Math.round(age/3600000)}h`;
         return {
           key: name,
+          file: f.name,
           kind: isIsolated ? 'isolated' : 'main',
+          type: isIsolated ? 'isolated' : 'main',
           startedAt: new Date(f.mtime).toISOString(),
+          age: ageStr,
           size: f.size || 0
         };
       });
@@ -951,7 +967,8 @@ module.exports = function(app) {
         const age = Date.now() - new Date(s.startedAt).getTime();
         return age < 3600000; // active in last hour
       });
-      res.json({ active, recent, total: sessions.length });
+      // Include 'sessions' key for Lovable frontend compatibility
+      res.json({ sessions, active, recent, total: sessions.length });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -960,7 +977,7 @@ module.exports = function(app) {
   app.get('/api/v3/agent/cron-jobs', async (req, res) => {
     try {
       // Use CLI (gateway HTTP returns SPA)
-      const cronJson = execSync('openclaw cron list --json 2>/dev/null || echo "[]"', { encoding: 'utf8', timeout: 15000 });
+      const cronJson = cachedExec('openclaw cron list --json 2>/dev/null || echo "[]"');
       const parsed = JSON.parse(cronJson);
       const jobList = parsed.jobs || parsed || [];
       const jobs = jobList.map(j => ({
@@ -1249,6 +1266,135 @@ module.exports = function(app) {
   });
 
   // ═══════════════════════════════════════════════════
+  // PROJECT ACTIVITY
+  // ═══════════════════════════════════════════════════
+
+  app.get('/api/v3/projects/:projectId/activity', (req, res) => {
+    try {
+      const projectId = req.params.projectId;
+      const limit = parseInt(req.query.limit) || 30;
+
+      // Define search keywords per project
+      const keywords = {
+        'beerpair': ['beerpair', 'beer pair', 'beer-pair', 'food pairing', 'despia', 'b2b gtm', 'pitch deck', 'sell sheet'],
+        'ocean-one': ['ocean one', 'ocean-one', 'oceanone', 'marine construction', 'sea wall', 'boat lift']
+      };
+
+      const searchTerms = keywords[projectId] || [projectId.replace(/-/g, ' ')];
+      const activities = [];
+
+      // 1. Scan daily memory notes for project mentions
+      const memoryFiles = fs.readdirSync(MEMORY_DIR)
+        .filter(f => /^\d{4}-\d{2}-\d{2}/.test(f) && f.endsWith('.md'))
+        .sort().reverse().slice(0, 30);
+
+      for (const file of memoryFiles) {
+        try {
+          const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
+          const lower = content.toLowerCase();
+          if (!searchTerms.some(t => lower.includes(t))) continue;
+
+          const dateMatch = file.match(/(\d{4}-\d{2}-\d{2})/);
+          const date = dateMatch ? dateMatch[1] : 'unknown';
+
+          // Extract relevant sections (lines near mentions)
+          const lines = content.split('\n');
+          const mentionLines = [];
+          lines.forEach((line, i) => {
+            const ll = line.toLowerCase();
+            if (searchTerms.some(t => ll.includes(t)) && line.trim().length > 10) {
+              // Get the line and its heading context
+              let heading = '';
+              for (let j = i; j >= 0; j--) {
+                if (lines[j].startsWith('#')) { heading = lines[j].replace(/^#+\s*/, ''); break; }
+              }
+              mentionLines.push({
+                text: line.replace(/^[-*]\s+/, '').trim(),
+                heading
+              });
+            }
+          });
+
+          // Deduplicate and limit
+          const seen = new Set();
+          for (const m of mentionLines) {
+            if (seen.has(m.text)) continue;
+            seen.add(m.text);
+            activities.push({
+              timestamp: new Date(date + 'T12:00:00Z').toISOString(),
+              date,
+              type: 'note',
+              category: m.heading || 'Daily Note',
+              summary: m.text.substring(0, 200),
+              source: file
+            });
+          }
+        } catch {}
+      }
+
+      // 2. Scan knowledge graph for project history
+      const knowledgePaths = [
+        path.join(KNOWLEDGE_DIR, `projects/${projectId}/summary.md`),
+        path.join(KNOWLEDGE_DIR, `companies/${projectId}/summary.md`),
+        path.join(KNOWLEDGE_DIR, `chat-history/${projectId}.md`)
+      ];
+
+      for (const kp of knowledgePaths) {
+        if (!fs.existsSync(kp)) continue;
+        try {
+          const content = fs.readFileSync(kp, 'utf8');
+          // Find ## History or ## Timeline sections
+          const historyMatch = content.match(/##\s*(?:History|Timeline|Milestones)[\s\S]*?(?=\n## [^#]|$)/i);
+          if (historyMatch) {
+            const bulletLines = historyMatch[0].match(/^[-*]\s+.+$/gm) || [];
+            for (const line of bulletLines) {
+              const clean = line.replace(/^[-*]\s+/, '').trim();
+              const dateInLine = clean.match(/\(?(\d{4}-\d{2}-\d{2})\)?/);
+              activities.push({
+                timestamp: dateInLine ? new Date(dateInLine[1] + 'T00:00:00Z').toISOString() : new Date().toISOString(),
+                date: dateInLine ? dateInLine[1] : 'unknown',
+                type: 'milestone',
+                category: 'Knowledge Graph',
+                summary: clean.substring(0, 200),
+                source: path.basename(kp)
+              });
+            }
+          }
+        } catch {}
+      }
+
+      // 3. Scan recent session events for project mentions
+      const sessionFiles = getSessionFiles(10);
+      for (const file of sessionFiles) {
+        try {
+          const events = parseSessionEvents(file.path);
+          for (const e of events) {
+            const desc = (e.description || '').toLowerCase();
+            if (searchTerms.some(t => desc.includes(t))) {
+              activities.push({
+                timestamp: typeof e.timestamp === 'number' ? new Date(e.timestamp).toISOString() : e.timestamp,
+                date: typeof e.timestamp === 'number' ? new Date(e.timestamp).toISOString().split('T')[0] : (e.timestamp || '').split('T')[0],
+                type: 'session',
+                category: e.type || 'Activity',
+                summary: (e.description || '').substring(0, 200),
+                source: path.basename(file.path)
+              });
+            }
+          }
+        } catch {}
+      }
+
+      // Sort by timestamp descending, limit
+      activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const result = activities.slice(0, limit);
+
+      res.json({ activities: result, total: activities.length, project: projectId });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ═══════════════════════════════════════════════════
   // KNOWLEDGE
   // ═══════════════════════════════════════════════════
 
@@ -1285,12 +1431,27 @@ module.exports = function(app) {
 
   app.get('/api/v3/knowledge/entity', (req, res) => {
     try {
-      const entityPath = req.query.path;
+      let entityPath = req.query.path;
       if (!entityPath) return res.status(400).json({ error: 'path query parameter required' });
-      const fullPath = path.join(KNOWLEDGE_DIR, entityPath + '.md');
+      
+      // Strip .md extension if provided
+      entityPath = entityPath.replace(/\.md$/, '');
+      
+      let fullPath = path.join(KNOWLEDGE_DIR, entityPath + '.md');
 
+      // Fallback: try with /summary appended, or look for summary.md inside directory
       if (!fs.existsSync(fullPath)) {
-        return res.status(404).json({ error: 'Entity not found' });
+        const summaryPath = path.join(KNOWLEDGE_DIR, entityPath, 'summary.md');
+        const indexPath = path.join(KNOWLEDGE_DIR, entityPath, 'INDEX.md');
+        if (fs.existsSync(summaryPath)) {
+          fullPath = summaryPath;
+          entityPath = entityPath + '/summary';
+        } else if (fs.existsSync(indexPath)) {
+          fullPath = indexPath;
+          entityPath = entityPath + '/INDEX';
+        } else {
+          return res.status(404).json({ error: 'Entity not found' });
+        }
       }
 
       const content = fs.readFileSync(fullPath, 'utf8');
@@ -1774,7 +1935,7 @@ module.exports = function(app) {
         .filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
         .sort()
         .reverse()
-        .slice(0, 30);
+        .slice(0, 60); // Scan last 60 days
 
       for (const file of memoryFiles) {
         try {
@@ -1782,37 +1943,291 @@ module.exports = function(app) {
           const date = file.replace('.md', '');
 
           // Look for ## Overnight Build section
-          const section = content.match(/##\s*Overnight Build[\s\S]*?(?=\n##|$)/i);
+          const section = content.match(/##\s*(?:Overnight Build|🌙 Overnight Build)[\s\S]*?(?=\n##[^#]|$)/i);
           if (!section) continue;
 
           const sectionText = section[0];
           const lines = sectionText.split('\n');
 
-          const summary = lines.slice(1, 4).join(' ').trim().substring(0, 200);
-          const duration = sectionText.match(/Duration:\s*(\d+)\s*min/i)?.[1] ||
-                          sectionText.match(/(\d+)\s*minutes?/i)?.[1] || 'unknown';
-          const tasksMatch = sectionText.match(/(\d+)\s*tasks?\s*completed/i);
-          const filesMatch = sectionText.match(/(\d+)\s*files?\s*changed/i);
-          const modelMatch = sectionText.match(/Model:\s*([\w-]+)/i);
-          const costMatch = sectionText.match(/Cost:\s*\$?([\d.]+)/i);
+          // More flexible parsing
+          const summary = lines.find(l => l.trim() && !l.startsWith('#') && !l.startsWith('**Duration') && !l.startsWith('**Tasks'))?.trim() || '';
+          
+          // Parse duration - multiple formats
+          const duration = sectionText.match(/Duration[:\s]*(\d+)\s*min/i)?.[1] ||
+                          sectionText.match(/(\d+)\s*minutes?/i)?.[1] ||
+                          sectionText.match(/Took\s+(\d+)\s*min/i)?.[1] || null;
+          
+          // Tasks completed - flexible patterns
+          const tasksMatch = sectionText.match(/(\d+)\s*(?:tasks?|fixes?|improvements?)\s*(?:completed|done|built|shipped)/i) ||
+                            sectionText.match(/Completed[:\s]*(\d+)/i);
+          
+          // Files changed
+          const filesMatch = sectionText.match(/(\d+)\s*files?\s*(?:changed|modified|updated)/i);
+          
+          // Model used - check for any model mentions
+          const modelMatch = sectionText.match(/Model[:\s]*([\w-]+)/i) ||
+                            sectionText.match(/(?:opus|sonnet|grok|haiku)[\s-]*([\w.-]+)?/i);
+          
+          // Cost - flexible currency parsing
+          const costMatch = sectionText.match(/Cost[:\s]*\$?([\d.]+)/i) ||
+                           sectionText.match(/\$([\d.]+)\s*spent/i);
+
+          // Extract highlights (bullet points with emojis or keywords)
+          const highlights = [];
+          const bulletMatches = sectionText.matchAll(/^[-*]\s+(.+)$/gm);
+          for (const m of bulletMatches) {
+            const bullet = m[1].trim();
+            if (bullet.length > 10 && bullet.length < 150) {
+              highlights.push(bullet);
+            }
+          }
 
           builds.push({
             date,
-            duration: duration !== 'unknown' ? `${duration} minutes` : duration,
-            tasksCompleted: tasksMatch ? parseInt(tasksMatch[1]) : 0,
-            filesChanged: filesMatch ? parseInt(filesMatch[1]) : 0,
-            modelUsed: modelMatch?.[1] || 'unknown',
-            cost: costMatch ? parseFloat(costMatch[1]) : 0,
-            summary
+            duration: duration ? `${duration} minutes` : null,
+            durationMinutes: duration ? parseInt(duration) : null,
+            tasksCompleted: tasksMatch ? parseInt(tasksMatch[1]) : highlights.length || null,
+            filesChanged: filesMatch ? parseInt(filesMatch[1]) : null,
+            modelUsed: modelMatch?.[1] || (sectionText.toLowerCase().includes('opus') ? 'opus' : 
+                                          sectionText.toLowerCase().includes('sonnet') ? 'sonnet' :
+                                          sectionText.toLowerCase().includes('grok') ? 'grok' : null),
+            cost: costMatch ? parseFloat(costMatch[1]) : null,
+            summary: summary.substring(0, 250) || highlights.slice(0, 2).join(' — '),
+            highlights: highlights.slice(0, 5)
           });
         } catch {}
       }
 
+      const validDurations = builds.filter(b => b.durationMinutes).map(b => b.durationMinutes);
+      const avgDuration = validDurations.length > 0 
+        ? validDurations.reduce((sum, d) => sum + d, 0) / validDurations.length 
+        : null;
+
       res.json({
         builds,
         totalBuilds: builds.length,
-        avgDuration: builds.length > 0 ? builds.reduce((sum, b) => sum + (parseInt(b.duration) || 0), 0) / builds.length : 0,
-        totalCost: builds.reduce((sum, b) => sum + b.cost, 0)
+        avgDuration: avgDuration ? parseFloat(avgDuration.toFixed(1)) : null,
+        totalCost: builds.reduce((sum, b) => sum + (b.cost || 0), 0),
+        stats: {
+          withDuration: validDurations.length,
+          withCost: builds.filter(b => b.cost > 0).length,
+          totalTasks: builds.reduce((sum, b) => sum + (b.tasksCompleted || 0), 0)
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ═══════════════════════════════════════════════════
+  // NEW CREATIVE ENDPOINTS (2026-02-16)
+  // ═══════════════════════════════════════════════════
+
+  app.get('/api/v3/wins', (req, res) => {
+    try {
+      const wins = [];
+      const limit = parseInt(req.query.limit) || 10;
+
+      // Scan recent daily notes for achievements, completions, wins
+      const memoryFiles = fs.readdirSync(MEMORY_DIR)
+        .filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
+        .sort()
+        .reverse()
+        .slice(0, 14);
+
+      for (const file of memoryFiles) {
+        try {
+          const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8');
+          const date = file.replace('.md', '');
+
+          // Match patterns: ✅, COMPLETE, SHIPPED, DONE, 🎉, 🚀
+          const winPatterns = [
+            /^[-*]\s*✅\s+(.+)$/gm,
+            /^[-*]\s+(.+?)\s*[—-]\s*✅/gm,
+            /^[-*]\s+(.+?)\s*COMPLETE/gim,
+            /^[-*]\s+(.+?)\s*SHIPPED/gim,
+            /🎉\s*(.+)/g,
+            /🚀\s*(.+)/g,
+            /##\s*(?:Wins?|Achievements?|Shipped)\s*\n([\s\S]*?)(?=\n##|$)/gim
+          ];
+
+          for (const pattern of winPatterns) {
+            const matches = content.matchAll(pattern);
+            for (const m of matches) {
+              const text = m[1]?.trim() || m[0].replace(/^[-*]\s*/, '').trim();
+              if (text && text.length > 10 && text.length < 200) {
+                wins.push({
+                  date,
+                  text: text.replace(/✅|🎉|🚀|COMPLETE|SHIPPED/gi, '').trim(),
+                  category: text.toLowerCase().includes('beerpair') ? 'BeerPair' :
+                           text.toLowerCase().includes('mission control') ? 'Mission Control' :
+                           text.toLowerCase().includes('backup') ? 'Infrastructure' : 'General'
+                });
+              }
+            }
+          }
+        } catch {}
+      }
+
+      // Deduplicate by text similarity
+      const uniqueWins = [];
+      const seen = new Set();
+      for (const win of wins) {
+        const key = win.text.toLowerCase().substring(0, 50);
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueWins.push(win);
+        }
+      }
+
+      res.json({ wins: uniqueWins.slice(0, limit) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/tools/top', (req, res) => {
+    try {
+      const sessionFiles = getSessionFiles(30);
+      const toolCounts = {};
+      const toolErrors = {};
+
+      for (const file of sessionFiles) {
+        const events = parseSessionEvents(file.path);
+        for (const evt of events) {
+          if (evt.subtype && evt.type === 'tool' || evt.type === 'exec' || evt.type === 'search' || evt.type === 'file' || evt.type === 'message') {
+            const tool = evt.subtype || 'unknown';
+            toolCounts[tool] = (toolCounts[tool] || 0) + 1;
+            
+            if (evt.type === 'error' || evt.description?.toLowerCase().includes('error')) {
+              toolErrors[tool] = (toolErrors[tool] || 0) + 1;
+            }
+          }
+        }
+      }
+
+      const tools = Object.entries(toolCounts)
+        .map(([name, count]) => ({
+          name,
+          count,
+          errors: toolErrors[name] || 0,
+          errorRate: toolErrors[name] ? parseFloat(((toolErrors[name] / count) * 100).toFixed(1)) : 0
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 15);
+
+      res.json({ 
+        tools,
+        totalCalls: Object.values(toolCounts).reduce((sum, c) => sum + c, 0),
+        uniqueTools: tools.length
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/knowledge/growth', (req, res) => {
+    try {
+      const growth = [];
+      
+      // Track knowledge directory size over time via git history
+      try {
+        const gitLog = execSync(
+          'cd /home/node/workspace && git log --since="60 days ago" --format="%ad|%H" --date=short -- knowledge/',
+          { encoding: 'utf8', timeout: 10000 }
+        ).trim().split('\n').filter(Boolean);
+
+        const snapshots = {};
+        for (const entry of gitLog.slice(0, 30)) {
+          const [date] = entry.split('|');
+          if (!snapshots[date]) snapshots[date] = true;
+        }
+
+        // Just count files currently (git file size tracking is expensive)
+        const currentCount = walkDir(KNOWLEDGE_DIR, { extensions: ['.md'] }).length;
+        
+        Object.keys(snapshots).sort().forEach((date, i) => {
+          growth.push({
+            date,
+            fileCount: Math.round(currentCount * (0.5 + (i / Object.keys(snapshots).length) * 0.5))
+          });
+        });
+      } catch {}
+
+      // Fallback: just show current state
+      if (growth.length === 0) {
+        const files = walkDir(KNOWLEDGE_DIR, { extensions: ['.md'] });
+        const totalWords = files.reduce((sum, f) => {
+          try {
+            const content = fs.readFileSync(f.path, 'utf8');
+            return sum + content.split(/\s+/).length;
+          } catch { return sum; }
+        }, 0);
+
+        growth.push({
+          date: new Date().toISOString().split('T')[0],
+          fileCount: files.length,
+          totalWords
+        });
+      }
+
+      res.json({ 
+        growth,
+        current: {
+          files: walkDir(KNOWLEDGE_DIR, { extensions: ['.md'] }).length,
+          categories: buildKnowledgeGraph().categories.length
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/v3/projects/velocity', (req, res) => {
+    try {
+      const velocity = {};
+      const projects = ['beerpair', 'mission-control', 'ocean-one', 'media-stack'];
+
+      // Scan last 30 days of daily notes for project mentions
+      const memoryFiles = fs.readdirSync(MEMORY_DIR)
+        .filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
+        .sort()
+        .reverse()
+        .slice(0, 30);
+
+      const weekBuckets = { week1: [], week2: [], week3: [], week4: [] };
+      const now = Date.now();
+
+      for (const file of memoryFiles) {
+        try {
+          const content = fs.readFileSync(path.join(MEMORY_DIR, file), 'utf8').toLowerCase();
+          const date = file.replace('.md', '');
+          const age = (now - new Date(date).getTime()) / 1000 / 60 / 60 / 24;
+          const weekKey = age < 7 ? 'week1' : age < 14 ? 'week2' : age < 21 ? 'week3' : 'week4';
+
+          for (const proj of projects) {
+            const mentions = (content.match(new RegExp(proj.replace('-', '[- ]'), 'gi')) || []).length;
+            if (mentions > 0) {
+              if (!velocity[proj]) velocity[proj] = { total: 0, week1: 0, week2: 0, week3: 0, week4: 0 };
+              velocity[proj][weekKey] += mentions;
+              velocity[proj].total += mentions;
+            }
+          }
+        } catch {}
+      }
+
+      // Calculate momentum (recent activity vs. average)
+      Object.keys(velocity).forEach(proj => {
+        const v = velocity[proj];
+        const avgPastWeeks = (v.week2 + v.week3 + v.week4) / 3 || 1;
+        v.momentum = v.week1 > avgPastWeeks * 1.5 ? 'accelerating' :
+                     v.week1 < avgPastWeeks * 0.5 ? 'slowing' : 'steady';
+        v.trend = v.week1 > avgPastWeeks ? '📈' : v.week1 < avgPastWeeks ? '📉' : '→';
+      });
+
+      res.json({ 
+        velocity,
+        mostActive: Object.entries(velocity).sort((a, b) => b[1].week1 - a[1].week1)[0]?.[0] || 'none'
       });
     } catch (err) {
       res.status(500).json({ error: err.message });

@@ -12,6 +12,12 @@ Things like:
 - Device nicknames
 - Anything environment-specific
 
+## Container Constraints
+- **jq installed** at `/home/node/workspace/jq` (static binary, survives restarts). Use full path: `/home/node/workspace/jq`
+- **No `sudo`/`apt-get`** — container runs as non-root user `node`.
+- Parse JSON with: `curl -s URL | node -e "process.stdin.resume(); let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>console.log(JSON.stringify(JSON.parse(d).KEY,null,2)))"`
+- Or just: `curl -s URL | head -200` and read it manually.
+
 ## Examples
 
 ```markdown
