@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalAsked": 13,
+  "totalAsked": 14,
   "questions": [
     {
       "id": 1,
@@ -331,7 +331,7 @@
       "category": "history",
       "text": "How did you end up in Denver? Was it deliberate or did life just take you there?",
       "weight": 1,
-      "asked": null,
+      "asked": "2026-02-16T17:00:05.677Z",
       "answered": null,
       "answer": null
     },

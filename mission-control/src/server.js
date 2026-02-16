@@ -66,7 +66,13 @@ try {
   console.error(err.stack);
 }
 
+// ─── SPA catch-all (React Router) ──────────────────
+// Express 5 requires regex for wildcards
+app.get(/^\/(?!api\/).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
 // ─── Start ─────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`⚡ Mission Control v2 running on http://0.0.0.0:${PORT}`);
+  console.log(`⚡ Mission Control v3 running on http://0.0.0.0:${PORT}`);
 });

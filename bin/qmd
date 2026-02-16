@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# qmd wrapper — sets NODE_PATH so tsx is found by node --import tsx
+export NODE_PATH=/home/node/workspace/node_modules
+exec /usr/local/bin/qmd "$@"

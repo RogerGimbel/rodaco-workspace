@@ -552,14 +552,16 @@ module.exports = function(app) {
       ram: { totalGB: 0, usedGB: 0, availableGB: 0, usagePercent: 0 },
       disk: { totalGB: 0, usedGB: 0, availableGB: 0, usagePercent: 0 },
       uptime: 0,
-      hostname: 'rogers-macbook-pro'
+      hostname: 'rogers-macbook-pro',
+      fetchedAt: new Date().toISOString()
     };
 
     const host = 'rogergimbel@100.124.209.59';
+    let sshSuccess = false;
 
     // CPU info
     const cpuModel = sshCommand(host, 'sysctl -n machdep.cpu.brand_string');
-    if (cpuModel) device.cpu.model = cpuModel;
+    if (cpuModel) { device.cpu.model = cpuModel; sshSuccess = true; }
 
     const cpuCores = sshCommand(host, 'sysctl -n hw.ncpu');
     if (cpuCores) device.cpu.cores = parseInt(cpuCores);
@@ -622,7 +624,7 @@ module.exports = function(app) {
       }
     }
 
-    device.status = 'online';
+    device.status = sshSuccess ? 'online' : 'unreachable';
     res.json(device);
   });
 
@@ -637,14 +639,16 @@ module.exports = function(app) {
         media: { totalGB: 0, usedGB: 0, availableGB: 0, usagePercent: 0 }
       },
       uptime: 0,
-      hostname: 'media-pi'
+      hostname: 'media-pi',
+      fetchedAt: new Date().toISOString()
     };
 
     const host = 'rogergimbel@100.83.169.87';
+    let sshSuccess = false;
 
     // Temperature
     const temp = sshCommand(host, 'vcgencmd measure_temp');
-    if (temp) {
+    if (temp) { sshSuccess = true;
       const match = temp.match(/temp=([\d.]+)/);
       if (match) {
         device.temperature.celsius = parseFloat(match[1]);
@@ -713,7 +717,7 @@ module.exports = function(app) {
     // Provide drives array for frontend that wants all drives
     device.drives = Object.entries(device.storage).map(([name, data]) => ({ name, mount: name === 'root' ? '/' : `/mnt/${name}`, ...data }));
 
-    device.status = 'online';
+    device.status = sshSuccess ? 'online' : 'unreachable';
     res.json(device);
   });
 

@@ -1,13 +1,13 @@
 {
-  "lastUpdate": "2026-02-15T12:00:00.000Z",
+  "lastUpdate": "2026-02-16T12:00:00.000Z",
   "jobs": [
     {
       "id": "morning_brief",
       "name": "Morning Brief",
       "schedule": "7 AM ET daily",
-      "lastRun": "2026-02-15T12:00:00.000Z",
+      "lastRun": "2026-02-16T12:00:00.000Z",
       "status": "healthy",
-      "note": "Delivered. Overnight build success, SOPS deploy, MC v3 audit complete."
+      "note": "Delivered. Overnight build success (4 new endpoints), no urgent emails, gog not configured."
     },
     {
       "id": "overnight_build",
@@ -22,8 +22,9 @@
       "id": "daily_backup",
       "name": "Daily Backup",
       "schedule": "4 AM MT daily",
-      "lastRun": "2026-02-14T11:01:00.000Z",
-      "status": "healthy"
+      "lastRun": "2026-02-16T11:00:00.000Z",
+      "status": "healthy",
+      "note": "Pi backup 86M workspace + 143M config ✓; GitHub push ✓"
     }
   ]
 }

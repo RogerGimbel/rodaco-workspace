@@ -1,0 +1,24 @@
+#!/bin/bash
+# /checkpoint — lightweight memory flush to daily notes
+# Usage: bash bin/checkpoint "what just happened"
+# Unlike /save, this does NOT git commit. Just appends to today's daily note.
+
+set -euo pipefail
+
+SUMMARY="${1:-Checkpoint (no summary)}"
+TODAY=$(date +%Y-%m-%d)
+TIME=$(date +%H:%M)
+DAILY="memory/${TODAY}.md"
+
+# Create daily note if it doesn't exist
+if [ ! -f "$DAILY" ]; then
+  echo "# ${TODAY}" > "$DAILY"
+  echo "" >> "$DAILY"
+fi
+
+# Append checkpoint
+echo "" >> "$DAILY"
+echo "## 📌 Checkpoint — ${TIME}" >> "$DAILY"
+echo "${SUMMARY}" >> "$DAILY"
+
+echo "✅ Checkpointed to ${DAILY} at ${TIME}"

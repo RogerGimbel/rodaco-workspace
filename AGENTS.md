@@ -8,14 +8,51 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 
 ## Every Session
 
-Before doing anything else:
-1. Read `SOUL.md` — this is who you are
-2. Read `USER.md` — this is who you're helping
-3. Read `memory/active-tasks.md` — resume anything in progress
-4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-5. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+**⚠️ BOOT SEQUENCE — NON-NEGOTIABLE. Do this BEFORE answering the first message:**
+1. Read `MEMORY.md` — your hot context (tools, projects, preferences, infra)
+2. Read `memory/active-tasks.md` — resume anything in progress
+3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+
+If you skip this and answer from vibes, you WILL forget things you already know (agent-browser, local URLs, auth tokens, GitHub access). This has happened. Don't repeat it.
 
 Don't ask permission. Just do it.
+
+## Checkpoint Discipline
+
+**Every 15-30 minutes of active work, or after any significant unit of work:**
+```bash
+bash bin/checkpoint "what just happened"
+```
+This appends to today's daily note. It's fast. Do it DURING the work, not after. Session crashes lose everything since the last write. `/save` is for git commits; `/checkpoint` is for survival.
+
+## Task Journal (memory/tasks/CURRENT.md)
+
+**Before starting any multi-step task**, write the plan to `memory/tasks/CURRENT.md`:
+- What you're doing, the steps, which step you're on
+- Update after EACH step completes (mark done, advance to next)
+- Include key context (URLs, file paths, decisions made)
+- Set status to IDLE when done
+
+This is your crash recovery file. After any interruption, read this FIRST.
+
+## Context Monitoring
+
+**After every 3-4 tool calls in a long task**, check your context usage:
+- Run `session_status` (quick, lightweight)
+- If context > 60%: checkpoint immediately + write CURRENT.md
+- If context > 75%: checkpoint + alert Roger ("Context getting heavy, checkpointing now")
+- If context > 85%: stop new work, do a full memory flush, suggest `/compact`
+
+The pre-compaction memory flush is enabled in OpenClaw config, but don't rely on it alone — it fires late and gets one shot. Proactive is better than reactive.
+
+## Exec Completion Messages — Don't Freeze
+
+When you receive `[System Message] Exec completed/failed (session-id, code N)`, these are **background process notifications**, not emergencies. Read them, note if something actually broke, and **keep going**. Do NOT:
+- Stop your current reply to address a background notification
+- Treat a non-zero exit code from a completed background task as a blocker
+- Repeat work that already succeeded just because you got a late notification
+
+Only stop if the failure is **directly blocking your current task**.
 
 ## Memory
 
