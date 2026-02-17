@@ -1,43 +1,58 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 02:10 ET*
+*Updated 2026-02-17 09:45 ET*
 
 ## TL;DR
-Overnight build complete. MC v3 UI + API fixes deployed.
+Setting up two new Lovable sites locally for Roger to manage. rodaco-site build complete, server setup in progress.
 
-## Status: IDLE
+## Status: ACTIVE
 
-## ✅ OVERNIGHT BUILD: MC v3 Full Stack Fixes — COMPLETE
+## Task: Clone + Set Up Two Lovable Sites Locally
 
-### API Fixes (sub-agent mc-api-fixes)
-- [x] Model pricing: Real costs (opus $15/$75, sonnet $3/$15)
-- [x] Cost tracking: $8.57 today, $20.91 week (was $0.00)
-- [x] Sub-agent count: 717/24h vs 1236 all-time (was inflated 1011)
-- [x] Performance metrics: Real tool latency from JSONL timestamps
-- [x] Cost trend: Fixed query bug; today=$8.57, week=$20.91
-- [x] Usage by provider: anthropic $21.16 / 321 calls
+### Context
+Same pattern as rodaco-mc: clone GitHub repo → npm install → build → static server → remote screenshot via M5 Chrome → iterate → push to GitHub → Lovable auto-syncs.
 
-### UI Fixes (main session)
-- [x] #1 Badge contrast: solid bg-success text-white (Ops TaskCard)
-- [x] #2 BeerPair tag: solid bg-warning text-white (Research kanban)
-- [x] #3 Knowledge categories: All covered (no orphans)
-- [x] #4 Backup unicode: BackupNote component with Lucide Check
-- [x] #5 Duplicate label: "Active Tasks" → "Current Tasks"
-- [x] #6 Gateway latency color: green/yellow/red thresholds
-- [x] #7 Cost toggle: bg-primary text-primary-foreground
-- [x] #8 Ops empty hint: "Looking good — queue is light"
-- [ ] #9 Emoji rendering (needs real Chrome verification)
-- [x] #10 DeviceCard wrapping: truncate + whitespace-nowrap
-- [x] #11 Health bar labels: text-foreground/70
-- [ ] #12 Scroll fade affordance
-- [x] #13 Help button: bg-muted/80 visible
-- [ ] #14 Skeleton timing
+### Repos
+- **Roger personal site:** `RogerGimbel/rogergimbel-app-artist` → cloned to `/home/node/workspace/rogergimbel-site` (rogergimbel.dev)
+- **Rodaco corporate site:** `RogerGimbel/rodaco.co` → cloned to `/home/node/workspace/rodaco-site` (rodaco.co)
 
-### Build
-- ✅ npm run build: Clean (9.82s)
-- ✅ Deployed: rm -rf mission-control/public/assets && cp -r rodaco-mc/dist/* mission-control/public/
+### Port Assignments
+| Site | Port |
+|------|------|
+| MC (existing) | 3333 |
+| Rodaco corporate | 3334 |
+| Roger personal | 3335 |
 
-## Remaining (Next Session)
-- UI: #9, #12, #14 (minor P1/P2)
-- API: P2 items #7-#10 (enhancements)
-- Push to GitHub: Awaiting Roger's approval
+### Docker
+- Added ports 3334 and 3335 to `~/docker/openclaw/docker-compose.yml` on Intel Mac
+- Recreated container — now exposes 3333, 3334, 3335, 18789
+- Backup saved as `docker-compose.yml.bak2`
+
+### Steps Completed
+- [x] Clone rogergimbel-site (port 3335)
+- [x] npm install (NODE_ENV=development, --legacy-peer-deps, --cache /home/node/workspace/.npm-cache)
+- [x] npm run build → dist/ built successfully
+- [x] server.cjs created (static file server, ESM-safe)
+- [x] supervisor.sh + start.sh created
+- [x] Server running on port 3335 (process briny-dune, nohup node server.cjs)
+- [x] Screenshot taken — site renders (hero: "Roger Gimbel / Technology Architect")
+- [x] Clone rodaco-site (port 3334)
+- [x] npm install + build complete
+- [ ] Create server.cjs for rodaco-site (port 3334)
+- [ ] Create supervisor.sh + start.sh for rodaco-site
+- [ ] Start rodaco-site server
+- [ ] Screenshot rodaco-site
+- [ ] Wire both servers to survive container restarts (add to mission-control start.sh or separate launchd/cron on Mac host)
+- [ ] Sort out rodaco.co PAT in git remote URL (currently no PAT embedded — needed for push)
+
+### Key Notes
+- npm cache is tmpfs at /home/node/.npm (200MB) — ALWAYS use `--cache /home/node/workspace/.npm-cache` to avoid ENOSPC
+- NODE_ENV=production skips devDependencies (vite!) — ALWAYS use `NODE_ENV=development npm install`
+- server.js must be named server.cjs (ESM package.json type:module conflict)
+- `--virtual-time-budget=5000` needed in Chrome headless for React to fully render before screenshot
+- rogergimbel-site server: running as nohup background process (not supervisor yet — supervisor SIGTERM issue)
+
+### Pending After Sites Are Up
+- Embed PAT in rodaco-site git remote for push capability
+- Decide on persistent startup mechanism for both servers (Mac launchd vs Docker entrypoint)
+- Roger wants to brainstorm/work on improvements to both sites
