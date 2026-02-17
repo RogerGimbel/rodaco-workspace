@@ -1,0 +1,26 @@
+{
+  "updatedAt": "2026-02-17T10:58:48.655Z",
+  "containers": {
+    "ok": true,
+    "list": [
+      {
+        "name": "moltbot-gateway",
+        "status": "Up 6 minutes (healthy)",
+        "image": "moltbot:local"
+      },
+      {
+        "name": "moltbot-autoheal",
+        "status": "Up 3 hours (healthy)",
+        "image": "willfarrell/autoheal:latest"
+      }
+    ]
+  },
+  "mc": {
+    "status": "ok",
+    "updatedAt": "2026-02-17T10:58:48.655Z"
+  },
+  "pi": {
+    "reachable": true,
+    "uptime": "up 2 hours, 45 minutes"
+  }
+}

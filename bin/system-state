@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# bin/system-state — Queries host agent, MC, and Pi; writes memory/system-state.json
+# Usage: bash bin/system-state [--quiet]
+
+set -euo pipefail
+
+HOST_AGENT="http://100.124.209.59:18790"
+MC_HEALTH="http://localhost:3333/api/v3/health"
+PI_HOST="rogergimbel@100.83.169.87"
+OUT="memory/system-state.json"
+
+mkdir -p memory
+
+# Temp files for parallel queries
+tmp_containers=$(mktemp)
+tmp_mc=$(mktemp)
+tmp_pi=$(mktemp)
+trap 'rm -f "$tmp_containers" "$tmp_mc" "$tmp_pi"' EXIT
+
+# Query all three in parallel
+(curl -sf "$HOST_AGENT/run" -X POST -H "Content-Type: application/json" \
+  -d '{"command":"docker-ps"}' --max-time 5 > "$tmp_containers" 2>/dev/null || echo '{"ok":false}' > "$tmp_containers") &
+
+(curl -sf "$MC_HEALTH" --max-time 5 > "$tmp_mc" 2>/dev/null || echo '{"status":"unreachable"}' > "$tmp_mc") &
+
+(ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no "$PI_HOST" \
+  "echo '{\"reachable\":true,\"uptime\":\"'\"$(uptime -p 2>/dev/null || uptime)\"'\"}'" \
+  > "$tmp_pi" 2>/dev/null || echo '{"reachable":false}' > "$tmp_pi") &
+
+wait
+
+# Build JSON output
+node -e "
+const fs = require('fs');
+const containers = JSON.parse(fs.readFileSync('$tmp_containers','utf8'));
+const mc = JSON.parse(fs.readFileSync('$tmp_mc','utf8'));
+let pi;
+try { pi = JSON.parse(fs.readFileSync('$tmp_pi','utf8')); } catch { pi = {reachable:false}; }
+
+// Parse container output into structured data
+let containerList = [];
+if (containers.ok && containers.output) {
+  const lines = containers.output.trim().split('\n').slice(1); // skip header
+  containerList = lines.map(l => {
+    const parts = l.split(/\s{2,}/);
+    return { name: parts[0], status: parts[1], image: parts[2] };
+  }).filter(c => c.name);
+}
+
+const state = {
+  updatedAt: new Date().toISOString(),
+  containers: {
+    ok: containers.ok || false,
+    list: containerList
+  },
+  mc: {
+    status: mc.status || 'unknown',
+    uptime: mc.uptime || null,
+    disk: mc.disk || null
+  },
+  pi: {
+    reachable: pi.reachable || false,
+    uptime: pi.uptime || null
+  }
+};
+
+fs.writeFileSync('$OUT', JSON.stringify(state, null, 2));
+if (process.argv.includes('--quiet')) process.exit(0);
+// Summary
+const cUp = containerList.filter(c => c.status && c.status.startsWith('Up')).length;
+const cTotal = containerList.length;
+console.log('Containers: ' + cUp + '/' + cTotal + ' up');
+console.log('MC: ' + state.mc.status + (state.mc.uptime ? ' (up ' + Math.round(state.mc.uptime) + 's)' : ''));
+console.log('Pi: ' + (state.pi.reachable ? 'reachable' : 'UNREACHABLE'));
+console.log('Written to $OUT');
+" -- "$@"

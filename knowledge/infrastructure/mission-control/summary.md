@@ -26,7 +26,7 @@ Internal ops dashboard for [[Rodaco]]/OpenClaw monitoring. Multi-page React SPA 
 1. **Home** — System overview, device cards (MacBook/Pi), health score, cost analytics, cron jobs, recent wins
 2. **Ops** — Active tasks, goals, overnight build log/history, suggested tasks
 3. **Agent** — Agent status hero, role cards, model arsenal, sessions, personality/traits
-4. **Projects** — BeerPair + Ocean One dashboards with velocity/momentum
+4. **Projects** — [[BeerPair]] + Ocean One dashboards with velocity/momentum
 5. **Knowledge** — D3 force graph, timeline heatmap, entity detail, growth stats
 6. **Research** — Marketing ideas kanban, competitive analysis, OpenClaw research
 

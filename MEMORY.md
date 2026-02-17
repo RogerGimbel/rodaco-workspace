@@ -42,6 +42,20 @@ updated: 2026-02-16
 - Don't push coding help unless asked. Don't push to GitHub without asking.
 - Never send emails without asking Roger, Dale, or Stuart first
 
+## 🔀 Model Routing Policy (2026-02-16)
+- **Roger's DMs (main session):** Always Opus 4.6
+- **Heartbeats:** Sonnet 4.5 (`agents.defaults.heartbeat.model`)
+- **Cron jobs (internal):** Sonnet 4.5 — backups, wikilink sync, morning brief, get-to-know, weekly synthesis, monthly review, MC watchdog, overnight build
+- **Cron jobs (external):** Opus — TestFlight check (does web search)
+- **Antfarm workflow agents (all 19):** Sonnet 4.5 (per-agent `model` in config)
+- **Rule:** If external data touches context → top-tier model only. Input trust level determines model, not task complexity.
+- **Exception agents (Opus, have web access):** security-audit/scanner, security-audit/tester, feature-dev/tester
+
+## 📋 Queued Projects (see memory/tasks/CURRENT.md)
+1. Persistent process awareness — `bin/system-state` + boot integration
+2. Remote screenshots for overnight builds — M5 MacBook headless Chrome
+3. Smarter context management — checkpoint discipline + tiered loading
+
 ## 📝 Lessons Learned
 - Docker Desktop Mac: `network_mode: host` broken — use IP-specific port bindings
 - iCloud sync changes ownership (UID 501) — use one-directional sync

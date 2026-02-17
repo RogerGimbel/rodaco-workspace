@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# bin/context-check — Quick context usage check
+# Wraps session_status. Use during long tasks to monitor context bloat.
+# This is a reminder script — actual check requires calling session_status tool.
+echo "Run session_status tool to check context usage."
+echo "Thresholds: >50% checkpoint, >60% update CURRENT.md, >75% alert Roger, >85% stop + compact"

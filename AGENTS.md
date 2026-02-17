@@ -10,12 +10,13 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 
 **⚠️ BOOT SEQUENCE — NON-NEGOTIABLE. Do this BEFORE answering the first message:**
 1. Read `MEMORY.md` — your hot context (tools, projects, preferences, infra)
-2. Read `memory/tasks/CURRENT.md` — THE source of truth for what's in progress
+2. Read `memory/system-state.json` — what's running right now (containers, MC, Pi)
+3. Read `memory/tasks/CURRENT.md` — THE source of truth for what's in progress
    - Check the `Updated` timestamp. If >24h old, treat as stale context (read but don't assume active)
    - If status is ACTIVE, you're resuming a task. Pick up where it left off.
    - If status is IDLE, you're free for new work.
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. Run `git diff --stat` to detect uncommitted changes from a previous session/crash
+4. Read `memory/YYYY-MM-DD.md` (today's daily notes; only load yesterday's if today's doesn't exist yet)
+5. Run `git diff --stat` to detect uncommitted changes from a previous session/crash
 
 If you skip this and answer from vibes, you WILL forget things you already know (agent-browser, local URLs, auth tokens, GitHub access). This has happened. Don't repeat it.
 
@@ -40,6 +41,8 @@ This appends to today's daily note. It's fast. Do it DURING the work, not after.
 This is your crash recovery file. After any interruption, read this FIRST.
 
 ## Context Monitoring
+
+**After any file write during an active task**, check: has it been >10 minutes since you last updated CURRENT.md? If yes, update it now.
 
 **After every 3-4 tool calls in a long task**, check your context usage:
 - Run `session_status` (quick, lightweight)

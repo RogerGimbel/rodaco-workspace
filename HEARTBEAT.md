@@ -11,6 +11,7 @@ Run: `bash /home/node/workspace/mission-control/start.sh`
 
 ## 3. ACTIVE TASKS
 Read `memory/active-tasks.md` — resume anything stalled or abandoned.
+Check `memory/tasks/CURRENT.md` — if status is ACTIVE and Updated timestamp is >1h old, flag it in daily notes as "stale task detected".
 
 ## 4. CRON HEALTH
 Read `memory/cron-status.json`. Alert Roger if any job is stale:

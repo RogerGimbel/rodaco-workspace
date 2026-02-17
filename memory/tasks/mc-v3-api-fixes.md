@@ -23,7 +23,7 @@ bash /home/node/workspace/mission-control/start.sh
 
 ### P0 — Data Quality (dashboard shows wrong/empty data)
 
-- [ ] **1. Model pricing — all show "unknown"**
+- [x] **1. Model pricing — all show "unknown"**
   - File: `mission-control/src/routes/api-v3.js` — `parseModelArsenal()` (line ~294)
   - Root cause: Reads from IDENTITY.md markdown table, column 4 (cost) doesn't exist in the table
   - Fix: Add a pricing lookup map with real per-token costs:
@@ -41,7 +41,7 @@ bash /home/node/workspace/mission-control/start.sh
   - Return `cost` as object `{ input, output, unit }` instead of string "unknown"
   - Also update frontend `ModelCard.tsx` to display pricing info
 
-- [ ] **2. Cost tracking — always $0.00**
+- [x] **2. Cost tracking — always $0.00**
   - File: `mission-control/src/lib/session-parser.js` — `parseSessionUsage()` (line ~end)
   - Root cause: Session JSONL has `cost.total: 0` for all messages — the provider (Anthropic) doesn't embed cost in the usage response
   - Fix: Calculate costs from token counts using the pricing map:
@@ -52,7 +52,7 @@ bash /home/node/workspace/mission-control/start.sh
   - Update `parseSessionUsage()` to calculate cost when `u.cost.total === 0`
   - This fixes: metrics/costs endpoint, usage endpoint, Home page cost analytics, all $0.00 displays
 
-- [ ] **3. Sub-agent count — inflated (showing 1011)**
+- [x] **3. Sub-agent count — inflated (showing 1011)**
   - File: `mission-control/src/routes/api-v3.js` — system-overview endpoint (line ~529)
   - Root cause: Counting ALL session files including old/dead ones: `fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl')).length`
   - Fix: Only count sessions that are recent (last 24h) OR actively running. Filter by mtime:
@@ -65,7 +65,7 @@ bash /home/node/workspace/mission-control/start.sh
 
 ### P1 — Missing/Broken Endpoints
 
-- [ ] **4. Performance metrics — all zeros**
+- [x] **4. Performance metrics — all zeros**
   - File: `mission-control/src/routes/api-v3.js` — `metrics/performance` endpoint
   - Root cause: No actual performance data collection happening — no response time tracking
   - Fix: Add middleware to track API response times:
@@ -80,7 +80,7 @@ bash /home/node/workspace/mission-control/start.sh
   - Then calculate avg/p95 from the collected data
   - Also: parse session JSONL for tool call durations as "tool performance"
 
-- [ ] **5. Cost trend — always null**
+- [x] **5. Cost trend — always null**
   - File: `mission-control/src/routes/api-v3.js` — `metrics/costs` endpoint (line ~1684)
   - Root cause: Depends on fix #2 (cost calculation). Once costs are non-zero, compare this week vs last week
   - Fix: After implementing cost calculation:
@@ -90,7 +90,7 @@ bash /home/node/workspace/mission-control/start.sh
     trend = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek * 100).toFixed(1) + '%' : null;
     ```
 
-- [ ] **6. Usage by provider — incomplete**
+- [x] **6. Usage by provider — incomplete**
   - File: `mission-control/src/routes/api-v3.js` — `usage/providers` endpoint
   - Root cause: Returns raw OpenAI billing API response but doesn't aggregate Anthropic/xAI usage from session data
   - Fix: Parse all session files, group by provider (extract from model ID: `claude-*` → anthropic, `grok-*` → xai, `gpt-*` → openai), aggregate token counts and calculated costs
@@ -131,3 +131,15 @@ After each fix:
 - Performance metrics populated with real data
 - All endpoints return valid JSON (no 404s for frontend-requested endpoints)
 - Do NOT push to GitHub without Roger's approval
+
+## Last Overnight Run: 2026-02-17
+- Items completed: [1, 2, 3, 4, 5, 6] (all P0 + all P1)
+  - #1 Model pricing: MODEL_PRICING map added, real per-token costs (opus $15/$75, sonnet $3/$15, etc.)
+  - #2 Cost tracking: SESSION_MODEL_PRICING + calculateCost() in session-parser.js — ~$20-21 total from 30 sessions
+  - #3 Sub-agent count: Filtered to mtime > 24h — now reports subAgentCount (24h=717) + subAgentCountTotal (1236)
+  - #4 Performance metrics: Tool call latency from assistant→toolResult timestamp deltas (image 22s, exec 1.15s)
+  - #5 Cost trend: Fixed parseSessionUsage call bug — today=$8.57, week=$20.91, trend null (no prior-week data yet)
+  - #6 Usage by provider: sessionUsage aggregated from JSONL — anthropic $21.16/321 calls
+- Items attempted but failed: none
+- Items not attempted: P2 items (#7-#10)
+- Remaining: 4 items (#7, #8, #9, #10) — all P2/enhancement

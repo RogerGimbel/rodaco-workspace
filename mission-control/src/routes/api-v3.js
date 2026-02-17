@@ -291,6 +291,44 @@ function parseIdentity() {
   }
 }
 
+// Pricing per 1M tokens (input/output) as of 2026-02
+const MODEL_PRICING = {
+  // Anthropic Claude
+  'claude-opus-4':   { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75, unit: '1M tokens' },
+  'claude-sonnet-4': { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75,  unit: '1M tokens' },
+  'claude-haiku-3':  { input: 0.25,  output: 1.25,  cacheRead: 0.03, cacheWrite: 0.30,  unit: '1M tokens' },
+  // xAI Grok
+  'grok-3':       { input: 3.00,  output: 15.00, cacheRead: 0.75, cacheWrite: 0, unit: '1M tokens' },
+  'grok-3-mini':  { input: 0.30,  output: 0.50,  cacheRead: 0.075, cacheWrite: 0, unit: '1M tokens' },
+  'grok-2':       { input: 2.00,  output: 10.00, cacheRead: 0, cacheWrite: 0, unit: '1M tokens' },
+  // OpenAI
+  'gpt-4o':       { input: 2.50,  output: 10.00, cacheRead: 1.25, cacheWrite: 0, unit: '1M tokens' },
+  'gpt-4o-mini':  { input: 0.15,  output: 0.60,  cacheRead: 0.075, cacheWrite: 0, unit: '1M tokens' },
+  'o3':           { input: 10.00, output: 40.00, cacheRead: 2.50, cacheWrite: 0, unit: '1M tokens' },
+  'codex-mini':   { input: 1.50,  output: 6.00,  cacheRead: 0.375, cacheWrite: 0, unit: '1M tokens' },
+};
+
+// Match a full model ID string to a pricing entry
+function lookupModelPricing(modelId) {
+  if (!modelId) return null;
+  const id = modelId.toLowerCase();
+  // Exact prefix match first (most specific wins)
+  for (const [key, pricing] of Object.entries(MODEL_PRICING)) {
+    if (id.startsWith(key)) return pricing;
+  }
+  // Fuzzy keyword match
+  if (id.includes('opus'))   return MODEL_PRICING['claude-opus-4'];
+  if (id.includes('sonnet')) return MODEL_PRICING['claude-sonnet-4'];
+  if (id.includes('haiku'))  return MODEL_PRICING['claude-haiku-3'];
+  if (id.includes('grok-3-mini') || id.includes('grok3mini')) return MODEL_PRICING['grok-3-mini'];
+  if (id.includes('grok'))   return MODEL_PRICING['grok-3'];
+  if (id.includes('o3'))     return MODEL_PRICING['o3'];
+  if (id.includes('codex'))  return MODEL_PRICING['codex-mini'];
+  if (id.includes('4o-mini') || id.includes('4omini')) return MODEL_PRICING['gpt-4o-mini'];
+  if (id.includes('4o') || id.includes('gpt')) return MODEL_PRICING['gpt-4o'];
+  return null;
+}
+
 function parseModelArsenal() {
   try {
     const identity = fs.readFileSync(path.join(WORKSPACE, 'IDENTITY.md'), 'utf8');
@@ -304,11 +342,14 @@ function parseModelArsenal() {
       if (row.includes('---')) continue;
       const cells = row.split('|').map(c => c.trim()).filter(c => c);
       if (cells.length >= 3) {
+        const alias = cells[0].replace(/`/g, '');
+        const modelId = cells[1];
+        const pricing = lookupModelPricing(modelId);
         models.push({
-          alias: cells[0].replace(/`/g, ''),
-          model: cells[1],
+          alias,
+          model: modelId,
           bestFor: cells[2].replace(/\*\*/g, ''),
-          cost: cells[3] || 'unknown'
+          cost: pricing || { input: 0, output: 0, unit: '1M tokens', unknown: true }
         });
       }
     }
@@ -524,10 +565,15 @@ module.exports = function(app) {
         overview.activeTasks = tasks.map(t => ({ title: t.title, status: t.status, nextStep: t.nextStep }));
       } catch {}
 
-      // Sub-agents
+      // Sub-agents — only count sessions active in last 24h
       try {
-        const sessions = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl'));
-        overview.subAgentCount = sessions.length;
+        const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+        const allSessions = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl') && !f.includes('.lock') && !f.includes('.deleted'));
+        const recentSessions = allSessions.filter(f => {
+          try { return fs.statSync(path.join(SESSIONS_DIR, f)).mtimeMs > cutoff; } catch { return false; }
+        });
+        overview.subAgentCount = recentSessions.length;
+        overview.subAgentCountTotal = allSessions.length;
       } catch {}
 
       // Last backup (already extracted from cron-status above, this is a fallback)
@@ -823,12 +869,43 @@ module.exports = function(app) {
         providers[provider] = {
           available: !!value,
           configured: !!value,
-          usage: null
+          usage: null,
+          // session-level aggregates (calculated from local session files)
+          sessionUsage: { input: 0, output: 0, cacheRead: 0, cost: 0, calls: 0 }
         };
       }
 
+      // Aggregate session-level usage by provider
+      const files = getSessionFiles(30);
+      for (const file of files) {
+        const entries = parseSessionUsage(file.path);
+        for (const u of entries) {
+          const id = (u.model || '').toLowerCase();
+          let provider = 'unknown';
+          if (id.includes('claude'))  provider = 'anthropic';
+          else if (id.includes('grok')) provider = 'xai';
+          else if (id.includes('gpt') || id.includes('o3') || id.includes('codex')) provider = 'openai';
+          else if (id.includes('gemini')) provider = 'gemini';
+
+          if (!providers[provider]) {
+            providers[provider] = { available: false, configured: false, usage: null, sessionUsage: { input: 0, output: 0, cacheRead: 0, cost: 0, calls: 0 } };
+          }
+          const s = providers[provider].sessionUsage;
+          s.input     += u.input;
+          s.output    += u.output;
+          s.cacheRead += u.cacheRead;
+          s.cost      += u.cost;
+          s.calls++;
+        }
+      }
+
+      // Round costs
+      for (const p of Object.values(providers)) {
+        if (p.sessionUsage) p.sessionUsage.cost = parseFloat(p.sessionUsage.cost.toFixed(4));
+      }
+
       // Try to fetch OpenAI usage
-      if (providers.openai.available) {
+      if (providers.openai && providers.openai.available) {
         const url = 'https://api.openai.com/v1/usage?date=' + new Date().toISOString().split('T')[0];
         const result = await apiGet(url, { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` });
         if (result.status === 200) providers.openai.usage = result.data;
@@ -1683,41 +1760,67 @@ module.exports = function(app) {
 
   app.get('/api/v3/metrics/costs', (req, res) => {
     try {
-      const usage = cache.get('usage') || parseSessionUsage(30);
+      // Aggregate usage from session files (same logic as /usage endpoint)
+      const files = getSessionFiles(30);
+      const byDayMap = {};
+      const byModelMap = {};
+
+      for (const file of files) {
+        const entries = parseSessionUsage(file.path);
+        for (const u of entries) {
+          const day = typeof u.timestamp === 'number'
+            ? new Date(u.timestamp).toISOString().split('T')[0]
+            : typeof u.timestamp === 'string' ? u.timestamp.split('T')[0] : 'unknown';
+
+          if (!byDayMap[day]) byDayMap[day] = { cost: 0 };
+          byDayMap[day].cost += u.cost;
+
+          const modelId = u.model || 'unknown';
+          if (!byModelMap[modelId]) byModelMap[modelId] = { cost: 0 };
+          byModelMap[modelId].cost += u.cost;
+        }
+      }
+
+      const byDay = Object.entries(byDayMap)
+        .map(([date, data]) => ({ date, ...data }))
+        .sort((a, b) => a.date.localeCompare(b.date));
 
       const now = new Date();
       const todayStr = now.toISOString().split('T')[0];
       const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      let today = 0, week = 0, month = 0;
+      let today = 0, week = 0, month = 0, prevWeek = 0;
       const byProvider = {};
 
-      if (usage.byDay) {
-        usage.byDay.forEach(day => {
-          if (day.date === todayStr) today += day.cost || 0;
-          if (day.date >= weekAgo) week += day.cost || 0;
-          if (day.date >= monthAgo) month += day.cost || 0;
-        });
-      }
+      byDay.forEach(d => {
+        if (d.date === todayStr) today += d.cost || 0;
+        if (d.date >= weekAgo) week += d.cost || 0;
+        if (d.date >= twoWeeksAgo && d.date < weekAgo) prevWeek += d.cost || 0;
+        if (d.date >= monthAgo) month += d.cost || 0;
+      });
 
-      if (usage.byModel) {
-        usage.byModel.forEach(model => {
-          const provider = model.model.split('/')[0];
-          byProvider[provider] = (byProvider[provider] || 0) + (model.cost || 0);
-        });
-      }
+      Object.entries(byModelMap).forEach(([modelId, data]) => {
+        // Derive provider from model ID
+        let provider = 'unknown';
+        const id = modelId.toLowerCase();
+        if (id.includes('claude')) provider = 'anthropic';
+        else if (id.includes('grok')) provider = 'xai';
+        else if (id.includes('gpt') || id.includes('o3') || id.includes('codex')) provider = 'openai';
+        else if (id.includes('gemini')) provider = 'google';
+        byProvider[provider] = (byProvider[provider] || 0) + (data.cost || 0);
+      });
 
-      const prevWeek = usage.byDay
-        ?.filter(d => d.date < weekAgo && d.date >= new Date(new Date(weekAgo) - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .reduce((sum, d) => sum + (d.cost || 0), 0) || 0;
-
-      const trend = prevWeek > 0 ? `${week > prevWeek ? '+' : ''}${((week - prevWeek) / prevWeek * 100).toFixed(1)}% vs last week` : null;
+      const trend = prevWeek > 0
+        ? `${week >= prevWeek ? '+' : ''}${((week - prevWeek) / prevWeek * 100).toFixed(1)}% vs last week`
+        : null;
 
       res.json({
-        today: parseFloat(today.toFixed(2)),
-        week: parseFloat(week.toFixed(2)),
-        month: parseFloat(month.toFixed(2)),
+        today: parseFloat(today.toFixed(4)),
+        week: parseFloat(week.toFixed(4)),
+        month: parseFloat(month.toFixed(4)),
+        byDay,
         byProvider,
         trend,
         timestamp: now.toISOString()
@@ -1730,46 +1833,83 @@ module.exports = function(app) {
   app.get('/api/v3/metrics/performance', (req, res) => {
     try {
       const sessionFiles = getSessionFiles(7);
-      const events = [];
+      const toolTimes = {};
+      let errorsLast24h = 0;
+      const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
 
-      for (const file of sessionFiles.slice(0, 5)) {
+      // Parse tool response times from session JSONL:
+      // Measure time from assistant tool_use message → toolResult message
+      for (const file of sessionFiles.slice(0, 10)) {
         try {
           const content = fs.readFileSync(file.path, 'utf8');
           const lines = content.trim().split('\n');
-          for (const line of lines.slice(-100)) {
+          const msgs = [];
+          for (const line of lines) {
             try {
               const evt = JSON.parse(line);
-              if (evt.timestamp && evt.tool) events.push(evt);
+              if (evt.type === 'message' && evt.message) msgs.push(evt);
             } catch {}
+          }
+
+          for (let i = 0; i < msgs.length - 1; i++) {
+            const cur = msgs[i];
+            const next = msgs[i + 1];
+            const msg = cur.message;
+
+            // Tool call: assistant message with toolUse blocks
+            if (msg.role === 'assistant' && msg.stopReason === 'toolUse' && Array.isArray(msg.content)) {
+              const toolCallTs = new Date(cur.timestamp).getTime() || 0;
+              // Collect tool names from this assistant turn
+              const toolNames = msg.content
+                .filter(b => b.type === 'toolCall' && b.name)
+                .map(b => b.name.toLowerCase());
+
+              if (toolNames.length > 0 && next && next.message && next.message.role === 'toolResult') {
+                const resultTs = new Date(next.timestamp).getTime() || 0;
+                const elapsedMs = resultTs - toolCallTs;
+                if (elapsedMs > 0 && elapsedMs < 120_000) { // sanity: 0-120s
+                  for (const toolName of toolNames) {
+                    if (!toolTimes[toolName]) toolTimes[toolName] = [];
+                    toolTimes[toolName].push(elapsedMs);
+                  }
+                }
+              }
+
+              // Count errors in last 24h
+              if (next && next.message && next.message.isError && toolCallTs >= cutoff24h) {
+                errorsLast24h++;
+              }
+            }
+
+            // Also count tool result errors
+            if (msg.role === 'toolResult' && msg.isError) {
+              const ts = new Date(cur.timestamp).getTime() || 0;
+              if (ts >= cutoff24h) errorsLast24h++;
+            }
           }
         } catch {}
       }
 
-      const toolTimes = {};
-      events.forEach(evt => {
-        if (evt.elapsedMs && evt.tool) {
-          if (!toolTimes[evt.tool]) toolTimes[evt.tool] = [];
-          toolTimes[evt.tool].push(evt.elapsedMs);
-        }
-      });
-
-      const avgTimes = Object.entries(toolTimes).map(([tool, times]) => ({
-        tool,
-        avg: parseFloat((times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)),
-        p95: parseFloat(times.sort((a, b) => a - b)[Math.floor(times.length * 0.95)] || 0)
-      })).sort((a, b) => b.avg - a.avg);
-
-      const errorsLast24h = events.filter(e =>
-        e.type === 'error' &&
-        new Date(e.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-      ).length;
+      const avgTimes = Object.entries(toolTimes).map(([tool, times]) => {
+        const sorted = [...times].sort((a, b) => a - b);
+        return {
+          tool,
+          avg: parseFloat((times.reduce((a, b) => a + b, 0) / times.length / 1000).toFixed(2)),  // seconds
+          p95: parseFloat((sorted[Math.floor(sorted.length * 0.95)] / 1000 || 0).toFixed(2)),
+          calls: times.length
+        };
+      }).sort((a, b) => b.avg - a.avg);
 
       const slowestTool = avgTimes[0] || { tool: 'none', avg: 0 };
       const fastestTool = avgTimes[avgTimes.length - 1] || { tool: 'none', avg: 0 };
+      const allAvgs = avgTimes.map(t => t.avg);
+      const overallAvg = allAvgs.length > 0 ? parseFloat((allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length).toFixed(2)) : 0;
+      const overallP95 = allAvgs.length > 0 ? parseFloat([...allAvgs].sort((a, b) => a - b)[Math.floor(allAvgs.length * 0.95)] || 0) : 0;
 
       res.json({
-        avgResponseTime: avgTimes.length > 0 ? parseFloat((avgTimes.reduce((sum, t) => sum + t.avg, 0) / avgTimes.length).toFixed(1)) : 0,
-        p95ResponseTime: avgTimes.length > 0 ? parseFloat(avgTimes.reduce((max, t) => Math.max(max, t.p95), 0).toFixed(1)) : 0,
+        avgResponseTime: overallAvg,
+        p95ResponseTime: overallP95,
+        responseTimeUnit: 'seconds',
         errorsLast24h,
         toolPerformance: avgTimes.slice(0, 10),
         slowestTool: slowestTool.tool,

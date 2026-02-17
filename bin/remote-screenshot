@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# bin/remote-screenshot — Take a headless Chrome screenshot on M5 MacBook
+# Usage: bash bin/remote-screenshot <URL> [output_filename]
+# Output lands in /tmp/<filename> locally (safe from OOM on workspace volume)
+
+set -euo pipefail
+
+URL="${1:?Usage: remote-screenshot <URL> [filename]}"
+FILENAME="${2:-screenshot-$(date +%s).png}"
+M5="rogergimbel@100.71.128.20"
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+REMOTE_TMP="/tmp/rodaco-screenshots"
+
+# Take screenshot on M5
+ssh -o ConnectTimeout=5 "$M5" "
+  mkdir -p '$REMOTE_TMP'
+  '$CHROME' --headless=new --disable-gpu --no-sandbox \
+    --window-size=1440,900 \
+    --screenshot='$REMOTE_TMP/$FILENAME' \
+    '$URL' 2>/dev/null
+"
+
+# Copy back to local /tmp (not workspace — avoids OOM)
+scp -o ConnectTimeout=5 "$M5:$REMOTE_TMP/$FILENAME" "/tmp/$FILENAME"
+
+# Clean up remote
+ssh "$M5" "rm -f '$REMOTE_TMP/$FILENAME'" 2>/dev/null &
+
+echo "/tmp/$FILENAME"
