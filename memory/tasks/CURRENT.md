@@ -1,40 +1,55 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 10:30 ET*
+*Updated 2026-02-17 13:13 ET*
 
 ## TL;DR
-Both new sites fully set up locally. All three repos push-capable. Ready to iterate on site improvements.
+Reorganizing MEMORY.md — moving operational/tool/infra reference to TOOLS.md. Keeping MEMORY.md lean (<5KB) for actual memory.
 
-## Status: IDLE
+## Status: ACTIVE
 
-## ✅ COMPLETED: New Sites Local Setup
+## Task: MEMORY.md → TOOLS.md Reorganization
 
-### Sites
-| Site | Port | GitHub | Local Path |
-|------|------|--------|-----------|
-| Mission Control v3 | 3333 | RogerGimbel/rodaco-workspace | /home/node/workspace/mission-control |
-| Rodaco corporate | 3334 | RogerGimbel/rodaco.co | /home/node/workspace/rodaco-site |
-| Roger personal | 3335 | RogerGimbel/rogergimbel-app-artist | /home/node/workspace/rogergimbel-site |
+### Safety Plan
+1. Before any edits: git commit current state of MEMORY.md and TOOLS.md as backup
+2. All changes are to workspace files only (no infra, no config, no external systems)
+3. Recovery: `git checkout -- MEMORY.md TOOLS.md` reverts everything instantly
 
-### What Was Done
-- Cloned both Lovable sites locally
-- npm install + build for both (NODE_ENV=development, --legacy-peer-deps, --cache /home/node/workspace/.npm-cache)
-- server.cjs (static file server, CommonJS) created for each
-- Docker compose updated: ports 3334 + 3335 added, container recreated
-- PAT embedded in git remote for both sites (push-capable)
-- sites-watchdog cron (ID: a8c93721) running every 2 min to keep servers alive
-- First screenshots taken of both sites
-- Knowledge files created: knowledge/projects/rogergimbel-site/ and knowledge/projects/rodaco-site/
+### Step-by-Step Plan
 
-### Infrastructure Notes
-- npm cache is tmpfs (200MB) — ALWAYS use --cache /home/node/workspace/.npm-cache
-- NODE_ENV=production skips devDeps (vite!) — ALWAYS use NODE_ENV=development
-- server.js must be server.cjs (ESM package.json type:module)
-- Chrome screenshot needs --virtual-time-budget=5000 for React to render
-- Port 3334 was never used by MC (MC consolidated to 3333 only)
-- healer.py only monitors container health, not ports
+- [ ] Step 0: Git commit MEMORY.md + TOOLS.md as-is (backup snapshot)
+- [ ] Step 1: Move "My Tools (Quick Reference)" section → TOOLS.md
+- [ ] Step 2: Move "npm Install Gotchas (Lovable Sites)" → TOOLS.md
+- [ ] Step 3: Move "Key Infrastructure" section → TOOLS.md
+- [ ] Step 4: Move "Model Routing Policy" → TOOLS.md
+- [ ] Step 5: Move tool-specific lessons from "Lessons Learned" → TOOLS.md
+  - Agent-browser screenshots workaround
+  - MC build deploy recipe
+  - Light mode theming rule
+- [ ] Step 6: Remove stale "Queued Projects" (all 3 items completed today)
+- [ ] Step 7: Remove duplicate "Security Boundaries" (already in SOUL.md + AGENTS.md)
+- [ ] Step 8: Review final MEMORY.md — should be <5KB, only personal context + lessons + active projects
+- [ ] Step 9: Review final TOOLS.md — should have all operational reference, organized
+- [ ] Step 10: Git commit the reorganized files
 
-### Next Steps (When Ready)
-- Iterate on rogergimbel-site improvements (see knowledge/projects/rogergimbel-site/summary.md)
-- Iterate on rodaco-site improvements (see knowledge/projects/rodaco-site/summary.md)
-- Remaining MC v3 items: 3 UI fixes (#9 emoji, #12 scroll fade, #14 skeleton) + 4 API P2 enhancements (overnight build tonight)
+### What stays in MEMORY.md (actual memory)
+- Active Projects (pointers to knowledge/)
+- Roger's Preferences
+- Non-tool Lessons Learned (session crashes, CURRENT.md discipline, cron crash recovery, etc.)
+- Master Plan pointer
+- Deep Reference pointers
+
+### What moves to TOOLS.md (operational reference)
+- Tool command reference (email, bird, gh, agent-browser, image gen, video gen, save, summarize)
+- Infrastructure IPs/ports/services
+- npm install gotchas
+- Model routing policy
+- Build/deploy recipes
+- Tool-specific workarounds
+
+### Recovery
+If anything breaks: `git checkout -- MEMORY.md TOOLS.md`
+
+### Previous Work (today)
+- rodaco.co v1 deployed (ef98123, 240df59)
+- rogergimbel.dev v2 deployed (38a5f00)
+- Both sites: dev→GitHub→Lovable→production pattern validated
