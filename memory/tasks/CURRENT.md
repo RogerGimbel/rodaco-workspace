@@ -5,7 +5,7 @@
 ## TL;DR for Roger
 MC v3 contrast overhaul deployed (150+ fixes). API audit done. 24 items queued across two task files for overnight builds. Memory system audited — found 8 gaps, fixing now.
 
-## Status: ACTIVE — Memory system audit + hardening
+## Status: IDLE — Memory audit complete, overnight tasks queued
 
 ### What We Did This Session:
 
@@ -53,6 +53,9 @@ MC v3 contrast overhaul deployed (150+ fixes). API audit done. 24 items queued a
 
 ### What Roger Might Ask Next
 - Review overnight build results (check morning brief at 7 AM)
-- More MC v3 improvements (there are 24 items across both task files)
+- More MC v3 improvements → see `PLAN.md` for full prioritized backlog
 - Push changes to GitHub (ask first!)
 - Other projects (BeerPair, infrastructure)
+
+### Master Plan Reference
+**`PLAN.md`** — All open work (24 MC items + 4 memory items + enhancements), prioritized P0/P1/P2.

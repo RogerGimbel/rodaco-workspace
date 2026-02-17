@@ -58,6 +58,9 @@ updated: 2026-02-16
 - **Cron job crash recovery:** Overnight builds must check `git diff --stat` first and read task files for `[x]` state before starting work.
 - **active-tasks.md is DEPRECATED.** Use `memory/tasks/CURRENT.md` as the single source of truth.
 
+## 📋 Master Plan
+- **`PLAN.md`** — All open work in one place. P0/P1/P2 prioritized. Check before asking "what should I do?"
+
 ## 🔗 Deep Reference (in knowledge/)
 For full details on any topic above, check:
 - `knowledge/INDEX.md` — master index
