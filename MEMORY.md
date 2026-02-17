@@ -1,10 +1,10 @@
 ---
 tags: [memory, hot-context, core]
-updated: 2026-02-16
+updated: 2026-02-17
 ---
 # MEMORY.md - Hot Context (< 5KB target)
 
-*Last updated: 2026-02-16*
+*Last updated: 2026-02-17*
 
 ## 🔒 Security Boundaries (Non-Negotiable)
 - Email: ONLY Roger's inboxes (accfighter@gmail.com, rogergimbel@selfgrowth.app, roger@rogergimbel.dev)
@@ -23,18 +23,28 @@ updated: 2026-02-16
 
 ## 📋 Active Projects
 - **BeerPair** — LIVE at beerpair.com. Native apps in progress (Despia). B2B GTM complete (17 assets).
-- **Mission Control v3** — Combined API+frontend on :3333. Source: `rodaco-mc/` (frontend), `mission-control/` (API). Build pipeline: edit src → `npm run build` → copy dist to `mission-control/public/`. Lovable DEAD. 6 pages: Home, Ops, Agent, Projects, Knowledge, Research. Overnight builds work through `memory/tasks/mc-v3-ui-fixes.md` (14 items) and `memory/tasks/mc-v3-api-fixes.md` (10 items).
+- **Mission Control v3** — Combined API+frontend on :3333. Source: `rodaco-mc/` (frontend), `mission-control/` (API). Build pipeline: edit src → `npm run build` → copy dist to `mission-control/public/`. 6 pages: Home, Ops, Agent, Projects, Knowledge, Research. Remaining: 3 UI + 4 API P2 items (overnight build).
+- **rogergimbel-site** — Personal site (rogergimbel.dev). Local: `:3335`, clone: `rogergimbel-site/`, GitHub: `RogerGimbel/rogergimbel-app-artist`. Lovable two-way sync via GitHub. KB: `knowledge/projects/rogergimbel-site/summary.md`.
+- **rodaco-site** — Rodaco corporate (rodaco.co). Local: `:3334`, clone: `rodaco-site/`, GitHub: `RogerGimbel/rodaco.co`. Lovable two-way sync via GitHub. KB: `knowledge/projects/rodaco-site/summary.md`.
 - **Infrastructure Overhaul** — Steps 1-5 COMPLETE (Tailscale lockdown, host agent, Pi lockdown). See `memory/active-tasks.md`.
 
 ## 🏗️ Key Infrastructure
 - **Intel MacBook:** 100.124.209.59, container `moltbot-gateway`, workspace is Docker volume (NOT bind mount)
 - **Raspberry Pi:** 100.83.169.87, media stack, exit node
 - **MC (combined):** `http://100.124.209.59:3333/` — Express serves frontend from `mission-control/public/` + API at `/api/v3/`
-- **MC Vite dev:** `http://100.124.209.59:3334/` — host ~/rodaco-mc/, may be stale (use :3333 for production)
+- **rodaco-site:** `http://100.124.209.59:3334/` — static server, `rodaco-site/server.cjs`
+- **rogergimbel-site:** `http://100.124.209.59:3335/` — static server, `rogergimbel-site/server.cjs`
+- **Sites watchdog:** cron ID `a8c93721` every 2min — auto-restarts 3334+3335 if down
 - **Host Agent:** 100.124.209.59:18790 (13 commands, Tailscale-only)
 - **Secrets:** SOPS/age → `/tmp/secrets/` at container start. Encrypted: `~/docker/openclaw/secrets.enc.yaml`
 - **Docker compose:** `/Users/rogergimbel/docker/openclaw/` on host
 - **Backups:** MacBook→Pi 4AM MT, MacBook→GitHub 4AM MT, Pi→MacBook 3AM
+
+## ⚠️ npm Install Gotchas (Lovable Sites)
+- `/home/node/.npm` is 200MB tmpfs — ALWAYS use `--cache /home/node/workspace/.npm-cache`
+- `NODE_ENV=production` skips devDeps (vite not installed!) — ALWAYS prefix with `NODE_ENV=development`
+- `package.json` has `"type":"module"` — server files must be `.cjs` not `.js`
+- Full safe install: `NODE_ENV=development npm install --legacy-peer-deps --cache /home/node/workspace/.npm-cache`
 
 ## 🧠 Roger's Preferences
 - Dev tools: Claude Code, Lovable, Cursor, Replit, Bolt, Antigravity, Codex

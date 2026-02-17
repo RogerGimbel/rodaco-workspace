@@ -1,13 +1,13 @@
 {
-  "lastUpdate": "2026-02-16T12:00:00.000Z",
+  "lastUpdate": "2026-02-17T12:00:00.000Z",
   "jobs": [
     {
       "id": "morning_brief",
       "name": "Morning Brief",
       "schedule": "7 AM ET daily",
-      "lastRun": "2026-02-16T12:00:00.000Z",
+      "lastRun": "2026-02-17T12:00:00.000Z",
       "status": "healthy",
-      "note": "Delivered. Overnight build success (4 new endpoints), no urgent emails, gog not configured."
+      "note": "Delivered. Build: 11/14 UI + all API P0/P1 fixes deployed. Backup OK. Action needed: GitHub push approval for MC v3."
     },
     {
       "id": "overnight_build",
@@ -22,9 +22,9 @@
       "id": "daily_backup",
       "name": "Daily Backup",
       "schedule": "4 AM MT daily",
-      "lastRun": "2026-02-16T11:00:00.000Z",
-      "status": "healthy",
-      "note": "Pi backup 86M workspace + 143M config ✓; GitHub push ✓"
+      "lastRun": "2026-02-17T11:00:00.000Z",
+      "status": "ok",
+      "note": "Pi backup 88M workspace + 163M config ✓ (1.9G total on Pi); GitHub push 31 files changed ✓"
     }
   ]
 }

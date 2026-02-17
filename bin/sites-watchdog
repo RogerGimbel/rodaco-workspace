@@ -1,0 +1,30 @@
+#!/bin/bash
+# bin/sites-watchdog — Keep rodaco-site (3334) and rogergimbel-site (3335) alive
+# Called by cron every 2 minutes
+
+WORKSPACE="/home/node/workspace"
+LOG="/tmp/sites-watchdog.log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+check_and_start() {
+  local name="$1"
+  local port="$2"
+  local server="$WORKSPACE/$name/server.cjs"
+
+  if curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://localhost:$port/" | grep -q "200"; then
+    return 0  # healthy
+  fi
+
+  echo "[$TIMESTAMP] $name (port $port) not responding — starting..." >> "$LOG"
+  nohup node "$server" >> "/tmp/$name.log" 2>&1 &
+  sleep 2
+
+  if curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://localhost:$port/" | grep -q "200"; then
+    echo "[$TIMESTAMP] $name started OK" >> "$LOG"
+  else
+    echo "[$TIMESTAMP] $name FAILED to start" >> "$LOG"
+  fi
+}
+
+check_and_start "rodaco-site" 3334
+check_and_start "rogergimbel-site" 3335

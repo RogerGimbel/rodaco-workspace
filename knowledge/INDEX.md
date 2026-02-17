@@ -13,6 +13,8 @@ knowledge/
 │   ├── beerpair/summary.md        # + marketing docs, images, sitemap
 │   ├── media-stack/summary.md
 │   ├── rodaco-app/summary.md
+│   ├── rogergimbel-site/summary.md  # rogergimbel.dev — personal presence site
+│   ├── rodaco-site/summary.md        # rodaco.co — corporate presence site
 │   ├── obsidian-openclaw-setup.md
 │   └── bookmark-backlog.md
 ├── infrastructure/
@@ -46,4 +48,4 @@ When spawning sub-agents, include relevant KB paths:
 "Check Pi health. Load: knowledge/infrastructure/raspberry-pi/summary.md"
 ```
 
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-17*

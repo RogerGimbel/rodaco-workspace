@@ -1,58 +1,40 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 09:45 ET*
+*Updated 2026-02-17 10:30 ET*
 
 ## TL;DR
-Setting up two new Lovable sites locally for Roger to manage. rodaco-site build complete, server setup in progress.
+Both new sites fully set up locally. All three repos push-capable. Ready to iterate on site improvements.
 
-## Status: ACTIVE
+## Status: IDLE
 
-## Task: Clone + Set Up Two Lovable Sites Locally
+## ✅ COMPLETED: New Sites Local Setup
 
-### Context
-Same pattern as rodaco-mc: clone GitHub repo → npm install → build → static server → remote screenshot via M5 Chrome → iterate → push to GitHub → Lovable auto-syncs.
+### Sites
+| Site | Port | GitHub | Local Path |
+|------|------|--------|-----------|
+| Mission Control v3 | 3333 | RogerGimbel/rodaco-workspace | /home/node/workspace/mission-control |
+| Rodaco corporate | 3334 | RogerGimbel/rodaco.co | /home/node/workspace/rodaco-site |
+| Roger personal | 3335 | RogerGimbel/rogergimbel-app-artist | /home/node/workspace/rogergimbel-site |
 
-### Repos
-- **Roger personal site:** `RogerGimbel/rogergimbel-app-artist` → cloned to `/home/node/workspace/rogergimbel-site` (rogergimbel.dev)
-- **Rodaco corporate site:** `RogerGimbel/rodaco.co` → cloned to `/home/node/workspace/rodaco-site` (rodaco.co)
+### What Was Done
+- Cloned both Lovable sites locally
+- npm install + build for both (NODE_ENV=development, --legacy-peer-deps, --cache /home/node/workspace/.npm-cache)
+- server.cjs (static file server, CommonJS) created for each
+- Docker compose updated: ports 3334 + 3335 added, container recreated
+- PAT embedded in git remote for both sites (push-capable)
+- sites-watchdog cron (ID: a8c93721) running every 2 min to keep servers alive
+- First screenshots taken of both sites
+- Knowledge files created: knowledge/projects/rogergimbel-site/ and knowledge/projects/rodaco-site/
 
-### Port Assignments
-| Site | Port |
-|------|------|
-| MC (existing) | 3333 |
-| Rodaco corporate | 3334 |
-| Roger personal | 3335 |
+### Infrastructure Notes
+- npm cache is tmpfs (200MB) — ALWAYS use --cache /home/node/workspace/.npm-cache
+- NODE_ENV=production skips devDeps (vite!) — ALWAYS use NODE_ENV=development
+- server.js must be server.cjs (ESM package.json type:module)
+- Chrome screenshot needs --virtual-time-budget=5000 for React to render
+- Port 3334 was never used by MC (MC consolidated to 3333 only)
+- healer.py only monitors container health, not ports
 
-### Docker
-- Added ports 3334 and 3335 to `~/docker/openclaw/docker-compose.yml` on Intel Mac
-- Recreated container — now exposes 3333, 3334, 3335, 18789
-- Backup saved as `docker-compose.yml.bak2`
-
-### Steps Completed
-- [x] Clone rogergimbel-site (port 3335)
-- [x] npm install (NODE_ENV=development, --legacy-peer-deps, --cache /home/node/workspace/.npm-cache)
-- [x] npm run build → dist/ built successfully
-- [x] server.cjs created (static file server, ESM-safe)
-- [x] supervisor.sh + start.sh created
-- [x] Server running on port 3335 (process briny-dune, nohup node server.cjs)
-- [x] Screenshot taken — site renders (hero: "Roger Gimbel / Technology Architect")
-- [x] Clone rodaco-site (port 3334)
-- [x] npm install + build complete
-- [ ] Create server.cjs for rodaco-site (port 3334)
-- [ ] Create supervisor.sh + start.sh for rodaco-site
-- [ ] Start rodaco-site server
-- [ ] Screenshot rodaco-site
-- [ ] Wire both servers to survive container restarts (add to mission-control start.sh or separate launchd/cron on Mac host)
-- [ ] Sort out rodaco.co PAT in git remote URL (currently no PAT embedded — needed for push)
-
-### Key Notes
-- npm cache is tmpfs at /home/node/.npm (200MB) — ALWAYS use `--cache /home/node/workspace/.npm-cache` to avoid ENOSPC
-- NODE_ENV=production skips devDependencies (vite!) — ALWAYS use `NODE_ENV=development npm install`
-- server.js must be named server.cjs (ESM package.json type:module conflict)
-- `--virtual-time-budget=5000` needed in Chrome headless for React to fully render before screenshot
-- rogergimbel-site server: running as nohup background process (not supervisor yet — supervisor SIGTERM issue)
-
-### Pending After Sites Are Up
-- Embed PAT in rodaco-site git remote for push capability
-- Decide on persistent startup mechanism for both servers (Mac launchd vs Docker entrypoint)
-- Roger wants to brainstorm/work on improvements to both sites
+### Next Steps (When Ready)
+- Iterate on rogergimbel-site improvements (see knowledge/projects/rogergimbel-site/summary.md)
+- Iterate on rodaco-site improvements (see knowledge/projects/rodaco-site/summary.md)
+- Remaining MC v3 items: 3 UI fixes (#9 emoji, #12 scroll fade, #14 skeleton) + 4 API P2 enhancements (overnight build tonight)
