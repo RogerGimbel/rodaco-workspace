@@ -15,6 +15,7 @@ knowledge/
 │   ├── rodaco-app/summary.md
 │   ├── rogergimbel-site/summary.md  # rogergimbel.dev — personal presence site
 │   ├── rodaco-site/summary.md        # rodaco.co — corporate presence site
+│   ├── ugc-campaign/summary.md      # UGC video campaign generator (Nano Banana + Veo 3.1)
 │   ├── obsidian-openclaw-setup.md
 │   └── bookmark-backlog.md
 ├── infrastructure/
@@ -35,7 +36,9 @@ knowledge/
 ## Canonical Locations (DO NOT DUPLICATE)
 - **Long-term memory:** `/MEMORY.md` (root)
 - **Daily notes:** `/memory/YYYY-MM-DD.md`
-- **Active tasks:** `/memory/active-tasks.md`
+- **Active tasks:** `/memory/tasks/CURRENT.md` (single source of truth)
+- **Overnight build queue:** `/memory/tasks/overnight-queue.md`
+- **Site health reports:** `/memory/tasks/site-health-report.md`
 - **Soul/identity:** `/SOUL.md`, `/IDENTITY.md`, `/USER.md` (root)
 - **Agent instructions:** `/AGENTS.md` (root)
 - **Heartbeat config:** `/HEARTBEAT.md` (root)

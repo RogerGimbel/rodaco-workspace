@@ -1,0 +1,61 @@
+{
+  "name": "beerpair-launch",
+  "brand": "BeerPair - AI-powered beer and food pairing app that helps craft beer lovers find the perfect pairing for any meal",
+  "target_audience": "Craft beer enthusiasts, foodies, 25-45, tech-comfortable, enjoy discovering new beers",
+  "character_profiles": [
+    {
+      "id": "craft-beer-guy",
+      "description": "Friendly mid-30s man, short brown hair with slight stubble, wearing a casual henley or flannel shirt, approachable and enthusiastic about beer without being pretentious. Think 'your buddy who always knows which beer to order.'",
+      "vibe": "Authentic, knowledgeable but not snobby, genuinely excited"
+    },
+    {
+      "id": "foodie-woman",
+      "description": "Late 20s woman, dark wavy hair, casual-cool style (denim jacket, simple jewelry), the friend who always picks the restaurant. Genuinely curious and adventurous with food and drink.",
+      "vibe": "Confident, exploratory, the friend everyone trusts for recommendations"
+    }
+  ],
+  "scene_templates": [
+    {
+      "id": "overwhelmed-aisle",
+      "title": "The Overwhelming Choice",
+      "setting": "Craft beer aisle in a well-stocked grocery store or bottle shop",
+      "action": "Character stares at a massive wall of craft beers, picks up two bottles, looks confused, then pulls out phone and opens BeerPair",
+      "dialogue": "There's like 200 options here... okay, what goes with tacos?",
+      "camera": "Start wide to show the overwhelming selection, push in to medium close-up as they pull out phone",
+      "audio": "Quirky indie music, subtle overwhelmed sigh, phone tap sounds"
+    },
+    {
+      "id": "restaurant-save",
+      "title": "The Restaurant Save",
+      "setting": "Trendy casual restaurant, warm lighting, menu in hand",
+      "action": "Character scanning a beer menu looking lost, opens BeerPair, scans the food menu, gets instant pairing recommendation. Confident smile.",
+      "dialogue": "I used to just pick the IPA every time. Now I actually know what I'm doing.",
+      "camera": "Over-shoulder shot of menu, cut to face close-up showing the 'aha' moment",
+      "audio": "Restaurant ambient noise, subtle satisfying chime when app shows result"
+    },
+    {
+      "id": "dinner-party-hero",
+      "title": "The Dinner Party Hero",
+      "setting": "Friend's dinner party, kitchen island with food spread",
+      "action": "Character arrives with a 6-pack, friends are impressed. Quick flash of BeerPair showing the pairing. Everyone cheers.",
+      "dialogue": "How did you know to bring a Belgian wit for the seafood?! ...I have my ways.",
+      "camera": "Follow character entering, reaction shots of impressed friends, phone screen flash",
+      "audio": "Party ambient, friends laughing, 'ooh' reactions"
+    },
+    {
+      "id": "discovery-moment",
+      "title": "The Discovery",
+      "setting": "Cozy home, couch or kitchen counter with a new craft beer and food",
+      "action": "Character opens a new beer, checks BeerPair for the perfect food match, surprised by suggestion, tries it, mind-blown reaction",
+      "dialogue": "Stout with... chocolate cake? Okay BeerPair, I trust you... oh wow. Oh WOW.",
+      "camera": "Close-up of app screen, cut to tasting reaction, genuine surprise",
+      "audio": "Cozy ambient, beer pouring sound, genuine 'mmm' reaction"
+    }
+  ],
+  "cta_options": [
+    "Download BeerPair free — your taste buds will thank you",
+    "Never guess at beer pairings again. Download BeerPair.",
+    "BeerPair — because life's too short for bad pairings"
+  ],
+  "hashtags": ["#BeerPair", "#CraftBeer", "#FoodPairing", "#BeerTok", "#FoodieTok", "#CraftBeerLovers", "#BeerAndFood"]
+}

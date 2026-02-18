@@ -1,55 +1,46 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 13:13 ET*
+*Updated 2026-02-17 21:45 ET*
 
 ## TL;DR
-Reorganizing MEMORY.md — moving operational/tool/infra reference to TOOLS.md. Keeping MEMORY.md lean (<5KB) for actual memory.
+UGC Campaign skill complete. Full 4-scene BeerPair pipeline ran successfully (~3 min, ~$1.50). All checkpointed.
 
-## Status: ACTIVE
+## Status: IDLE
 
-## Task: MEMORY.md → TOOLS.md Reorganization
+## Task: UGC Campaign Skill — Full Pipeline Test
 
-### Safety Plan
-1. Before any edits: git commit current state of MEMORY.md and TOOLS.md as backup
-2. All changes are to workspace files only (no infra, no config, no external systems)
-3. Recovery: `git checkout -- MEMORY.md TOOLS.md` reverts everything instantly
+### Completed Steps
+- [x] Built skill structure: `skills/ugc-campaign/`
+- [x] `creative-brief.sh` — tested, works (Gemini Flash, ~10s)
+- [x] `generate-character.sh` — tested, works (Nano Banana Pro, ~30s, 3 shots)
+- [x] `generate-video.py` — tested, works (Veo 3.1 Python SDK, ~25s, 4.8MB)
+- [x] Fixed REST API issue: must use Python SDK for reference images (not predictLongRunning)
+- [x] Fixed JSON escaping: creative-brief uses Python for payload construction
+- [x] Fixed "argument list too long": video gen uses @file for curl payload → then switched to Python SDK entirely
+- [x] Sent test images + video to Roger via Telegram
 
-### Step-by-Step Plan
+### Completed
+- [x] Run full 4-scene pipeline ✅ (~3 min, ~$1.50, all 4 scenes generated)
+- [x] Character consistency confirmed across all scenes ✅
+- [x] Sent all videos + character to Roger via Telegram ✅
+- [ ] Test stitch (ffmpeg on M5) — future task
+- [ ] Iterate on character/scenes based on Roger's feedback — future task
 
-- [ ] Step 0: Git commit MEMORY.md + TOOLS.md as-is (backup snapshot)
-- [ ] Step 1: Move "My Tools (Quick Reference)" section → TOOLS.md
-- [ ] Step 2: Move "npm Install Gotchas (Lovable Sites)" → TOOLS.md
-- [ ] Step 3: Move "Key Infrastructure" section → TOOLS.md
-- [ ] Step 4: Move "Model Routing Policy" → TOOLS.md
-- [ ] Step 5: Move tool-specific lessons from "Lessons Learned" → TOOLS.md
-  - Agent-browser screenshots workaround
-  - MC build deploy recipe
-  - Light mode theming rule
-- [ ] Step 6: Remove stale "Queued Projects" (all 3 items completed today)
-- [ ] Step 7: Remove duplicate "Security Boundaries" (already in SOUL.md + AGENTS.md)
-- [ ] Step 8: Review final MEMORY.md — should be <5KB, only personal context + lessons + active projects
-- [ ] Step 9: Review final TOOLS.md — should have all operational reference, organized
-- [ ] Step 10: Git commit the reorganized files
+### Key Files
+- `skills/ugc-campaign/` — the skill
+- `/tmp/ugc-test-brief.json` — test creative brief
+- `/tmp/ugc-test-character/` — test character images (3 shots)
+- `/tmp/ugc-test-scene-1.mp4` — test video scene
 
-### What stays in MEMORY.md (actual memory)
-- Active Projects (pointers to knowledge/)
-- Roger's Preferences
-- Non-tool Lessons Learned (session crashes, CURRENT.md discipline, cron crash recovery, etc.)
-- Master Plan pointer
-- Deep Reference pointers
-
-### What moves to TOOLS.md (operational reference)
-- Tool command reference (email, bird, gh, agent-browser, image gen, video gen, save, summarize)
-- Infrastructure IPs/ports/services
-- npm install gotchas
-- Model routing policy
-- Build/deploy recipes
-- Tool-specific workarounds
+### Technical Notes
+- Veo 3.1 model: `veo-3.1-generate-preview`
+- Reference images: use Python SDK `types.VideoGenerationReferenceImage(image=types.Image(image_bytes=..., mime_type=...), reference_type="asset")`
+- REST predictLongRunning does NOT support referenceImages
+- Nano Banana Pro script: `/usr/local/lib/node_modules/openclaw/skills/nano-banana-pro/scripts/generate_image.py`
+- No ffmpeg in container — stitch via M5 MacBook SSH
+- `uv run --with google-genai` for Python SDK dependency
 
 ### Recovery
-If anything breaks: `git checkout -- MEMORY.md TOOLS.md`
-
-### Previous Work (today)
-- rodaco.co v1 deployed (ef98123, 240df59)
-- rogergimbel.dev v2 deployed (38a5f00)
-- Both sites: dev→GitHub→Lovable→production pattern validated
+- If crash: re-read this file, test artifacts in /tmp/, skill code in skills/ugc-campaign/
+- Character images can be regenerated quickly (~30s)
+- Brief can be regenerated (~10s)

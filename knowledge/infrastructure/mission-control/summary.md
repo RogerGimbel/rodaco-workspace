@@ -9,10 +9,12 @@ Internal ops dashboard for [[Rodaco]]/OpenClaw monitoring. Multi-page React SPA 
 - **Frontend source:** `rodaco-mc/` — Vite + React + TypeScript + shadcn/ui + Tailwind
 - **Data source:** Workspace filesystem (markdown + JSON), OpenClaw session JSONL files, SSH to devices
 - **Build pipeline:** `cd rodaco-mc && npm run build` → copy `dist/*` to `mission-control/public/`
-- **Process:** 3-layer resilience:
+- **Process:** 4-layer resilience:
   1. **Supervisor** (`mission-control/supervisor.sh`) — auto-restarts on crash, circuit breaker after 10 failures/5min
-  2. **Cron watchdog** (every 2 min, job `ac4f86b8`) — checks `/api/v3/health`, auto-restarts if down
-  3. **Heartbeat** (~30 min) — backup check via `mission-control/start.sh`
+  2. **Cron watchdog** (every 2 min) — checks `/api/v3/health`, auto-restarts if down
+  3. **Daily health check** (6 AM ET) — deep CLI check: content sanity, response time, production URLs
+  4. **Weekly browser audit** (Sun 3 AM ET) — full screenshot, mobile viewport, click-through
+  - Heartbeat (~30 min) — backup check via `mission-control/start.sh`
 - **Start command:** `bash mission-control/start.sh`
 - **Logs:** `/tmp/mission-control.log`
 
