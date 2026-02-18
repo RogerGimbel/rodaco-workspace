@@ -1,50 +1,36 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 22:00 ET*
+*Updated 2026-02-18 02:02 ET*
 
 ## TL;DR
-Monster session complete. UGC campaign built, tested, shared with partners, presentation page deployed. Everything saved.
+Overnight Build v2 — Feb 18. Finishing MC UI fixes + API enhancements. Pricing map update for -4-6 models, scroll affordance, skeleton loaders, model usage breakdown.
 
 ## Status: IDLE
 
-## Task: UGC Campaign Skill — Full Pipeline Test
+## Task: Overnight Build — MC UI/API Round 3
 
-### Completed Steps
-- [x] Built skill structure: `skills/ugc-campaign/`
-- [x] `creative-brief.sh` — tested, works (Gemini Flash, ~10s)
-- [x] `generate-character.sh` — tested, works (Nano Banana Pro, ~30s, 3 shots)
-- [x] `generate-video.py` — tested, works (Veo 3.1 Python SDK, ~25s, 4.8MB)
-- [x] Fixed REST API issue: must use Python SDK for reference images (not predictLongRunning)
-- [x] Fixed JSON escaping: creative-brief uses Python for payload construction
-- [x] Fixed "argument list too long": video gen uses @file for curl payload → then switched to Python SDK entirely
-- [x] Sent test images + video to Roger via Telegram
-
-### Completed
-- [x] Run full 4-scene pipeline ✅ (~3 min, ~$1.50, all 4 scenes generated)
-- [x] Character consistency confirmed across all scenes ✅
-- [x] Sent all videos + character to Roger via Telegram ✅
-- [x] Sent to Dale + Stuart via Telegram ✅
-- [x] Built presentation page at presentations.rogergimbel.dev/beerpair/ugc/ ✅
-- [x] Sent presentation link to Dale + Stuart ✅
-- [ ] Test stitch (ffmpeg on M5) — future task
-- [ ] Iterate on character/scenes based on partner feedback — future task
-- [ ] Add UGC tab/link to main BeerPair marketing plan page — future task
+### Steps
+- [x] Step 0: Crash recovery (no crashes, MC healthy)
+- [x] Step 1: Read queue — P1: UI fixes #12, #14; API fixes #7, #8; pricing update
+- [x] Step 2: Fix model pricing exact match for claude-opus-4-6 / claude-sonnet-4-6
+- [x] Step 3: UI Fix #12 — scroll affordance (Home page bottom fade)
+- [x] Step 4: UI Fix #14 — Ops skeleton loaders (verified already working; no fix needed)
+- [x] Step 5: API Fix #7 — Model usage breakdown endpoint + Home page display
+- [x] Step 6: API Fix #8 — Session categorization (TodaySummary updated to use active array length)
+- [x] Step 7: Build + deploy frontend (MC 8.86s, rodaco-site 6.28s, rogergimbel-site 5.67s)
+- [x] Step 8: Restart API server
+- [x] Step 9: Screenshot + verify (Top Model visible, bottom fade confirmed)
+- [x] Step 10: Memory checkpoint + mark queue items done
 
 ### Key Files
-- `skills/ugc-campaign/` — the skill
-- `/tmp/ugc-test-brief.json` — test creative brief
-- `/tmp/ugc-test-character/` — test character images (3 shots)
-- `/tmp/ugc-test-scene-1.mp4` — test video scene
-
-### Technical Notes
-- Veo 3.1 model: `veo-3.1-generate-preview`
-- Reference images: use Python SDK `types.VideoGenerationReferenceImage(image=types.Image(image_bytes=..., mime_type=...), reference_type="asset")`
-- REST predictLongRunning does NOT support referenceImages
-- Nano Banana Pro script: `/usr/local/lib/node_modules/openclaw/skills/nano-banana-pro/scripts/generate_image.py`
-- No ffmpeg in container — stitch via M5 MacBook SSH
-- `uv run --with google-genai` for Python SDK dependency
+- `mission-control/src/routes/api-v3.js` — API (MODEL_PRICING at line 295)
+- `mission-control/src/lib/session-parser.js` — SESSION_MODEL_PRICING at line 7
+- `rodaco-mc/src/pages/Home.tsx` — Home page (scroll affordance)
+- `rodaco-mc/src/pages/Ops.tsx` — Ops page (skeleton loaders)
+- `rodaco-mc/src/components/home/` — Home components
 
 ### Recovery
-- If crash: re-read this file, test artifacts in /tmp/, skill code in skills/ugc-campaign/
-- Character images can be regenerated quickly (~30s)
-- Brief can be regenerated (~10s)
+- If crash: re-read this file, pick up at last unchecked step
+- Build: `cd /home/node/workspace/rodaco-mc && npm run build`
+- Deploy: `rm -rf /home/node/workspace/mission-control/public/assets && cp -r /home/node/workspace/rodaco-mc/dist/* /home/node/workspace/mission-control/public/`
+- API restart: `bash /home/node/workspace/mission-control/start.sh`

@@ -35,8 +35,8 @@
 - Always-dark theme: charcoal base (#1a1a2e) + warm amber/gold accents (HSL 43 90% 55%)
 - Hero: left-aligned name, gold divider, tagline "I've been building the future since before it had a name", animated career timeline (1994→2026)
 - Noise texture + warm amber glow background effects
-- Sections: Hero → What I Do (3 pillars) → Built For (8 clients) → BeerPair → Rodaco → Contact → Footer
-- Nav: "RG" amber mark + 4 links (What I Do, Built For, Rodaco, Contact)
+- Sections: Hero → What I Do (3 pillars) → Built For (8 clients) → [[BeerPair]] → [[Rodaco]] → Contact → Footer
+- Nav: "RG" amber mark + 4 links (What I Do, Built For, [[Rodaco]], Contact)
 - No blue gradients, no purple — warm workshop aesthetic
 
 ## Roger's Client History (for "Built For" section)
@@ -56,11 +56,11 @@
 - **Color:** Dark charcoal base + warm amber/gold accents (from Gimbel crest --crest-or). NO blue gradients, NO purple.
 - **Hero:** Career timeline that scrolls through tech eras (1994→2026), ending with "Bitstream in → Bitstream out"
 - **Sections:** "I Build Things" / "I Fix Things" / "I See What's Coming" (not generic "services")
-- **BeerPair callout:** Personal angle — proof the future works
-- **Rodaco connection:** Co-founder mention + link
+- **[[BeerPair]] callout:** Personal angle — proof the future works
+- **[[Rodaco]] connection:** Co-founder mention + link
 - **"Built For"** not "Trusted By" — client names with one-line descriptions of what was built
 - **Contact:** Dead simple — email, LinkedIn, GitHub, Twitter. No form.
-- **Vibe:** Warm workshop, not sterile tech. Grain texture, amber glow. The person behind Rodaco.
+- **Vibe:** Warm workshop, not sterile tech. Grain texture, amber glow. The person behind [[Rodaco]].
 
 ## History
 - 2026-02-17: Cloned locally, built, server set up on port 3335, first screenshot taken

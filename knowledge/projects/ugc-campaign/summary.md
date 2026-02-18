@@ -10,7 +10,7 @@ AI-powered UGC video campaign generator. Creates consistent "creator" characters
 - **Image Gen:** Nano Banana Pro (Gemini 3 Pro Image) via `uv run`
 - **Video Gen:** Veo 3.1 via Google GenAI Python SDK (`google-genai` package)
 - **Creative Direction:** Gemini 2.5 Flash (fast, cheap, good at structured JSON output)
-- **Video Stitching:** ffmpeg on M5 MacBook via SSH (no ffmpeg in container)
+- **Video Stitching:** ffmpeg on [[M5 MacBook]] via SSH (no ffmpeg in container)
 - **Orchestration:** Bash scripts calling Python where needed
 
 ## Architecture
@@ -37,13 +37,13 @@ ugc-campaign.sh (orchestrator)
 - Cost estimate: ~$2-3 for 4 scenes
 
 ## Use Cases
-- **BeerPair launch:** Craft beer enthusiast character, 4 scenes (discovery → app → pairing → satisfaction)
+- **[[BeerPair]] launch:** Craft beer enthusiast character, 4 scenes (discovery → app → pairing → satisfaction)
 - **Any product/brand:** Takes product photo + description, generates everything
 
 ## Full Pipeline Command
 ```bash
 bash skills/ugc-campaign/ugc-campaign.sh \
-  --brand "BeerPair - AI-powered beer and food pairing app..." \
+  --brand "[[BeerPair]] - AI-powered beer and food pairing app..." \
   --scenes 4 --aspect "9:16" --skip-stitch \
   --output /tmp/ugc-beerpair-campaign
 ```
@@ -52,9 +52,9 @@ bash skills/ugc-campaign/ugc-campaign.sh \
 - **URL:** https://presentations.rogergimbel.dev/beerpair/ugc/
 - **Hosted:** Pi Caddy server → `/mnt/media/presentations/beerpair/ugc/`
 - **Contents:** index.html (dark theme, orange accent) + characters/*.png + scenes/*.mp4
-- **Back link** to main BeerPair marketing plan
+- **Back link** to main [[BeerPair]] marketing plan
 
 ## History
 - 2026-02-17: Created. All components tested individually.
-- 2026-02-17: Full 4-scene BeerPair pipeline SUCCESS. ~3 min, ~$1.50. Character consistency confirmed.
+- 2026-02-17: Full 4-scene [[BeerPair]] pipeline SUCCESS. ~3 min, ~$1.50. Character consistency confirmed.
 - 2026-02-17: Presentation page deployed. Videos + link shared with Dale + Stuart via Telegram.

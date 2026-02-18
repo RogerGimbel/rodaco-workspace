@@ -5,6 +5,13 @@ const SESSIONS_DIR = path.join(process.env.HOME, '.openclaw/agents/main/sessions
 
 // Pricing per 1M tokens — keep in sync with api-v3.js MODEL_PRICING
 const SESSION_MODEL_PRICING = {
+  // Explicit -4-6 and -4-5 variants (matched by startsWith before fuzzy fallback)
+  'claude-opus-4-6':    { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75 },
+  'claude-opus-4-5':    { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75 },
+  'claude-sonnet-4-6':  { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75  },
+  'claude-sonnet-4-5':  { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75  },
+  'claude-haiku-3-5':   { input: 0.80,  output: 4.00,  cacheRead: 0.08, cacheWrite: 1.00  },
+  // Base variants (fuzzy fallback targets)
   'claude-opus-4':   { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75 },
   'claude-sonnet-4': { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75  },
   'claude-haiku-3':  { input: 0.25,  output: 1.25,  cacheRead: 0.03, cacheWrite: 0.30  },

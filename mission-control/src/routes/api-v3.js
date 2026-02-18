@@ -293,7 +293,13 @@ function parseIdentity() {
 
 // Pricing per 1M tokens (input/output) as of 2026-02
 const MODEL_PRICING = {
-  // Anthropic Claude
+  // Anthropic Claude — explicit -4-6 / -4-5 variants (startsWith match wins over fuzzy)
+  'claude-opus-4-6':   { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75, unit: '1M tokens' },
+  'claude-opus-4-5':   { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75, unit: '1M tokens' },
+  'claude-sonnet-4-6': { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75,  unit: '1M tokens' },
+  'claude-sonnet-4-5': { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75,  unit: '1M tokens' },
+  'claude-haiku-3-5':  { input: 0.80,  output: 4.00,  cacheRead: 0.08, cacheWrite: 1.00,  unit: '1M tokens' },
+  // Base variants (fuzzy fallback targets)
   'claude-opus-4':   { input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite: 18.75, unit: '1M tokens' },
   'claude-sonnet-4': { input: 3.00,  output: 15.00, cacheRead: 0.30, cacheWrite: 3.75,  unit: '1M tokens' },
   'claude-haiku-3':  { input: 0.25,  output: 1.25,  cacheRead: 0.03, cacheWrite: 0.30,  unit: '1M tokens' },
@@ -574,6 +580,25 @@ module.exports = function(app) {
         });
         overview.subAgentCount = recentSessions.length;
         overview.subAgentCountTotal = allSessions.length;
+      } catch {}
+
+      // Model usage breakdown from recent sessions (last 24h)
+      try {
+        const recentFiles = getSessionFiles(30);
+        const modelMap = {};
+        for (const file of recentFiles) {
+          const entries = parseSessionUsage(file.path);
+          for (const u of entries) {
+            if (!u.model) continue;
+            if (!modelMap[u.model]) modelMap[u.model] = { calls: 0, cost: 0 };
+            modelMap[u.model].calls++;
+            modelMap[u.model].cost += u.cost || 0;
+          }
+        }
+        overview.modelBreakdown = Object.entries(modelMap)
+          .map(([model, data]) => ({ model, ...data, cost: parseFloat(data.cost.toFixed(4)) }))
+          .sort((a, b) => b.calls - a.calls)
+          .slice(0, 5); // top 5 models
       } catch {}
 
       // Last backup (already extracted from cron-status above, this is a fallback)
@@ -1934,7 +1959,14 @@ module.exports = function(app) {
       }
 
       const lockFiles = execSync('find /home/node/.openclaw -name "*.lock" 2>/dev/null', { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-      const lockStatus = lockFiles.length === 0 ? 'healthy' : `${lockFiles.length} lock files present`;
+      // Classify locks: stale = older than 5 minutes (likely orphaned from crashes)
+      const lockCutoff = Date.now() - 5 * 60 * 1000;
+      const staleLocks = lockFiles.filter(f => { try { return fs.statSync(f).mtimeMs < lockCutoff; } catch { return true; } });
+      const activeLocks = lockFiles.filter(f => !staleLocks.includes(f));
+      // Auto-cleanup stale locks
+      staleLocks.forEach(f => { try { fs.unlinkSync(f); } catch {} });
+      const remainingLocks = activeLocks.length; // only active locks remain after cleanup
+      const lockStatus = remainingLocks === 0 ? 'healthy' : `${remainingLocks} active lock file(s)`;
 
       let zombieProcesses = 0;
       try {
@@ -1951,6 +1983,8 @@ module.exports = function(app) {
         sessionFileSize: `${sessionFileSizeMB} MB`,
         sessionFileSizeBytes: sessionFileSize,
         lockStatus,
+        locksActive: remainingLocks,
+        locksCleaned: staleLocks.length,
         zombieProcesses,
         heapUsage: `${heapUsagePercent}%`,
         heapUsageBytes: heapStats.heapUsed,
@@ -1958,7 +1992,7 @@ module.exports = function(app) {
         logFileSize: `${(logSize / 1024).toFixed(1)} KB`,
         warnings: [
           ...(sessionFileSizeMB > 2 ? ['Session file exceeds 2 MB - consider rotation'] : []),
-          ...(lockFiles.length > 0 ? ['Lock files detected - possible stale locks'] : []),
+          ...(remainingLocks > 0 ? [`${remainingLocks} active lock file(s) detected`] : staleLocks.length > 0 ? [`Auto-cleaned ${staleLocks.length} stale lock(s)`] : []),
           ...(zombieProcesses > 3 ? ['Zombie processes detected'] : []),
           ...(heapUsagePercent > 80 ? ['Heap usage above 80%'] : [])
         ],

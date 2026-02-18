@@ -18,7 +18,7 @@
 - [[BeerPair]] — Food/beer pairing app (web live, native in progress)
 - [[Mission Control]] — OpenClaw ops dashboard (v3, local dev on port 3333)
 - [[rogergimbel-site]] — Personal presence site (rogergimbel.dev, local dev port 3335)
-- [[rodaco-site]] — Rodaco corporate site (rodaco.co, local dev port 3334)
+- [[rodaco-site]] — [[Rodaco]] corporate site (rodaco.co, local dev port 3334)
 - [[Obsidian]] integration — Knowledge vault synced via iCloud
 
 ## Working Style

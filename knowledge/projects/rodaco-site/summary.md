@@ -33,7 +33,7 @@
 ## About Rodaco (The Company)
 
 ### Overview
-Rodaco is a forward-looking AI innovation company founded ~early 2025 by three partners who collectively bring 35+ years of full-stack web development experience dating back to the mid-90s. The company was formed when they recognized the "vibe coding" revolution — where AI agents build and manage code, and ideas + architectural understanding matter more than manual coding.
+[[Rodaco]] is a forward-looking AI innovation company founded ~early 2025 by three partners who collectively bring 35+ years of full-stack web development experience dating back to the mid-90s. The company was formed when they recognized the "vibe coding" revolution — where AI agents build and manage code, and ideas + architectural understanding matter more than manual coding.
 
 ### Focus Areas
 - AI development & AI agents
@@ -50,9 +50,9 @@ Rodaco is a forward-looking AI innovation company founded ~early 2025 by three p
 - Not a stodgy corporate presence — innovative, entrepreneurial
 
 ### Team
-1. **Roger Gimbel** (Denver, CO) — Technical lead. 35+ years full-stack. Background in Java applets → JavaScript → C#/.NET. Deep SQL database expertise (SQL Server, Informix, Oracle, DB2). Extensive B2B consulting. Runs the infrastructure (OpenClaw on Intel MacBook). Full access/control.
-2. **Dale Abbott** (Florida) — Technical partner. Strong technical background similar to Roger. Database expertise. Pays the bills (token costs). Access via Telegram (chat ID 8372298367). Research + simple tasks only (no infrastructure changes).
-3. **Stuart Seligman** (New Jersey) — Marketing research. Somewhat technical. Access via Telegram (chat ID 7655601668). Research + simple tasks only (no infrastructure changes).
+1. **[[Roger Gimbel]]** (Denver, CO) — Technical lead. 35+ years full-stack. Background in Java applets → JavaScript → C#/.NET. Deep SQL database expertise (SQL Server, Informix, Oracle, DB2). Extensive B2B consulting. Runs the infrastructure (OpenClaw on Intel MacBook). Full access/control.
+2. **[[Dale Abbott]]** (Florida) — Technical partner. Strong technical background similar to Roger. Database expertise. Pays the bills (token costs). Access via Telegram (chat ID 8372298367). Research + simple tasks only (no infrastructure changes).
+3. **[[Stuart Seligman]]** (New Jersey) — Marketing research. Somewhat technical. Access via Telegram (chat ID 7655601668). Research + simple tasks only (no infrastructure changes).
 
 ### Access Model
 - Only Roger can make changes (runs on his hardware)
@@ -64,7 +64,7 @@ Rodaco is a forward-looking AI innovation company founded ~early 2025 by three p
 - **rodaco.ai** — Legacy prototype AI chatbot (vector/semantic search, long-term memory). Built ~6 months ago as experiment. Site up but non-functional. NOT the main presence.
 
 ### Products & Projects
-- **BeerPair** — FLAGSHIP. Live at beerpair.com. Web app fully functional and polished. Native apps in progress (Play Store + App Store). Should be featured on corporate site.
+- **[[BeerPair]]** — FLAGSHIP. Live at beerpair.com. Web app fully functional and polished. Native apps in progress (Play Store + App Store). Should be featured on corporate site.
 - **Knife collection manager** — app for managing knife collections, not yet polished
 - **Self-help site** — partially finished
 - **Physical therapy guidance app** — "nagging app" prototyped for Roger's dad's PT regimen
@@ -78,7 +78,7 @@ Rodaco is a forward-looking AI innovation company founded ~early 2025 by three p
 3. Potential investors
 
 ### Content Strategy
-- Feature BeerPair as flagship product showcase
+- Feature [[BeerPair]] as flagship product showcase
 - Simple "who we are and what we believe" section (not a manifesto, just clear and honest)
 - No case studies or deep showcases yet — other projects not polished enough
 - Will add more product showcases as projects mature
@@ -94,7 +94,7 @@ Rodaco is a forward-looking AI innovation company founded ~early 2025 by three p
 - Should reflect the AI-first, agent-driven philosophy
 - Creative and imaginative — break conventions
 - Audiences: clients, partners, investors
-- Feature BeerPair prominently
+- Feature [[BeerPair]] prominently
 - Simple belief/identity section
 
 ## Dev→Deploy Pattern (Validated 2026-02-17)

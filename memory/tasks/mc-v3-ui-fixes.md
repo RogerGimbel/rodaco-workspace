@@ -78,7 +78,7 @@ Full audit completed 2026-02-16. Major contrast overhaul deployed (~150 text-whi
   - Issue: Horizontal teal bars have zero labels — unclear what each represents
   - Fix: Add small labels (api, gateway, macbook, pi, cron, backups) next to each bar
 
-- [ ] **12. Scroll affordance for bottom stats**
+- [x] **12. Scroll affordance for bottom stats**
   - File: `rodaco-mc/src/pages/Home.tsx`
   - Issue: Bottom row clipped with no visual hint of more content
   - Fix: Add a subtle fade gradient at the bottom of the scrollable area
@@ -88,7 +88,7 @@ Full audit completed 2026-02-16. Major contrast overhaul deployed (~150 text-whi
   - Issue: `?` icon bottom-right is nearly invisible
   - Fix: Add a subtle background circle or increase opacity
 
-- [ ] **14. Ops skeleton loaders**
+- [x] **14. Ops skeleton loaders** *(verified: skeletons already working via isLoading → SkeletonCard; no fix needed)*
   - File: `rodaco-mc/src/pages/Ops.tsx`
   - Issue: Shows bare spinner during API load instead of skeleton cards
   - Fix: Already has `<SkeletonCard>` components — check if they're rendering. May be a timing issue (API is fast enough that spinner shows briefly then content loads)

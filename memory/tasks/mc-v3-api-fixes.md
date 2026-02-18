@@ -97,12 +97,12 @@ bash /home/node/workspace/mission-control/start.sh
 
 ### P2 — Enhancement Opportunities
 
-- [ ] **7. Add model usage breakdown to Home page**
+- [x] **7. Add model usage breakdown to Home page** *(2026-02-18: TodaySummary shows top model; modelBreakdown in system-overview)*
   - Currently: Home shows "Models Active: 1" with no breakdown
   - Fix: Parse session data to show which models were used today, with call counts and token usage per model
   - New endpoint or enhance existing: `usage` endpoint could include `modelBreakdown` array
 
-- [ ] **8. Add real session count logic**
+- [x] **8. Add real session count logic** *(2026-02-18: TodaySummary uses active array length; sessions endpoint already had active/recent/total)*
   - Currently: `agent/sessions` returns ALL session files (1000+)
   - Fix: Categorize sessions: `active` (modified in last hour), `recent` (last 24h), `total` (all-time)
   - Frontend should show active count prominently, not total
@@ -112,7 +112,7 @@ bash /home/node/workspace/mission-control/start.sh
   - Fix: Track gateway health check response times over time, store last N measurements
   - Add to `system/health-score` or new endpoint `metrics/gateway`
 
-- [ ] **10. Stale lock file cleanup**
+- [x] **10. Stale lock file cleanup** *(2026-02-18: session-health endpoint auto-deletes locks >5min old)*
   - Currently: `metrics/session-health` warns about "3 lock files present"
   - Fix: Add auto-cleanup of lock files older than 5 minutes
   - Or expose a cleanup endpoint that the overnight build can call
