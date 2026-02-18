@@ -14,6 +14,7 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 | Video Gen | `skills/video-gen/video-gen.sh` | xAI grok-imagine-video |
 | UGC Campaign | `skills/ugc-campaign/ugc-campaign.sh` | Nano Banana + Veo 3.1, full pipeline |
 | Veo 3.1 Video | `skills/ugc-campaign/generate-video.sh` | Python SDK, supports reference images |
+| Presentations | Pi Caddy: `/mnt/media/presentations/` | presentations.rogergimbel.dev |
 | Save | `/save` → `bash bin/save "<summary>"` | memory flush + fact extract + git commit |
 | Summarize | `ssh rogergimbel@100.71.128.20 /opt/homebrew/bin/summarize` | Runs on M5 MacBook |
 | jq | `/home/node/workspace/jq` | Static binary, use full path |

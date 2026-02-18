@@ -11,7 +11,7 @@ updated: 2026-02-17
 - **Mission Control v3** — Combined API+frontend on :3333. Remaining P2 items in `memory/tasks/overnight-queue.md`. KB: `knowledge/infrastructure/`
 - **rogergimbel.dev** — DEPLOYED. Dark charcoal + amber/gold theme, career timeline hero. KB: `knowledge/projects/rogergimbel-site/summary.md`
 - **rodaco.co** — DEPLOYED. Dark mode + blue/purple gradient, 8 sections. KB: `knowledge/projects/rodaco-site/summary.md`
-- **UGC Campaign Skill** — PRODUCTION READY. Nano Banana Pro + Veo 3.1 pipeline. Full 4-scene campaign in ~3 min for ~$1.50. KB: `knowledge/projects/ugc-campaign/summary.md`
+- **UGC Campaign Skill** — PRODUCTION READY. Nano Banana Pro + Veo 3.1 pipeline. Full 4-scene campaign in ~3 min for ~$1.50. Presentation: `presentations.rogergimbel.dev/beerpair/ugc/`. KB: `knowledge/projects/ugc-campaign/summary.md`
 - **Infrastructure Overhaul** — Steps 1-5 COMPLETE (Tailscale lockdown, host agent, Pi lockdown).
 
 ## ⚙️ Model & API Status

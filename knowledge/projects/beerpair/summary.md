@@ -33,8 +33,16 @@ Food and beer pairing web app. Users input a dish, get craft beer pairing recomm
 - Marketing strategy: `knowledge/projects/beerpair-free-marketing-strategy.md`
 - Play Store testing: `knowledge/projects/beerpair-play-store-testing.md`
 
+## UGC Campaign (AI Creative Lab)
+- **Skill:** `skills/ugc-campaign/` — Nano Banana Pro + Veo 3.1 pipeline
+- **First campaign:** 4-scene BeerPair UGC, ~$1.50, ~3 min, character-consistent
+- **Presentation:** https://presentations.rogergimbel.dev/beerpair/ugc/
+- **Shared with:** Dale + Stuart via Telegram (2026-02-17)
+- **Status:** V1 complete, ready for iteration when app store approval comes
+
 ## History
 - [2026-01-29] Confirmed active project
 - [2026-02-01] Web app live at beerpair.com
 - [2026-02-11] Stuart emailed B2B venue marketing plan
 - [2026-02-12] B2B GTM sprint — 17 marketing/sales assets built with Roger & Stuart
+- [2026-02-17] UGC Campaign skill built + first 4-scene campaign generated + shared with partners

@@ -1,9 +1,9 @@
 # CURRENT TASK
 
-*Updated 2026-02-17 21:45 ET*
+*Updated 2026-02-17 22:00 ET*
 
 ## TL;DR
-UGC Campaign skill complete. Full 4-scene BeerPair pipeline ran successfully (~3 min, ~$1.50). All checkpointed.
+Monster session complete. UGC campaign built, tested, shared with partners, presentation page deployed. Everything saved.
 
 ## Status: IDLE
 
@@ -23,8 +23,12 @@ UGC Campaign skill complete. Full 4-scene BeerPair pipeline ran successfully (~3
 - [x] Run full 4-scene pipeline ✅ (~3 min, ~$1.50, all 4 scenes generated)
 - [x] Character consistency confirmed across all scenes ✅
 - [x] Sent all videos + character to Roger via Telegram ✅
+- [x] Sent to Dale + Stuart via Telegram ✅
+- [x] Built presentation page at presentations.rogergimbel.dev/beerpair/ugc/ ✅
+- [x] Sent presentation link to Dale + Stuart ✅
 - [ ] Test stitch (ffmpeg on M5) — future task
-- [ ] Iterate on character/scenes based on Roger's feedback — future task
+- [ ] Iterate on character/scenes based on partner feedback — future task
+- [ ] Add UGC tab/link to main BeerPair marketing plan page — future task
 
 ### Key Files
 - `skills/ugc-campaign/` — the skill

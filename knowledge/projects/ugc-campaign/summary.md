@@ -48,6 +48,13 @@ bash skills/ugc-campaign/ugc-campaign.sh \
   --output /tmp/ugc-beerpair-campaign
 ```
 
+## Presentation Page
+- **URL:** https://presentations.rogergimbel.dev/beerpair/ugc/
+- **Hosted:** Pi Caddy server → `/mnt/media/presentations/beerpair/ugc/`
+- **Contents:** index.html (dark theme, orange accent) + characters/*.png + scenes/*.mp4
+- **Back link** to main BeerPair marketing plan
+
 ## History
 - 2026-02-17: Created. All components tested individually.
-- 2026-02-17: Full 4-scene BeerPair pipeline SUCCESS. ~3 min, ~$1.50. Character consistency confirmed across all video scenes. Videos sent to Roger. Skill is production-ready.
+- 2026-02-17: Full 4-scene BeerPair pipeline SUCCESS. ~3 min, ~$1.50. Character consistency confirmed.
+- 2026-02-17: Presentation page deployed. Videos + link shared with Dale + Stuart via Telegram.
