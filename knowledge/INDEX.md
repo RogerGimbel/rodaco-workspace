@@ -25,6 +25,8 @@ knowledge/
 │   ├── mission-control/summary.md
 │   └── network-overview.md
 ├── chat-history/                   # Parsed conversation summaries (256 convos)
+├── ai-models/
+│   └── gemini-31-pro-preview.md   # Benchmarks, specs, pricing, daily driver assessment
 ├── tools/
 │   ├── IMAGE_GENERATION.md
 │   └── video-gen-research.md
@@ -51,4 +53,4 @@ When spawning sub-agents, include relevant KB paths:
 "Check Pi health. Load: knowledge/infrastructure/raspberry-pi/summary.md"
 ```
 
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-19*
