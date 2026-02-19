@@ -7,7 +7,7 @@ updated: 2026-02-17
 *Last updated: 2026-02-17*
 
 ## 📋 Active Projects
-- **BladeKeeper** — LIVE at bladekeeper.app. Knife collection manager. 31 knives imported. Collections feature shipped. Strategy: vertical on knives → marketplace → expand. In overnight build rotation (P1, HIGH risk). KB: `knowledge/projects/bladekeeper/summary.md`. Skill: `skills/bladekeeper/SKILL.md`. **Core vision:** snap & identify (photo → AI auto-populates all attributes). 20 European collectors signed up on first launch = proven demand. Personal to Roger (built for his daughter). Replit original: https://knife-collector-28gfhftcmc.replit.app/
+- **BladeKeeper** — LIVE at bladekeeper.app. Knife collection manager. 31 knives imported. Big sprint 2026-02-19: forgot password, stats dashboard, sort controls, UI overhaul (warm amber), card borders, Features page. **Awaiting Roger to publish from Lovable UI** (latest commit: `4cb6ff4`). Strategy: vertical on knives → marketplace → expand. KB: `knowledge/projects/bladekeeper/summary.md`. Skill: `skills/bladekeeper/SKILL.md`. **Core vision:** snap & identify (photo → AI auto-populates all attributes). 20 European collectors signed up on first launch = proven demand. Personal to Roger (built for his daughter). Replit original: https://knife-collector-28gfhftcmc.replit.app/
 - **BeerPair** — LIVE at beerpair.com. Native apps in progress (Despia). B2B GTM complete (17 assets). KB: `knowledge/projects/beerpair/`
 - **Mission Control v3** — Combined API+frontend on :3333. Remaining P2 items in `memory/tasks/overnight-queue.md`. KB: `knowledge/infrastructure/`
 - **rogergimbel.dev** — DEPLOYED. Dark charcoal + amber/gold theme, career timeline hero. KB: `knowledge/projects/rogergimbel-site/summary.md`
@@ -16,12 +16,17 @@ updated: 2026-02-17
 - **Infrastructure Overhaul** — Steps 1-5 COMPLETE (Tailscale lockdown, host agent, Pi lockdown).
 
 ## ⚙️ Model & API Status
-- **Primary:** Opus 4.6 (1M context) | **Fallback:** Sonnet 4.6 (1M context)
-- **Anthropic API:** Regular API key (not Claude Code OAuth), Tier 4, $460 balance, auto-reload enabled
+- **Primary:** Sonnet 4.6 (1M context, daily driver since 2026-02-19) | **Opus:** available via `/model opus` for heavy tasks
+- **xAI/Grok:** NOT supported as chat model in OpenClaw 2026.2.17 — only used for web search tool. Config aliases exist but LLM runner can't dispatch to xAI. Would need OpenRouter or future OpenClaw update.
+- **Anthropic API:** Regular API key (not Claude Code OAuth), Tier 4, rotated 2026-02-19 (new key ends ...sTyQAA). Auto-reload enabled.
+- **All 5 API keys configured in container env:** Anthropic, OpenAI, Google Gemini, xAI, OpenRouter
+- **Alternative daily drivers available:** `openai/gpt-5.1-codex`, `google/gemini-3-pro-preview`, `openrouter/xai/grok-4-1-fast` — keys present, untested
+- **Routing config:** `memory/MODEL_ROUTING.md`, `memory/2026-02-05-model-config.md`
 - **All cron jobs + workflow agents:** Sonnet 4.6 (zero 4.5 references remain)
 - **1M context:** Via `params.context1m: true` per model (replaced manual anthropic-beta header in 2026.2.17)
 - **Opus thinkingDefault:** low | **Telegram reaction notifications:** all
 - **OpenClaw version:** 2026.2.17
+- **Cost note:** Opus 4.6 can spike hard ($87 in one morning). Sonnet 4.6 is 5x cheaper — right daily driver. Switch to Opus only for heavy tasks.
 
 ## 🔄 Automation Stack
 - **Overnight Build v2** (2 AM ET): Queue-based multi-project feature dev from `memory/tasks/overnight-queue.md`
@@ -45,16 +50,20 @@ updated: 2026-02-17
 - UFW DOCKER-USER needs `conntrack ESTABLISHED,RELATED` as FIRST rule
 - Always prefer container-to-container networking over published port loopback
 - Wildcard DNS with public domains catches root domain — use explicit subdomain entries
-- **Docker port mappings:** Must be added to docker-compose.yml for each new service. Watchdog checking localhost won't catch missing port forwards — the server runs fine inside the container but external access fails silently.
+- **Docker port mappings:** Must be added to docker-compose.yml for each new service. Already correctly mapped: 3333, 3334, 3335.
+- **Never check external/host IP from inside Docker container:** `curl http://100.124.209.59:$port/` from inside the container always returns HTTP 000 — Docker doesn't route traffic to the host's own external IP back through port mappings. This caused sites watchdog to fire false "port mapping missing" alerts. Use localhost checks only for internal health monitoring. External verification must run from outside the container. **Fixed 2026-02-19.**
 - **MOBILE FIRST:** Always test mobile viewport (Playwright with isMobile:true) BEFORE pushing CSS changes. Subtle overlays/textures that look fine on desktop create visible boundaries on mobile. Never add background effects that don't cover the full page edge-to-edge.
 - **Fix root cause, not symptoms:** When something looks broken, diagnose properly and fix once. Don't push 3 incremental commits hoping one works.
 - **BladeKeeper image pattern:** Hooks pass raw storage paths. Components sign at render time via `getSignedBladeImageUrl()`. Don't sign in hooks (double-signing breaks URLs).
 - **Lovable preview ≠ production:** Signed Supabase URLs break in Lovable's iframe preview. Always test on deployed site.
 - **Lovable 2-way sync:** Always `git pull` before editing — Lovable may have pushed fixes to GitHub.
+- **Never `git add -A` for BladeKeeper:** Use explicit file paths. Stale vite temp files (`vite.config.ts.timestamp-*.mjs`) will poison Lovable's build cache, and once poisoned, only a Lovable UI revert fixes it.
+- **Lovable build cache is sticky:** Once broken, pushing fixes doesn't help. Revert via Lovable UI to last working commit, then re-apply changes cleanly.
 - **Project registry:** `knowledge/projects/REGISTRY.md` — single source of truth for all projects.
 - **Fixes database:** `knowledge/fixes/INDEX.md` — searchable known issues and fixes to avoid wasting tokens.
 - **SESSION CRASHES:** Checkpoint work to daily notes DURING the session, not after.
 - **CURRENT.md is THE crash recovery file.** Update at every context threshold (50%+).
+- **Cron sub-agents should NOT send messages themselves:** Use `delivery.mode: "announce"` and just write the result as the reply. Trying to use `message send` from isolated sessions fails on target resolution.
 - **Cron job crash recovery:** Overnight builds must check `git diff --stat` first and read task files for `[x]` state.
 - **active-tasks.md is DEPRECATED.** Use `memory/tasks/CURRENT.md` as single source of truth.
 - **Anthropic tier advancement:** $400 cumulative credit purchases → Tier 4 (auto). 1M context requires Tier 4.

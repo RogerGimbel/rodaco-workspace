@@ -55,12 +55,13 @@
 - Photos: Supabase Storage
 
 ## Visual Identity
-- Amber/rust/brown-orange accent color
+- Warm amber palette with modern card grid layout
+- Subtle card borders (40% opacity in dark mode — no chunky white borders)
 - Rust-colored leather/suede photography backgrounds
-- White cards, steel-type color badges
+- Steel-type color badges
 - Premium, cohesive collector aesthetic
 
-## Current State (2026-02-18)
+## Current State (2026-02-19)
 - **31 knives imported** into Lovable/Supabase version ✅
 - **32 photos uploaded** to Supabase Storage (path: `user-uploads/<blade_id>/<timestamp>.jpg`) ✅
 - **Extended attributes** populated (grind, tang, guard, origin, historical notes) ✅
@@ -68,30 +69,39 @@
 - **Roger's email:** accfighter@gmail.com
 - **Supabase project:** `zocftrkoaokqvklugztj`
 - **34 total blades** in DB (31 imported + 3 from earlier testing)
-- **Collections table:** exists but empty — frontend shows same content as My Blades (bug)
+- **Collections:** fully functional (create/edit/delete/share) ✅
 - **BladeBase repo:** dead weight, ignore
 
 ## What Works
-- Auth (Supabase, OAuth)
+- Auth (Supabase, OAuth) + forgot/reset password flow
 - Multi-tenant blade storage with RLS
 - Blade CRUD (add/edit/view)
 - Photo upload to Supabase Storage
-- Dashboard with stats
+- Dashboard with blade stats (collection value, top makers, top steels)
 - Type-specific attribute schema (9 blade types)
-- Profile, settings, notifications pages
+- Profile, settings (account info, change password, theme picker), notifications pages
 - Admin/moderator roles
-- Sharing infrastructure (blade_shares, collection_shares with share_key)
+- Collections (create/edit/delete/add-remove blades/share via link)
+- Sort controls on My Blades (newest, oldest, A-Z, Z-A, value high/low)
 - Dynamic dropdown options
+- Dark mode with subtle card borders (global 40% opacity treatment)
+- Warm amber palette, modern card grid layout
 
 ## What's Broken / Incomplete
-1. **Collections page** — routes to same component as My Blades, shows identical content. DB schema ready (collections, collection_blades, collection_shares tables) but frontend not implemented.
-2. **Image display** — uses RPC `get_blade_images` returning URLs. Needs verification after import.
-3. **No AI features** — no Snap & Identify, no Ask AI per blade
-4. **No public sharing** — share infrastructure exists in DB but no UI
-5. **No marketplace** — Phase 2
+1. **No AI features** — no Snap & Identify, no Ask AI per blade
+2. **No public sharing UI** — share infrastructure exists in DB, collection sharing works but blade-level sharing UI missing
+3. **No marketplace** — Phase 2
+4. **Image display** — uses RPC `get_blade_images`. Works but could improve (lazy loading, galleries)
+5. **Mobile UX** — untested, likely needs polish
 
-## Next Task
-**Fix Collections page** — make it show actual collections (create, name, add/remove blades) instead of mirroring My Blades. Backend schema already supports it.
+## Next Up (from overnight queue)
+- Modernize blade card design (hover effects, animations)
+- Blade detail page enhancements (bigger photos, swipe gallery)
+- Mobile UX improvements
+- Empty states and onboarding for new users
+- Collection card previews (mosaic, cover image)
+- Advanced search/filter (steel, manufacturer, blade type, price range)
+- AI features prep (Snap & Identify, Ask AI per blade)
 
 ## Supabase Schema (Key Tables)
 - `blades` — core blade data, user_id for multi-tenant
@@ -121,3 +131,10 @@
 - [2026-02-18] 31 knives + 32 photos imported successfully
 - [2026-02-18] Duplicates cleaned (28 removed), photos re-uploaded with correct path pattern
 - [2026-02-18] App audit complete — Collections fix identified as next task
+- [2026-02-19] Overnight: forgot/reset password, blade stats dashboard, sort controls (commits 76fccbc, 499d439)
+- [2026-02-19] Morning: UI overhaul (warm amber palette, modern card grid) + global card border fix (commits 7e83a01, 03ff4a0)
+- [2026-02-19] All pushed to GitHub, awaiting Lovable sync + Roger publish
+- [2026-02-19] Morning: UI overhaul (warm amber palette `7e83a01`) + global card border fix `03ff4a0`
+- [2026-02-19] Features/Learn More page shipped `4cb6ff4` — public marketing page at `/features` with breadcrumbs, auth-aware CTAs, 5 feature sections + coming soon
+- [2026-02-19] All commits pushed. App awaiting Roger to publish from Lovable UI.
+- [2026-02-19] API key rotated on host Mac. Model switched to Sonnet 4.6 as daily driver.

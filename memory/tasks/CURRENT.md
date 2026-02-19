@@ -1,40 +1,35 @@
 # Current Task
 
 **Status:** IDLE
-**Updated:** 2026-02-19 02:07 ET
-**Task:** Overnight Build v2 — COMPLETE ✅
+**Updated:** 2026-02-19 12:04 ET
+**Task:** Full Morning Session — COMPLETE ✅
 
 ## Summary
-Completed 4 tasks across BladeKeeper and Mission Control.
-See memory/2026-02-19.md for full details.
+Big day. Overnight build shipped 4 features. Morning added UI polish, Features page, MC bug fixes, watchdog fix, model switch, and API key rotation. Everything is committed and ready.
 
-## What We're Doing
-Priority fixes from overnight-queue.md BladeKeeper section:
-1. Add "Forgot password?" link on login screen → Supabase password reset email flow
-2. Add "Change Password" / "Reset Password" in Settings → Account tab
-3. Settings page general cleanup (actually implement account & appearance tabs)
+## BladeKeeper — Awaiting Roger's Action
+- All 6 commits pushed to GitHub
+- Lovable should be synced to `4cb6ff4` (Features page)
+- **Roger needs to:** check Lovable sync → publish from Lovable UI
 
-## Plan
-- [ ] Step 1: Add ForgotPassword flow to AuthPage.tsx (new "forgot" mode with email input + send reset)
-- [ ] Step 2: Add useResetPassword hook (wraps supabase.auth.resetPasswordForEmail)
-- [ ] Step 3: Add PasswordResetHandler — catch /auth/callback?type=recovery and show new-password form
-- [ ] Step 4: Implement Settings → Account tab (show email, change password, danger zone)
-- [ ] Step 5: Settings → Appearance tab (dark/light/system theme toggle)
-- [ ] Step 6: TypeScript check + push to GitHub
+## What Was Shipped Today
+- [x] Forgot password flow + reset in settings + theme picker (`76fccbc`)
+- [x] Blade stats dashboard + sort controls (`499d439`)
+- [x] UI overhaul: warm amber palette + modern card grid (`7e83a01`)
+- [x] Global card border fix: subtle 40% opacity (`03ff4a0`)
+- [x] Features page at /features with breadcrumbs + auth-aware CTAs (`4cb6ff4`)
+- [x] MC: 4 bugs fixed (degraded status, RAM display, model name, API base URL)
+- [x] Sites watchdog false alarm fixed (removed external IP check)
+- [x] Homarr backup done, migration reminder set for Feb 26
+- [x] AI digest cron delivery fix
+- [x] Model switched to Sonnet 4.6 (daily driver)
+- [x] Anthropic API key rotated (new key: ...sTyQAA)
 
-## Key Files
-- `projects/bladekeeper.app/src/pages/AuthPage.tsx` — login/signup form
-- `projects/bladekeeper.app/src/pages/AuthCallback.tsx` — OAuth callback, needs recovery handling
-- `projects/bladekeeper.app/src/pages/SettingsPage.tsx` — settings tabs
-- `projects/bladekeeper.app/src/hooks/useAuthMethods.ts` — signIn/signUp/signOut
-- `projects/bladekeeper.app/src/integrations/supabase/client.ts` — supabase client
-- `projects/bladekeeper.app/src/components/ThemeProvider.tsx` — theme context
-
-## Supabase
-- Project: zocftrkoaokqvklugztj
-- Auth reset: supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://bladekeeper.app/auth/callback' })
-- Update password: supabase.auth.updateUser({ password: newPassword })
-
-## Deploy
-- Push to GitHub after TypeScript check passes
-- Lovable auto-syncs → Roger publishes
+## Next Up (from overnight queue)
+- Blade card design improvements (hover effects, animations)
+- Blade detail page enhancements (bigger photos, swipe gallery)
+- Mobile UX improvements
+- Empty states and onboarding for new users
+- Collection card previews (mosaic, cover image)
+- Advanced search/filter (steel, manufacturer, blade type, price range)
+- AI features prep (Snap & Identify, Ask AI per blade)
