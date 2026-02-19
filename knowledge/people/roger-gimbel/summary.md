@@ -37,8 +37,21 @@
 - [[BeerPair]]: 1/3 each (Roger, Dale, Stuart)
 
 ## Personal
+- Lifelong futurist — on the bleeding edge of tech since his 20s
+- Early career: built apps on HP handheld calculators for an ophthalmologist, used dBASE III for patient data analysis
+- Stage 4 adrenocortical cancer survivor (diagnosed ~2010) — one of the most lethal cancers, ~10-15% five-year survival at stage 4. Took him out of tech for roughly 2010-2024.
+- Now fully back and more driven than ever
+- X (Twitter) is his #1 source for staying current — prefers it over Google for cutting-edge AI/tech info
+- Follows developers, CEOs, CTOs at major companies on X
 - Worst job ever: stuffing insulation in an attic
 - If he could automate one thing in life: house cleaning (not a tech answer — a real life answer)
+
+## Additional Projects (Lovable/Replit, various states)
+- **[[BladeKeeper]]** — edge weapons collectors' web app
+- **[[PhysioPal]]** — physio routine reminders for elderly/post-surgery (built for his father)
+- **Supplement Tracker** — carnivore diet electrolyte/vitamin tracking (local storage, no backend)
+- **selfgrowth.app** — self-help content aggregator (stalled client project for selfgrowth.com owner)
+- **rodaco.ai** — was an AI chatbot with memory + vector search, domain available for repurposing
 
 ## Devices (Tailscale)
 - [[M5 MacBook]] (daily driver)

@@ -1,36 +1,40 @@
-# CURRENT TASK
+# Current Task
 
-*Updated 2026-02-18 02:02 ET*
+**Status:** IDLE
+**Updated:** 2026-02-19 02:07 ET
+**Task:** Overnight Build v2 — COMPLETE ✅
 
-## TL;DR
-Overnight Build v2 — Feb 18. Finishing MC UI fixes + API enhancements. Pricing map update for -4-6 models, scroll affordance, skeleton loaders, model usage breakdown.
+## Summary
+Completed 4 tasks across BladeKeeper and Mission Control.
+See memory/2026-02-19.md for full details.
 
-## Status: IDLE
+## What We're Doing
+Priority fixes from overnight-queue.md BladeKeeper section:
+1. Add "Forgot password?" link on login screen → Supabase password reset email flow
+2. Add "Change Password" / "Reset Password" in Settings → Account tab
+3. Settings page general cleanup (actually implement account & appearance tabs)
 
-## Task: Overnight Build — MC UI/API Round 3
+## Plan
+- [ ] Step 1: Add ForgotPassword flow to AuthPage.tsx (new "forgot" mode with email input + send reset)
+- [ ] Step 2: Add useResetPassword hook (wraps supabase.auth.resetPasswordForEmail)
+- [ ] Step 3: Add PasswordResetHandler — catch /auth/callback?type=recovery and show new-password form
+- [ ] Step 4: Implement Settings → Account tab (show email, change password, danger zone)
+- [ ] Step 5: Settings → Appearance tab (dark/light/system theme toggle)
+- [ ] Step 6: TypeScript check + push to GitHub
 
-### Steps
-- [x] Step 0: Crash recovery (no crashes, MC healthy)
-- [x] Step 1: Read queue — P1: UI fixes #12, #14; API fixes #7, #8; pricing update
-- [x] Step 2: Fix model pricing exact match for claude-opus-4-6 / claude-sonnet-4-6
-- [x] Step 3: UI Fix #12 — scroll affordance (Home page bottom fade)
-- [x] Step 4: UI Fix #14 — Ops skeleton loaders (verified already working; no fix needed)
-- [x] Step 5: API Fix #7 — Model usage breakdown endpoint + Home page display
-- [x] Step 6: API Fix #8 — Session categorization (TodaySummary updated to use active array length)
-- [x] Step 7: Build + deploy frontend (MC 8.86s, rodaco-site 6.28s, rogergimbel-site 5.67s)
-- [x] Step 8: Restart API server
-- [x] Step 9: Screenshot + verify (Top Model visible, bottom fade confirmed)
-- [x] Step 10: Memory checkpoint + mark queue items done
+## Key Files
+- `projects/bladekeeper.app/src/pages/AuthPage.tsx` — login/signup form
+- `projects/bladekeeper.app/src/pages/AuthCallback.tsx` — OAuth callback, needs recovery handling
+- `projects/bladekeeper.app/src/pages/SettingsPage.tsx` — settings tabs
+- `projects/bladekeeper.app/src/hooks/useAuthMethods.ts` — signIn/signUp/signOut
+- `projects/bladekeeper.app/src/integrations/supabase/client.ts` — supabase client
+- `projects/bladekeeper.app/src/components/ThemeProvider.tsx` — theme context
 
-### Key Files
-- `mission-control/src/routes/api-v3.js` — API (MODEL_PRICING at line 295)
-- `mission-control/src/lib/session-parser.js` — SESSION_MODEL_PRICING at line 7
-- `rodaco-mc/src/pages/Home.tsx` — Home page (scroll affordance)
-- `rodaco-mc/src/pages/Ops.tsx` — Ops page (skeleton loaders)
-- `rodaco-mc/src/components/home/` — Home components
+## Supabase
+- Project: zocftrkoaokqvklugztj
+- Auth reset: supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://bladekeeper.app/auth/callback' })
+- Update password: supabase.auth.updateUser({ password: newPassword })
 
-### Recovery
-- If crash: re-read this file, pick up at last unchecked step
-- Build: `cd /home/node/workspace/rodaco-mc && npm run build`
-- Deploy: `rm -rf /home/node/workspace/mission-control/public/assets && cp -r /home/node/workspace/rodaco-mc/dist/* /home/node/workspace/mission-control/public/`
-- API restart: `bash /home/node/workspace/mission-control/start.sh`
+## Deploy
+- Push to GitHub after TypeScript check passes
+- Lovable auto-syncs → Roger publishes

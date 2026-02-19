@@ -19,7 +19,14 @@ Read `memory/cron-status.json`. Alert Roger if any job is stale:
 - overnight_build: >36h since lastRun
 - daily_backup: >36h since lastRun
 
-## 5. CHECKPOINT
+## 5. NOTES SYNTHESIS (every 3-5 days)
+Check `notes/INDEX.md` — if last synthesis >3 days ago:
+- Review recent notes for patterns, recurring themes
+- Extract durable insights → MEMORY.md or knowledge/ entities
+- Update INDEX.md theme sections
+- Log synthesis date
+
+## 6. CHECKPOINT
 - Context bloated? → flush to `memory/YYYY-MM-DD.md`
 - Learned something permanent? → write to `MEMORY.md`
 - Major task just completed? → update `memory/active-tasks.md`

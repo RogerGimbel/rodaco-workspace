@@ -27,7 +27,7 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 | M5 MacBook | 100.71.128.20 | Headless Chrome, summarize CLI |
 | Raspberry Pi | 100.83.169.87 | Media stack, exit node |
 | Mission Control | http://100.124.209.59:3333/ | Express: frontend from `mission-control/public/` + API at `/api/v3/` |
-| rodaco-site | http://100.124.209.59:3334/ | Static server, `rodaco-site/server.cjs` |
+| rodaco-site | http://100.124.209.59:3334/ | Static server, `rodaco-site/server.cjs` (port added to docker-compose 2026-02-18) |
 | rogergimbel-site | http://100.124.209.59:3335/ | Static server, `rogergimbel-site/server.cjs` |
 | Host Agent | 100.124.209.59:18790 | 13 commands, Tailscale-only |
 | Sites Watchdog | Cron every 2min | Auto-restarts 3334+3335 if down |
@@ -45,6 +45,7 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 - **Cron jobs (all 11 on Sonnet 4.6):** MC watchdog (2min), sites watchdog (2min), overnight build v2 (2AM ET), wikilink sync (3AM MT), daily backup (4AM MT), daily health check (6AM ET), morning brief (7AM ET), get-to-know ×3 (Mon/Wed/Fri), weekly knowledge synthesis (Sun 9AM MT), weekly browser audit (Sun 3AM ET), monthly review (1st 2PM MT)
 - **Cron jobs (external, Opus):** TestFlight check (noon MT, does web search)
 - **Antfarm workflow agents (16 of 19):** Sonnet 4.6
+- **Daily AI Digest** (8 AM MT): X search across 20+ known voices + engineer discovery + product updates + trends → synthesized Telegram digest
 - **Rule:** If external data touches context → top-tier model only.
 - **Exception agents (Opus 4.6, web access):** security-audit/scanner, security-audit/tester, feature-dev/tester
 - **Context windows:** 1M tokens for both Opus 4.6 and Sonnet 4.6 (Tier 4 confirmed, beta header: `context-1m-2025-08-07`)

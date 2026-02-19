@@ -1,0 +1,56 @@
+#!/bin/bash
+# bin/screenshot-compare — Take before/after screenshots for overnight build verification
+# Usage: screenshot-compare [before|after]
+# Stores screenshots in /tmp/screenshot-compare/{before,after}/
+
+set -e
+
+MODE="${1:-before}"
+DIR="/tmp/screenshot-compare/$MODE"
+REMOTE="rogergimbel@100.71.128.20"
+CHROME="/opt/homebrew/bin/google-chrome-stable"
+
+mkdir -p "$DIR"
+
+SITES=(
+  "mc|http://100.124.209.59:3333/"
+  "rodaco|http://100.124.209.59:3334/"
+  "roger|http://100.124.209.59:3335/"
+)
+
+echo "Taking $MODE screenshots..."
+
+for entry in "${SITES[@]}"; do
+  IFS='|' read -r name url <<< "$entry"
+  
+  # Desktop
+  echo "  $name (desktop)..."
+  ssh "$REMOTE" "$CHROME --headless --disable-gpu --screenshot=/tmp/sc-${name}-desktop.png --window-size=1440,900 --virtual-time-budget=10000 '$url'" 2>/dev/null
+  scp -q "$REMOTE:/tmp/sc-${name}-desktop.png" "$DIR/${name}-desktop.png" 2>/dev/null
+  
+  # Mobile
+  echo "  $name (mobile)..."
+  ssh "$REMOTE" "$CHROME --headless --disable-gpu --screenshot=/tmp/sc-${name}-mobile.png --window-size=375,812 --virtual-time-budget=10000 '$url'" 2>/dev/null
+  scp -q "$REMOTE:/tmp/sc-${name}-mobile.png" "$DIR/${name}-mobile.png" 2>/dev/null
+done
+
+echo "Screenshots saved to $DIR/"
+ls -la "$DIR/"
+
+# If "after" mode, generate a comparison summary
+if [ "$MODE" = "after" ] && [ -d "/tmp/screenshot-compare/before" ]; then
+  echo ""
+  echo "=== Comparison ==="
+  for f in "$DIR"/*.png; do
+    name=$(basename "$f")
+    before="/tmp/screenshot-compare/before/$name"
+    if [ -f "$before" ]; then
+      before_size=$(stat -f%z "$before" 2>/dev/null || stat -c%s "$before" 2>/dev/null)
+      after_size=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null)
+      diff_pct=$(echo "scale=1; ($after_size - $before_size) * 100 / $before_size" | bc 2>/dev/null || echo "?")
+      echo "  $name: before=${before_size}B after=${after_size}B (${diff_pct}% change)"
+    else
+      echo "  $name: NEW (no before screenshot)"
+    fi
+  done
+fi

@@ -1,22 +1,60 @@
 # Overnight Build Queue
 
-*Updated: 2026-02-17*
+## Projects Under Active Overnight Review
 
-## Priority 1 — Tonight
-- [x] [MC] Finish remaining P1/P2 items from mc-v3-ui-fixes.md and mc-v3-api-fixes.md *(2026-02-18: scroll affordance, top model stat, lock cleanup, model breakdown)*
-- [x] [MC] Update model pricing map for Sonnet 4.6 + Opus 4.6 in API *(2026-02-18: explicit -4-6/-4-5 keys added)*
+### 1. Mission Control v3
+**Project:** mission-control/
+**Priority:** P1
+**Scope:** Bug fixes, UI improvements, API enhancements
+**KB:** knowledge/projects/mission-control-v3/
 
-## Priority 2 — This Week
-- [ ] [MC] Add real-time status indicators (green/red dots) for site health on Home dashboard
-- [x] [rodaco.co] Mobile responsiveness pass — test and fix breakpoints *(2026-02-18: hamburger nav menu added)*
-- [x] [rogergimbel.dev] Mobile responsiveness pass — test and fix breakpoints *(2026-02-18: hamburger nav menu added)*
+### 2. rogergimbel.dev
+**Project:** rogergimbel-site/
+**Priority:** P2
+**Scope:** Polish, content updates, performance
+**KB:** knowledge/projects/rogergimbel-site/summary.md
 
-## Priority 3 — Backlog
-- [ ] [MC] WebSocket updates for Ops page (live task status without refresh)
-- [ ] [MC] Dark/light theme toggle
-- [ ] [rodaco.co] Add detailed BeerPair case study section
-- [ ] [rogergimbel.dev] Add blog/writing section stub
-- [ ] [tooling] Create automated screenshot comparison script (before/after overnight builds)
+### 3. rodaco.co
+**Project:** rodaco-site/
+**Priority:** P2
+**Scope:** Polish, content updates, performance
+**KB:** knowledge/projects/rodaco-site/summary.md
 
-## Completed
-*(items move here when done)*
+### 4. BladeKeeper ⭐ NEW
+**Project:** projects/bladekeeper.app/
+**Priority:** P1
+**Scope:** WIDE OPEN — UI/UX enhancements, new features, modernization, creativity welcome
+**KB:** knowledge/projects/bladekeeper/summary.md
+**Skill:** skills/bladekeeper/SKILL.md
+**Deploy:** Push to GitHub → Lovable syncs → Roger publishes
+**Risk tolerance:** HIGH — this is a fun MVP prototype, be adventurous
+**Supabase:** zocftrkoaokqvklugztj
+
+#### Priority Fixes (Do First)
+- [x] **Forgot password** on login screen (Supabase auth reset flow) ✅ 2026-02-19
+- [x] **Reset password** in user profile/settings page ✅ 2026-02-19
+- [x] Profile/settings page general cleanup ✅ 2026-02-19 (account info + theme picker)
+
+#### BladeKeeper Enhancement Ideas
+- [ ] Modernize UI — the app is ~1 year old, lots of UX patterns have evolved
+- [ ] Improve blade card design (better photos, hover effects, animations)
+- [ ] Add blade detail page enhancements (bigger photos, swipe gallery, related info)
+- [ ] Dark mode polish (ensure consistent theming)
+- [ ] Mobile UX improvements (touch-friendly, swipe gestures)
+- [ ] Empty states and onboarding flow for new users
+- [ ] Collection card preview improvements (mosaic, cover image)
+- [ ] Search/filter improvements (by steel type, manufacturer, blade type, price range)
+- [x] Sort options (newest, oldest, value, alphabetical) ✅ 2026-02-19
+- [x] Blade statistics dashboard (total value, breakdown by type/maker/steel) ✅ 2026-02-19
+- [ ] AI features prep (Snap & Identify button, Ask AI per blade)
+- [ ] Animation and micro-interactions
+- [ ] Accessibility improvements
+- [ ] Performance optimization (lazy loading images, virtual scrolling for large collections)
+- [ ] PWA improvements (offline support, install prompt)
+
+#### What's Done
+- [x] 31 knives imported with photos ✅
+- [x] Collections page separated from My Blades ✅
+- [x] Create/edit/delete collections ✅
+- [x] Add/remove blades from collections ✅
+- [x] Share collections via link ✅

@@ -601,6 +601,35 @@ module.exports = function(app) {
           .slice(0, 5); // top 5 models
       } catch {}
 
+      // Site health (local + external)
+      try {
+        const sites = [
+          { name: 'rodaco.co', port: 3334, path: '/' },
+          { name: 'rogergimbel.dev', port: 3335, path: '/' }
+        ];
+        // MC is self (we're responding, so we're up)
+        overview.sites = [{ name: 'Mission Control', port: 3333, local: 'up', external: 'up', latencyMs: Math.round(overview.health?.durationMs || 0) }];
+        for (const site of sites) {
+          const entry = { name: site.name, port: site.port, local: 'unknown', external: 'unknown', latencyMs: null };
+          try {
+            const start = Date.now();
+            execSync(`curl -sf --connect-timeout 2 -o /dev/null http://127.0.0.1:${site.port}${site.path}`, { timeout: 5000 });
+            entry.local = 'up';
+            entry.latencyMs = Date.now() - start;
+          } catch { entry.local = 'down'; }
+          try {
+            execSync(`curl -sf --connect-timeout 3 -o /dev/null http://100.124.209.59:${site.port}${site.path}`, { timeout: 6000 });
+            entry.external = 'up';
+          } catch { entry.external = 'down'; }
+          overview.sites.push(entry);
+        }
+      } catch {}
+
+      // Gateway latency (from health check durationMs already captured above)
+      try {
+        overview.gatewayLatencyMs = overview.health?.durationMs || null;
+      } catch {}
+
       // Last backup (already extracted from cron-status above, this is a fallback)
       if (!overview.lastBackup) {
         try {

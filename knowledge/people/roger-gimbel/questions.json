@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalAsked": 14,
+  "totalAsked": 15,
   "questions": [
     {
       "id": 1,
@@ -844,7 +844,7 @@
       "category": "technical",
       "text": "If you had to pick one stack for everything forever, what would it be?",
       "weight": 1,
-      "asked": null,
+      "asked": "2026-02-18T21:00:03.466Z",
       "answered": null,
       "answer": null
     },

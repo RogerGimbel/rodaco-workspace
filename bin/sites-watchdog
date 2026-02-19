@@ -1,9 +1,11 @@
 #!/bin/bash
 # bin/sites-watchdog — Keep rodaco-site (3334) and rogergimbel-site (3335) alive
-# Called by cron every 2 minutes
+# Called by cron every 2-5 minutes
+# Checks BOTH localhost (container) and external IP (Docker port forward)
 
 WORKSPACE="/home/node/workspace"
 LOG="/tmp/sites-watchdog.log"
+EXTERNAL_IP="100.124.209.59"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
 check_and_start() {
@@ -11,20 +13,50 @@ check_and_start() {
   local port="$2"
   local server="$WORKSPACE/$name/server.cjs"
 
-  if curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://localhost:$port/" | grep -q "200"; then
-    return 0  # healthy
+  # Check localhost first (is the server process running?)
+  local local_status
+  local_status=$(curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port/")
+
+  # Check external IP (is Docker port forward working?)
+  local external_status
+  external_status=$(curl -s --connect-timeout 3 -o /dev/null -w "%{http_code}" "http://$EXTERNAL_IP:$port/")
+
+  if [ "$local_status" = "200" ] && [ "$external_status" = "200" ]; then
+    return 0  # fully healthy
   fi
 
-  echo "[$TIMESTAMP] $name (port $port) not responding — starting..." >> "$LOG"
-  nohup node "$server" >> "/tmp/$name.log" 2>&1 &
-  sleep 2
+  if [ "$local_status" != "200" ]; then
+    echo "[$TIMESTAMP] $name (port $port) localhost not responding (HTTP $local_status) — starting..." >> "$LOG"
+    # Kill any zombie processes for this server
+    pkill -f "node $server" 2>/dev/null
+    sleep 1
+    nohup node "$server" >> "/tmp/$name.log" 2>&1 &
+    sleep 2
 
-  if curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://localhost:$port/" | grep -q "200"; then
-    echo "[$TIMESTAMP] $name started OK" >> "$LOG"
-  else
-    echo "[$TIMESTAMP] $name FAILED to start" >> "$LOG"
+    local_status=$(curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port/")
+    if [ "$local_status" = "200" ]; then
+      echo "[$TIMESTAMP] $name restarted OK (localhost)" >> "$LOG"
+    else
+      echo "[$TIMESTAMP] $name FAILED to restart (localhost HTTP $local_status)" >> "$LOG"
+      return 1
+    fi
+  fi
+
+  if [ "$external_status" != "200" ]; then
+    # Server is running but external IP doesn't work = Docker port mapping issue
+    echo "[$TIMESTAMP] $name localhost OK but external IP FAILED (HTTP $external_status) — Docker port mapping missing for $EXTERNAL_IP:$port!" >> "$LOG"
+    echo "[$TIMESTAMP] ACTION REQUIRED: Add port $port to docker-compose.yml and recreate container" >> "$LOG"
+    return 2  # special code: server fine, Docker config broken
   fi
 }
 
 check_and_start "rodaco-site" 3334
+RODACO=$?
 check_and_start "rogergimbel-site" 3335
+ROGER=$?
+
+# Return worst status
+if [ $RODACO -ne 0 ] || [ $ROGER -ne 0 ]; then
+  exit 1
+fi
+exit 0

@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# Daily AI/Tech Digest — broad search across execs, known engineers, and topic discovery
+set -euo pipefail
+
+echo "=== AI/TECH DAILY DIGEST $(date '+%Y-%m-%d') ==="
+echo ""
+
+# ============================================================
+# TIER 1: KNOWN VOICES (verified handles)
+# ============================================================
+declare -a KNOWN=(
+  # Executives & Founders
+  "from:sama"               # Sam Altman — OpenAI CEO
+  "from:DarioAmodei"        # Dario Amodei — Anthropic CEO
+  "from:alexalbert__"       # Alex Albert — Anthropic developer relations
+  "from:karpathy"           # Andrej Karpathy — AI educator, ex-Tesla/OpenAI
+  "from:rauchg"             # Guillermo Rauch — Vercel CEO
+  "from:elonmusk"           # Elon Musk — xAI
+  "from:satabornad"         # Satya Nadella — Microsoft
+  "from:OfficialLoganK"     # Logan Kilpatrick — Google AI dev relations (ex-OpenAI)
+  # Engineers & Researchers
+  "from:simonw"             # Simon Willison — LLM tooling, datasette, AI ethics
+  "from:swyx"               # Shawn Wang — Latent Space podcast, AI engineering
+  "from:svpino"             # Santiago Valdarrama — ML engineering
+  "from:theprimeagen"       # ThePrimeagen — dev tools, performance, hot takes
+  "from:levelsio"           # Pieter Levels — indie hacker, AI-first products
+  "from:nutlope"            # Hassan El Mghari — AI apps, Vercel
+  "from:martin_casado"      # Martin Casado — a16z AI investing
+  "from:jeremyphoward"      # Jeremy Howard — fast.ai
+  "from:caboranov"          # Chris Olah — Anthropic interpretability
+  "from:tunguz"             # Tomasz Tunguz — VC, AI/SaaS data
+  "from:OpenAIDevs"         # OpenAI developer account
+  "from:AnthropicAI"        # Anthropic official
+  "from:GoogleDeepMind"     # DeepMind official
+  "from:xaboranov"          # xAI official
+)
+
+# ============================================================
+# TIER 2: ENGINEER DISCOVERY (find engineers we don't follow yet)
+# These topic searches surface actual company engineers posting
+# ============================================================
+declare -a ENGINEER_DISCOVERY=(
+  "OpenAI engineer OR developer just shipped OR launched"
+  "Anthropic engineer OR researcher just published OR released"
+  "Google DeepMind engineer new paper OR model"
+  "xAI engineer Grok OR Colossus"
+  "Vercel engineer OR Next.js core team"
+  "Supabase engineer OR team shipped"
+  "Meta AI engineer llama OR research"
+)
+
+# ============================================================
+# TIER 3: PRODUCT & TOOL UPDATES
+# ============================================================
+declare -a PRODUCTS=(
+  "Claude Code new OR update OR release"
+  "OpenAI Codex update OR release"
+  "Cursor AI new feature OR update"
+  "Lovable app update OR new"
+  "Replit agent OR AI update"
+  "Bolt new OR v0 update"
+  "MCP server OR model context protocol new"
+  "OpenClaw update OR release"
+)
+
+# ============================================================
+# TIER 4: BROADER AI TRENDS
+# ============================================================
+declare -a TRENDS=(
+  "AI agents production deployment 2026"
+  "agentic AI framework breakthrough"
+  "open source model release launch 2026"
+  "AI coding benchmark OR eval new"
+  "LLM reasoning OR chain of thought breakthrough"
+  "vibe coding OR AI pair programming"
+  "self-hosted AI OR local model new"
+  "AI startup launch 2026"
+  "AI regulation OR policy update"
+)
+
+echo "## TIER 1: KNOWN VOICES"
+echo ""
+for query in "${KNOWN[@]}"; do
+  name=$(echo "$query" | sed 's/from://')
+  result=$(bird search "$query" -n 2 2>/dev/null || true)
+  if [ -n "$result" ]; then
+    echo "### @$name"
+    echo "$result"
+    echo ""
+  fi
+done
+
+echo ""
+echo "## TIER 2: ENGINEER DISCOVERY"
+echo "(Finding engineers at AI companies posting insights)"
+echo ""
+for topic in "${ENGINEER_DISCOVERY[@]}"; do
+  echo "### $topic"
+  bird search "$topic" -n 4 2>/dev/null || echo "(no results)"
+  echo ""
+done
+
+echo ""
+echo "## TIER 3: PRODUCT & TOOL UPDATES"
+echo ""
+for topic in "${PRODUCTS[@]}"; do
+  echo "### $topic"
+  bird search "$topic" -n 3 2>/dev/null || echo "(no results)"
+  echo ""
+done
+
+echo ""
+echo "## TIER 4: AI TRENDS & SIGNALS"
+echo ""
+for topic in "${TRENDS[@]}"; do
+  echo "### $topic"
+  bird search "$topic" -n 3 2>/dev/null || echo "(no results)"
+  echo ""
+done
+
+echo ""
+echo "=== END DIGEST ==="
