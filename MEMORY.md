@@ -36,6 +36,7 @@ updated: 2026-02-17
   - Tier 2: Daily CLI health check 6 AM ET — content, SSL, response time, production URLs
   - Tier 3: Weekly browser audit Sun 3 AM ET — screenshots, mobile, click-through
 - **Morning Brief** (7 AM ET): Includes overnight build + health check results
+- **OpenClaw 2026.2.19 rollout runbook:** `memory/openclaw-2026-2-19-rollout.md` (high-signal watch alerts, triage flow, device trust SOP, OTEL v2 debug ladder)
 - 11 cron jobs total, all on Sonnet 4.6
 
 ## 🧠 Roger's Preferences
