@@ -4,7 +4,7 @@
 
 | Task | Model | How |
 |------|-------|-----|
-| **Default (everything)** | Claude Opus 4.6 | Stay on current model |
+| **Default (everything)** | Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) | Stay on current model (subscription-backed) |
 | **Web/X search** | Grok 4.1 | `sessions_spawn` with model `grok` |
 | **Image generation** | Nano Banana Pro | Read skill, use Gemini 3 Pro Image |
 
@@ -12,4 +12,4 @@
 - No Brave API key needed — Grok handles all web search
 - Never say "I can't search the web" — spawn a Grok sub-agent
 - Never say "I can't generate images" — use nano-banana-pro skill
-- Always return to Opus 4.6 after completing search/image tasks
+- Always return to Codex GPT-5.3 after completing search/image tasks

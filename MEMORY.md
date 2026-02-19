@@ -16,7 +16,7 @@ updated: 2026-02-17
 - **Infrastructure Overhaul** — Steps 1-5 COMPLETE (Tailscale lockdown, host agent, Pi lockdown).
 
 ## ⚙️ Model & API Status
-- **Primary:** Sonnet 4.6 (1M context, daily driver since 2026-02-19) | **Opus:** available via `/model opus` for heavy tasks
+- **Primary:** Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) as daily driver (switched 2026-02-19 to use Roger's monthly subscription billing) | **Opus:** available via `/model opus` for heavy tasks | **Sonnet:** preferred fallback for stability/cost
 - **xAI/Grok:** NOT supported as chat model in OpenClaw 2026.2.17 — only used for web search tool. Config aliases exist but LLM runner can't dispatch to xAI. Would need OpenRouter or future OpenClaw update.
 - **Anthropic API:** Regular API key (not Claude Code OAuth), Tier 4, rotated 2026-02-19 (new key ends ...sTyQAA). Auto-reload enabled.
 - **All 5 API keys configured in container env:** Anthropic, OpenAI, Google Gemini, xAI, OpenRouter
@@ -27,7 +27,7 @@ updated: 2026-02-17
 - **1M context:** Via `params.context1m: true` per model (replaced manual anthropic-beta header in 2026.2.17)
 - **Opus thinkingDefault:** low | **Telegram reaction notifications:** all
 - **OpenClaw version:** 2026.2.17
-- **Cost note:** Opus 4.6 can spike hard ($87 in one morning). Sonnet 4.6 is 5x cheaper — right daily driver. Switch to Opus only for heavy tasks.
+- **Cost note:** Opus 4.6 can spike hard ($87 in one morning). Sonnet 4.6 is 5x cheaper. As of 2026-02-19, Roger moved primary to Codex GPT-5.3 under monthly subscription to reduce per-call API billing. Use Opus only for heavy tasks.
 
 ## 🔄 Automation Stack
 - **Overnight Build v2** (2 AM ET): Queue-based multi-project feature dev from `memory/tasks/overnight-queue.md`

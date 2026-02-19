@@ -1,35 +1,26 @@
 # Current Task
 
 **Status:** IDLE
-**Updated:** 2026-02-19 12:04 ET
-**Task:** Full Morning Session — COMPLETE ✅
+**Updated:** 2026-02-19 13:58 ET
+**Task:** Session Ops + Reporting + Model Routing Updates — COMPLETE ✅
 
 ## Summary
-Big day. Overnight build shipped 4 features. Morning added UI polish, Features page, MC bug fixes, watchdog fix, model switch, and API key rotation. Everything is committed and ready.
+Handled Jane's report publishing + route-loop fix and updated all model routing docs after Roger switched primary model to Codex GPT-5.3 subscription routing.
 
-## BladeKeeper — Awaiting Roger's Action
-- All 6 commits pushed to GitHub
-- Lovable should be synced to `4cb6ff4` (Features page)
-- **Roger needs to:** check Lovable sync → publish from Lovable UI
+## Completed in this window
+- [x] Built and published Jane's meningioma research HTML report
+- [x] Fixed `/index/index` recursion by correcting static directory index serving
+- [x] Synced report to `public/p/jane-health-i05ln8ux/index.html` and pushed to GitHub for hosted deploy
+- [x] Updated model docs for Codex GPT-5.3 as default:
+  - `MEMORY.md`
+  - `memory/MODEL_ROUTING.md`
+  - `TOOLS.md`
+  - `IDENTITY.md`
 
-## What Was Shipped Today
-- [x] Forgot password flow + reset in settings + theme picker (`76fccbc`)
-- [x] Blade stats dashboard + sort controls (`499d439`)
-- [x] UI overhaul: warm amber palette + modern card grid (`7e83a01`)
-- [x] Global card border fix: subtle 40% opacity (`03ff4a0`)
-- [x] Features page at /features with breadcrumbs + auth-aware CTAs (`4cb6ff4`)
-- [x] MC: 4 bugs fixed (degraded status, RAM display, model name, API base URL)
-- [x] Sites watchdog false alarm fixed (removed external IP check)
-- [x] Homarr backup done, migration reminder set for Feb 26
-- [x] AI digest cron delivery fix
-- [x] Model switched to Sonnet 4.6 (daily driver)
-- [x] Anthropic API key rotated (new key: ...sTyQAA)
+## Current model routing state
+- **Primary (Roger DMs):** Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`)
+- **Fallback:** Sonnet 4.6
+- **Escalation:** Opus 4.6 for heavy deep reasoning
 
-## Next Up (from overnight queue)
-- Blade card design improvements (hover effects, animations)
-- Blade detail page enhancements (bigger photos, swipe gallery)
-- Mobile UX improvements
-- Empty states and onboarding for new users
-- Collection card previews (mosaic, cover image)
-- Advanced search/filter (steel, manufacturer, blade type, price range)
-- AI features prep (Snap & Identify, Ask AI per blade)
+## Next up
+- Continue BladeKeeper queue items from overnight backlog when Roger is ready.

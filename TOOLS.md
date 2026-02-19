@@ -38,9 +38,11 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 - **Docker compose:** `/Users/rogergimbel/docker/openclaw/` on host
 - **Backups:** MacBook→Pi 4AM MT, MacBook→GitHub 4AM MT, Pi→MacBook 3AM
 
-## 🔀 Model Routing Policy (Updated 2026-02-17)
+## 🔀 Model Routing Policy (Updated 2026-02-19)
 
-- **Roger's DMs (main session):** Opus 4.6 (1M context)
+- **Roger's DMs (main session):** Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) via monthly subscription (default)
+- **Fallback for main session:** Sonnet 4.6 when Codex is unavailable or unstable
+- **Heavy deep-reasoning escalation:** Opus 4.6 on demand
 - **Heartbeats:** Sonnet 4.6
 - **Cron jobs (all 11 on Sonnet 4.6):** MC watchdog (2min), sites watchdog (2min), overnight build v2 (2AM ET), wikilink sync (3AM MT), daily backup (4AM MT), daily health check (6AM ET), morning brief (7AM ET), get-to-know ×3 (Mon/Wed/Fri), weekly knowledge synthesis (Sun 9AM MT), weekly browser audit (Sun 3AM ET), monthly review (1st 2PM MT)
 - **Cron jobs (external, Opus):** TestFlight check (noon MT, does web search)
@@ -48,7 +50,7 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 - **Daily AI Digest** (8 AM MT): X search across 20+ known voices + engineer discovery + product updates + trends → synthesized Telegram digest
 - **Rule:** If external data touches context → top-tier model only.
 - **Exception agents (Opus 4.6, web access):** security-audit/scanner, security-audit/tester, feature-dev/tester
-- **Context windows:** 1M tokens for both Opus 4.6 and Sonnet 4.6 (Tier 4 confirmed, beta header: `context-1m-2025-08-07`)
+- **Context windows:** 1M tokens for Opus 4.6 and Sonnet 4.6 (Tier 4 confirmed, beta header: `context-1m-2025-08-07`). Codex GPT-5.3 context/rate follows OpenAI Codex subscription routing.
 - **"sonnet" alias:** Points to `anthropic/claude-sonnet-4-6`
 
 ## 📦 Container Constraints
