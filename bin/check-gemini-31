@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+// check-gemini-31 — tests if gemini-3.1-pro-preview is accepting traffic
+// exits 0 = available, exits 1 = still down, exits 2 = auth/other error
+// used by cron to poll and notify Roger when launch traffic settles
+
+const MODEL = 'gemini-3.1-pro-preview';
+const KEY = process.env.GEMINI_API_KEY;
+
+if (!KEY) {
+  console.error('❌ GEMINI_API_KEY not set');
+  process.exit(2);
+}
+
+async function test() {
+  const body = JSON.stringify({
+    contents: [{ role: 'user', parts: [{ text: 'Say "online" in exactly one word.' }] }]
+  });
+
+  let res, data;
+  try {
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: AbortSignal.timeout(15000) }
+    );
+    data = await res.json();
+  } catch (e) {
+    console.error('❌ Network/timeout error:', e.message);
+    process.exit(2);
+  }
+
+  if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+    const text = data.candidates[0].content.parts[0].text.trim();
+    const usage = data.usageMetadata;
+    console.log(`✅ ${MODEL} is LIVE`);
+    console.log(`Response: "${text}"`);
+    console.log(`Tokens: ${usage?.promptTokenCount} in / ${usage?.candidatesTokenCount} out`);
+    process.exit(0);
+  }
+
+  const code = data?.error?.code;
+  const msg  = data?.error?.message || 'unknown error';
+
+  if (code === 503) {
+    console.log(`⏳ ${MODEL} still overloaded (503): ${msg}`);
+    process.exit(1);
+  }
+
+  if (code === 429) {
+    console.log(`⏳ ${MODEL} rate limited (429): ${msg}`);
+    process.exit(1);
+  }
+
+  console.error(`❌ Unexpected error ${code}: ${msg}`);
+  process.exit(2);
+}
+
+test();
