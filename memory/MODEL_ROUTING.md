@@ -1,15 +1,13 @@
-# Model Routing Rules (Roger's directive 2026-02-05)
+# Model Routing Rules (Roger directive, updated 2026-02-19)
 
-## CRITICAL — Always follow these rules
+## Default Policy
+- **Use Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) for everything by default.**
+- Do **not** switch to Sonnet/Opus/Grok unless Roger explicitly asks.
 
-| Task | Model | How |
-|------|-------|-----|
-| **Default (everything)** | Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) | Stay on current model (subscription-backed) |
-| **Web/X search** | Grok 4.1 | `sessions_spawn` with model `grok` |
-| **Image generation** | Nano Banana Pro | Read skill, use Gemini 3 Pro Image |
+## Explicit Exception Policy (only when Roger requests)
+- **Grok / Grok Imagine**: allowed when specifically requested.
+- **Opus 4.6 fallback**: allowed for difficult tasks only when specifically requested.
 
-## Rules
-- No Brave API key needed — Grok handles all web search
-- Never say "I can't search the web" — spawn a Grok sub-agent
-- Never say "I can't generate images" — use nano-banana-pro skill
-- Always return to Codex GPT-5.3 after completing search/image tasks
+## Operating Rules
+- Assume Codex first, even for complex work.
+- If Roger asks for a specific model, use it for that task and then return to Codex default behavior.

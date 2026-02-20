@@ -17,12 +17,11 @@ check_and_start() {
   local local_status
   local_status=$(curl -s --connect-timeout 2 -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port/")
 
-  # Check external IP (is Docker port forward working?)
-  local external_status
-  external_status=$(curl -s --connect-timeout 3 -o /dev/null -w "%{http_code}" "http://$EXTERNAL_IP:$port/")
+  # Note: external IP check removed — unreachable from inside Docker container (false positives)
+  # Port mappings are managed in docker-compose.yml on the host. Localhost check is sufficient.
 
-  if [ "$local_status" = "200" ] && [ "$external_status" = "200" ]; then
-    return 0  # fully healthy
+  if [ "$local_status" = "200" ]; then
+    return 0  # healthy
   fi
 
   if [ "$local_status" != "200" ]; then
@@ -42,12 +41,7 @@ check_and_start() {
     fi
   fi
 
-  if [ "$external_status" != "200" ]; then
-    # Server is running but external IP doesn't work = Docker port mapping issue
-    echo "[$TIMESTAMP] $name localhost OK but external IP FAILED (HTTP $external_status) — Docker port mapping missing for $EXTERNAL_IP:$port!" >> "$LOG"
-    echo "[$TIMESTAMP] ACTION REQUIRED: Add port $port to docker-compose.yml and recreate container" >> "$LOG"
-    return 2  # special code: server fine, Docker config broken
-  fi
+  # (external IP check removed — not reachable from inside Docker)
 }
 
 check_and_start "rodaco-site" 3334

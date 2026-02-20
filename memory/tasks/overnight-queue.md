@@ -7,6 +7,7 @@
 **Priority:** P1
 **Scope:** Bug fixes, UI improvements, API enhancements
 **KB:** knowledge/projects/mission-control-v3/
+- [x] Agent page role/identity icons → Lucide (mc-v3-ui-fixes #9) — 2026-02-20
 
 ### 2. rogergimbel.dev
 **Project:** rogergimbel-site/
@@ -58,3 +59,7 @@
 - [x] Create/edit/delete collections ✅
 - [x] Add/remove blades from collections ✅
 - [x] Share collections via link ✅
+- [x] UI overhaul — warm amber palette, modern card grid ✅ 2026-02-19
+- [x] Global card border fix — subtle 40% opacity borders in dark mode ✅ 2026-02-19
+- [x] Dark mode polish (card borders, activity items, settings) ✅ 2026-02-19
+- [x] **Features / Learn More page** — public marketing page at `/features` with breadcrumbs, auth-aware CTAs, coming soon section ✅ 2026-02-19

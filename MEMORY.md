@@ -42,6 +42,9 @@ updated: 2026-02-17
 ## 🧠 Roger's Preferences
 - Dev tools: Claude Code, Lovable, Cursor, Replit, Bolt, Antigravity, Codex
 - Stack: Vite+React, Supabase, Vercel, IONOS
+- Assistant operating style (set 2026-02-19): prioritize usefulness/smooth workflows over aggressive token trimming; keep relevant context naturally; only prune when genuinely noisy or very long (>150–200k) or clearly stale/irrelevant.
+- Cost posture (set 2026-02-19): monthly Codex subscription — ignore normal cost micromanagement; warn only on obviously extreme requests.
+- Model directive (set 2026-02-19): use Codex for everything by default; only switch to Grok/Grok Imagine or Opus 4.6 when Roger explicitly requests it.
 - Don't push coding help unless asked. Don't push to GitHub without asking.
 - Never send emails without asking Roger, Dale, or Stuart first
 - Hates generic purple "vibe-coded crap" — prefers warm, confident, non-generic design
@@ -63,6 +66,7 @@ updated: 2026-02-17
 - **Lovable build cache is sticky:** Once broken, pushing fixes doesn't help. Revert via Lovable UI to last working commit, then re-apply changes cleanly.
 - **Project registry:** `knowledge/projects/REGISTRY.md` — single source of truth for all projects.
 - **Fixes database:** `knowledge/fixes/INDEX.md` — searchable known issues and fixes to avoid wasting tokens.
+- **False alert hunt (2026-02-19):** recurring "MacBook is up but OpenClaw unhealthy HTTP 000" was NOT gateway failure. We first disabled host cron + Pi Uptime Kuma monitor, but true source was Pi cron `macbook-recovery.sh` running every 10 min. Final fix: probe host-agent `:18790/health` instead of brittle `:18789/health` path from Pi; add fail threshold/debounce. Result: spam stopped.
 - **SESSION CRASHES:** Checkpoint work to daily notes DURING the session, not after.
 - **CURRENT.md is THE crash recovery file.** Update at every context threshold (50%+).
 - **Cron sub-agents should NOT send messages themselves:** Use `delivery.mode: "announce"` and just write the result as the reply. Trying to use `message send` from isolated sessions fails on target resolution.

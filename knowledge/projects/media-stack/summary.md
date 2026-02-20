@@ -3,6 +3,7 @@
 ## Current Status
 - **Phase**: Stable/Maintenance
 - **Priority**: Q1 2026 Secondary (monitoring only)
+- **Pending**: Homarr migration from v0.16.0 → 1.x (new image: `ghcr.io/homarr-labs/homarr`). Backup at `/mnt/media/backups/homarr-backup-20260219-102053.tar.gz`. Reminder set for 2026-02-26.
 
 ## Infrastructure
 - **Host**: Raspberry Pi 5 (rgpi)

@@ -62,10 +62,10 @@ Full audit completed 2026-02-16. Major contrast overhaul deployed (~150 text-whi
   - Issue: Single task with vast empty area below, no guidance
   - Fix: Add a subtle "All caught up" message or CTA when task count is low (1-2 items)
 
-- [ ] **9. Agent role card emoji rendering**
+- [x] **9. Agent role card emoji rendering**
   - File: `rodaco-mc/src/components/agent/AgentHero.tsx` — role card section
   - Issue: Emojis render as □ in headless browser (might look fine in real browser)
-  - Fix: Only fix if confirmed broken in real Chrome. If so, replace with Lucide icons or SVG
+  - Fix: Replaced emoji hero badge with Lucide Zap icon and fallback role dot with Lucide Circle for consistent rendering
 
 ### P2 — Nice to Have
 - [x] **10. Pi device card disk label wrapping**
@@ -114,6 +114,6 @@ Full audit completed 2026-02-16. Major contrast overhaul deployed (~150 text-whi
   - #11 Health bar labels: increased from text-foreground/50 to text-foreground/70
   - #13 Help button: improved to bg-muted/80 text-foreground/60 (was nearly invisible)
 - Items attempted but failed: none
-- Items not attempted: #9 (emoji rendering - needs real Chrome to confirm), #12 (scroll affordance), #14 (ops skeleton loaders)
-- Remaining: 3 items (#9, #12, #14)
+- Items not attempted: #12 (scroll affordance), #14 (ops skeleton loaders)
+- Remaining: 2 items (#12, #14)
 - Build: ✅ Clean (9.82s), deployed to mission-control/public/

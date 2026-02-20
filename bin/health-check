@@ -13,6 +13,20 @@ FIX_MODE=false
 ISSUES=()
 SEVERITY="ok"  # ok, warn, critical
 
+# Debounce settings for gateway health noise
+STATE_FILE="/tmp/openclaw-gateway-health.state"
+FAIL_THRESHOLD=3
+ALERT_COOLDOWN_SEC=1800
+GATEWAY_FAIL_COUNT=0
+LAST_CRITICAL_ALERT_TS=0
+
+if [ -f "$STATE_FILE" ]; then
+  # shellcheck disable=SC2162
+  read GATEWAY_FAIL_COUNT LAST_CRITICAL_ALERT_TS < "$STATE_FILE" 2>/dev/null || true
+  GATEWAY_FAIL_COUNT=${GATEWAY_FAIL_COUNT:-0}
+  LAST_CRITICAL_ALERT_TS=${LAST_CRITICAL_ALERT_TS:-0}
+fi
+
 # 1. Check zombie processes
 ZOMBIE_COUNT=$(ps aux 2>/dev/null | grep -c ' Z ')
 if [ "$ZOMBIE_COUNT" -gt 2 ]; then
@@ -41,12 +55,38 @@ if [ -n "$TMP_USE" ] && [ "$TMP_USE" -gt 90 ]; then
     [ "$SEVERITY" != "critical" ] && SEVERITY="warn"
 fi
 
-# 4. Check if gateway health endpoint responds
-HEALTH=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://127.0.0.1:18789/health 2>/dev/null)
-if [ "$HEALTH" != "200" ]; then
-    ISSUES+=("gateway:unhealthy:$HEALTH")
-    SEVERITY="critical"
+# 4. Check if gateway health endpoint responds (debounced + retried)
+HEALTH="000"
+for _ in 1 2 3; do
+  HEALTH=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 2 --max-time 3 http://127.0.0.1:18789/health 2>/dev/null)
+  [ "$HEALTH" = "200" ] && break
+  sleep 1
+done
+
+NOW_TS=$(date +%s)
+if [ "$HEALTH" = "200" ]; then
+  GATEWAY_FAIL_COUNT=0
+else
+  GATEWAY_FAIL_COUNT=$((GATEWAY_FAIL_COUNT + 1))
+
+  if [ "$GATEWAY_FAIL_COUNT" -lt "$FAIL_THRESHOLD" ]; then
+    ISSUES+=("gateway:transient_unhealthy:$HEALTH:count=$GATEWAY_FAIL_COUNT")
+    [ "$SEVERITY" = "ok" ] && SEVERITY="warn"
+  else
+    # suppress repeated critical alert storms for same condition
+    if [ $((NOW_TS - LAST_CRITICAL_ALERT_TS)) -lt "$ALERT_COOLDOWN_SEC" ]; then
+      ISSUES+=("gateway:still_unhealthy_suppressed:$HEALTH:count=$GATEWAY_FAIL_COUNT")
+      [ "$SEVERITY" = "ok" ] && SEVERITY="warn"
+    else
+      ISSUES+=("gateway:unhealthy:$HEALTH:count=$GATEWAY_FAIL_COUNT")
+      SEVERITY="critical"
+      LAST_CRITICAL_ALERT_TS=$NOW_TS
+    fi
+  fi
 fi
+
+# Persist debounce state
+echo "$GATEWAY_FAIL_COUNT $LAST_CRITICAL_ALERT_TS" > "$STATE_FILE"
 
 # 5. Check SSH connectivity to host (for self-heal capability)
 SSH_OK=false
@@ -65,7 +105,7 @@ fi
 ISSUES_JSON="["
 FIRST=true
 for i in "${ISSUES[@]}"; do
-    $FIRST && FIRST=false || ISSUES_JSON+=","
+    $FIRST && FIRST=false || ISSUES_JSON+="," 
     ISSUES_JSON+="\"$i\""
 done
 ISSUES_JSON+="]"
@@ -76,6 +116,7 @@ cat <<EOF
   "disk_pct": ${WORKSPACE_USE:-0},
   "tmp_pct": ${TMP_USE:-0},
   "gateway_health": "$HEALTH",
+  "gateway_fail_count": $GATEWAY_FAIL_COUNT,
   "ssh_to_host": $SSH_OK,
   "stale_locks": $LOCK_COUNT,
   "issues": $ISSUES_JSON
@@ -90,5 +131,8 @@ if [ "$FIX_MODE" = true ] && [ "$SEVERITY" = "critical" ]; then
     exit 2
 fi
 
-# Exit codes: 0=ok, 1=issues found, 2=self-heal triggered
-[ "$SEVERITY" = "ok" ] && exit 0 || exit 1
+# Exit codes: 0=ok/warn (non-critical), 1=critical, 2=self-heal triggered
+if [ "$SEVERITY" = "critical" ]; then
+  exit 1
+fi
+exit 0

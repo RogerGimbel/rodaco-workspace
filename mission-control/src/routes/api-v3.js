@@ -255,8 +255,23 @@ function parseIdentity() {
     const nameMatch = identity.match(/\*\*Name:\*\*\s*(.+)/);
     if (nameMatch) agent.name = nameMatch[1].trim();
 
-    const modelMatch = identity.match(/\*\*Default Model:\*\*\s*(.+)/);
-    if (modelMatch) agent.model = modelMatch[1].trim();
+    // Read actual model from OpenClaw config (source of truth), fall back to IDENTITY.md
+    try {
+      const configRaw = fs.readFileSync('/home/node/.openclaw/openclaw.json', 'utf8');
+      const config = JSON.parse(configRaw);
+      const primary = config?.agents?.defaults?.model?.primary;
+      if (primary) {
+        // Format: "anthropic/claude-opus-4-6" → "Claude Opus 4.6"
+        const modelId = primary.split('/').pop(); // "claude-opus-4-6"
+        agent.model = modelId
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase())
+          .replace(/(\d) (\d)/g, '$1.$2'); // "4 6" → "4.6"
+      }
+    } catch {
+      const modelMatch = identity.match(/\*\*Default Model:\*\*\s*(.+)/);
+      if (modelMatch) agent.model = modelMatch[1].trim();
+    }
 
     const capMatch = identity.match(/##\s*My Capabilities[\s\S]*?((?:###\s+.+[\s\S]*?)+?)(?=##|$)/);
     if (capMatch) {
@@ -691,24 +706,41 @@ module.exports = function(app) {
     // Temperature - macOS Intel has no easy temp CLI; report null
     device.temperature = null;
 
-    // RAM
-    const vmStat = sshCommand(host, 'vm_stat');
-    if (vmStat) {
-      const pageSize = 4096;
-      const free = (vmStat.match(/Pages free:\s+(\d+)/) || [0, 0])[1];
-      const active = (vmStat.match(/Pages active:\s+(\d+)/) || [0, 0])[1];
-      const inactive = (vmStat.match(/Pages inactive:\s+(\d+)/) || [0, 0])[1];
-      const speculative = (vmStat.match(/Pages speculative:\s+(\d+)/) || [0, 0])[1];
-      const wired = (vmStat.match(/Pages wired down:\s+(\d+)/) || [0, 0])[1];
-
-      const freeBytes = (parseInt(free) + parseInt(speculative)) * pageSize;
-      const usedBytes = (parseInt(active) + parseInt(inactive) + parseInt(wired)) * pageSize;
-      const totalBytes = freeBytes + usedBytes;
-
+    // RAM — use memory_pressure for accurate available memory on macOS
+    // vm_stat counts inactive pages as "used" but they're really cache/reclaimable
+    const memPressure = sshCommand(host, 'memory_pressure | head -3');
+    const hwMemSize = sshCommand(host, 'sysctl -n hw.memsize');
+    if (hwMemSize) {
+      const totalBytes = parseInt(hwMemSize);
       device.ram.totalGB = parseFloat((totalBytes / 1024 / 1024 / 1024).toFixed(2));
-      device.ram.usedGB = parseFloat((usedBytes / 1024 / 1024 / 1024).toFixed(2));
-      device.ram.availableGB = parseFloat((freeBytes / 1024 / 1024 / 1024).toFixed(2));
-      device.ram.usagePercent = parseFloat(((usedBytes / totalBytes) * 100).toFixed(1));
+
+      // Try to get percentage free from memory_pressure output
+      const pctMatch = memPressure && memPressure.match(/(\d+)% is free/);
+      if (pctMatch) {
+        const freePct = parseInt(pctMatch[1]);
+        device.ram.usagePercent = 100 - freePct;
+        device.ram.availableGB = parseFloat((totalBytes * freePct / 100 / 1024 / 1024 / 1024).toFixed(2));
+        device.ram.usedGB = parseFloat((device.ram.totalGB - device.ram.availableGB).toFixed(2));
+      } else {
+        // Fallback to vm_stat but treat inactive as available
+        const vmStat = sshCommand(host, 'vm_stat');
+        if (vmStat) {
+          const pageSize = 4096;
+          const free = (vmStat.match(/Pages free:\s+(\d+)/) || [0, 0])[1];
+          const active = (vmStat.match(/Pages active:\s+(\d+)/) || [0, 0])[1];
+          const speculative = (vmStat.match(/Pages speculative:\s+(\d+)/) || [0, 0])[1];
+          const wired = (vmStat.match(/Pages wired down:\s+(\d+)/) || [0, 0])[1];
+          const compressor = (vmStat.match(/Pages occupied by compressor:\s+(\d+)/) || [0, 0])[1];
+
+          // "Used" = active + wired + compressor (actually in use)
+          // "Available" = free + speculative + inactive (reclaimable)
+          const usedBytes = (parseInt(active) + parseInt(wired) + parseInt(compressor)) * pageSize;
+
+          device.ram.usedGB = parseFloat((usedBytes / 1024 / 1024 / 1024).toFixed(2));
+          device.ram.availableGB = parseFloat((device.ram.totalGB - device.ram.usedGB).toFixed(2));
+          device.ram.usagePercent = parseFloat(((usedBytes / totalBytes) * 100).toFixed(1));
+        }
+      }
     }
 
     // Disk (macOS: df -g returns 1G-blocks as integers)

@@ -16,3 +16,9 @@
 - **Cause:** Lovable preview runs in an iframe sandbox with different origin — Supabase signed URL requests fail due to CORS/origin mismatch
 - **Fix:** Ignore it. Test images on the deployed site (bladekeeper.app), not in Lovable preview.
 - **Tags:** bladekeeper, lovable, supabase, images, not-a-bug
+
+## [2026-02-19] Sites Watchdog False Positive — "Docker port mapping missing"
+**Symptom:** Telegram alerts saying ports 3334/3335 missing from docker-compose, ACTION REQUIRED.
+**Root cause:** `bin/sites-watchdog` checked `http://100.124.209.59:$port/` from inside Docker container — unreachable, always HTTP 000.
+**Fix:** Removed external IP check. Localhost check sufficient. Port mappings in docker-compose are correct.
+**Rule:** Never curl host external IP from inside container. External checks must run from outside (host agent, Pi SSH).

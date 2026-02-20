@@ -23,7 +23,9 @@ knowledge/
 │   ├── raspberry-pi/summary.md    # + media-stack.md, backup plans
 │   ├── m5-macbook/summary.md
 │   ├── mission-control/summary.md
-│   └── network-overview.md
+│   ├── network-overview.md
+│   ├── incident-playbook-false-health-alerts.md
+│   └── 30-day-ai-tech-playbook.md
 ├── chat-history/                   # Parsed conversation summaries (256 convos)
 ├── ai-models/
 │   └── gemini-31-pro-preview.md   # Benchmarks, specs, pricing, daily driver assessment

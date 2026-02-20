@@ -5,6 +5,11 @@
 Run: `/home/node/workspace/bin/health-check`
 - Critical → flush memory, run self-heal, STOP
 - ssh_to_host false → alert Roger
+- If `issues` contains `gateway:transient_unhealthy` or `gateway:still_unhealthy_suppressed`: do **NOT** send a scary outage message; log only.
+- Only mention "manual restart" if `issues` contains `gateway:unhealthy` (sustained failure threshold met).
+- NEVER send this legacy phrase: "MacBook is up but OpenClaw unhealthy HTTP 000 from health endpoint. Docker may need manual restart."
+- Preferred wording for non-critical probe blips: "Transient health probe miss detected; auto-retrying."
+- When alerting, include exact issue code(s) from health-check output (e.g., `gateway:unhealthy:000:count=3`) for debugging.
 
 ## 2. MISSION CONTROL
 Run: `bash /home/node/workspace/mission-control/start.sh`
