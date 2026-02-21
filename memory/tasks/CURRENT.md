@@ -1,28 +1,37 @@
 # Current Task
 
 **Status:** IDLE
-**Updated:** 2026-02-21 08:16 ET
-**Task:** Direct browser QA pass + publish-ready checklist (3 sites)
+**Updated:** 2026-02-21 08:20 ET
+**Task:** Memory/knowledge checkpoint + operational cleanup (session, cron, zombies)
 
-## Outcome
-- Completed direct browser QA for:
-  - `http://100.124.209.59:3335` (rogergimbel.dev local)
-  - `http://100.124.209.59:3334` (rodaco.co local)
-- Captured fresh QA screenshots:
-  - `/tmp/qa2-roger-mobile.png`, `/tmp/qa2-roger-desktop.png`
-  - `/tmp/qa2-rodaco-mobile.png`, `/tmp/qa2-rodaco-desktop.png`
-- QA verdict from image review:
-  - Roger site: PASS (no launch blockers)
-  - Rodaco site: PASS (no launch blockers)
-  - BladeKeeper: PASS on latest available screenshots (no critical blockers observed)
+## Completed
+1. ✅ Checkpointed current state into task/memory artifacts and marked done vs pending:
+   - Updated `memory/tasks/overnight-queue.md`:
+     - D4 ✅, roger UI ✅, rodaco UI ✅, bladekeeper landing ✅, cross-site QA ✅, D5 draft ✅
+     - Remaining: D6-prep test matrix
+   - Updated durable context in `MEMORY.md`:
+     - Supabase short-lived PAT security workflow
+     - Overnight secret-gating rule for autonomous runs
 
-## Blocker encountered
-- BladeKeeper local preview server failed to start in container:
-  - `npm run dev -- --host 0.0.0.0 --port 4177` => `Bus error` (exit 135)
-- Same environment issue as build path; source commits remain valid and are ready for push/publish flow.
+2. ✅ Session bloat cleanup
+   - Removed temporary screenshot artifacts from `/tmp` created during QA/audit cycles.
+   - Removed files matched by: `qa2-*.png`, `*-after*.png`, `roger-*.png`, `rodaco-*.png`, `bladekeeper-*.png`
+   - Count: **15 -> 0**
 
-## Publish-ready commits (local only)
-- `rogergimbel-site`: `cfac1bc`
-- `rodaco-site`: `b0bbdc0`
-- `projects/bladekeeper.app`: `3c35212`
-- `workspace` pointers/docs/checkpoints: `62e6f26`, `1394a66`
+3. ✅ Cron job bloat cleanup
+   - Removed stale Antfarm feature-dev worker cron jobs (6 total):
+     - planner, setup, developer, verifier, reviewer, tester
+   - Post-clean cron count: `total_jobs=16`, `antfarm_jobs=0`
+
+4. ✅ Zombie process check
+   - `ps` scan found **no zombie (defunct) processes**.
+   - No stuck vite dev process remains from earlier bus-error attempt.
+
+## Current footprint snapshot
+- `~/.openclaw/agents/main/sessions` = 38M
+- `~/.openclaw/browser` = 72K
+- `~/.openclaw/memory` = 517M
+- `~/.openclaw/media` = 5.2M
+
+## Remaining work
+- D6-prep policy test matrix (`allowed vs blocked apply payloads`) still open.

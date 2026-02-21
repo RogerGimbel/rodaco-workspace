@@ -49,6 +49,7 @@ updated: 2026-02-20
 - Don't push coding help unless asked. Don't push to GitHub without asking.
 - Never send emails without asking Roger, Dale, or Stuart first
 - Hates generic purple "vibe-coded crap" — prefers warm, confident, non-generic design
+- **Supabase security pattern (2026-02-21):** Roger provides short-lived PAT only at execution time, then immediately revokes it. Never assume PAT persistence; always request a fresh token right before deploy/push actions that require it.
 
 ## 📝 Lessons Learned
 - Docker Desktop Mac: `network_mode: host` broken — use IP-specific port bindings
@@ -73,6 +74,7 @@ updated: 2026-02-20
 - **Cron sub-agents should NOT send messages themselves:** Use `delivery.mode: "announce"` and just write the result as the reply. Trying to use `message send` from isolated sessions fails on target resolution.
 - **Cron job crash recovery:** Overnight builds must check `git diff --stat` first and read task files for `[x]` state.
 - **active-tasks.md is DEPRECATED.** Use `memory/tasks/CURRENT.md` as single source of truth.
+- **Overnight secret gating rule (2026-02-21):** tasks requiring short-lived credentials (e.g., Supabase PAT / admin bearer) must be tagged and skipped overnight, then resumed in an interactive morning window with Roger present.
 - **Anthropic tier advancement:** $400 cumulative credit purchases → Tier 4 (auto). 1M context requires Tier 4.
 - **Config.patch merges, doesn't delete:** Can't remove stale entries (e.g. old sonnet-4-5 alias) via patch.
 - **Alias drift can silently route paid traffic wrong:** keep `codex -> openai-codex/gpt-5.3-codex` (OAuth/Pro), remove API-key Codex aliases from active config, and pin cron/heartbeat jobs to explicit `openai-codex/gpt-5.3-codex` (not `codex`) so alias drift cannot reroute billing.

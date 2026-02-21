@@ -76,28 +76,28 @@
   - Ensure admin scope enforcement stays intact
   - Verify with `bin/rodaco agent audit bladekeeper --params 'limit=20&action=propose' --token <bearer>` and at least one date-range query
 
-- [ ] **[rogergimbel.dev][UI][mobile-first] Hero conversion pass**
+- [x] **[rogergimbel.dev][UI][mobile-first] Hero conversion pass** ✅ 2026-02-21
   - Improve H1/subhead readability + spacing rhythm
   - Clarify CTA hierarchy above the fold (primary = contact intent)
   - Confirm no mobile clipping/overlap at 390x844 and 430x932
 
-- [ ] **[rodaco.co][UI][mobile-first] Hero hierarchy + CTA legibility**
+- [x] **[rodaco.co][UI][mobile-first] Hero hierarchy + CTA legibility** ✅ 2026-02-21
   - Reduce logo dominance and rebalance fold toward value prop + CTA
   - Improve nav/CTA contrast over background media
   - Confirm CTA tap targets >=44px and text contrast passes visual check
 
-- [ ] **[bladekeeper.app][landing][UX] Above-fold clarity pass**
+- [x] **[bladekeeper.app][landing][UX] Above-fold clarity pass** ✅ 2026-02-21
   - Increase hero text contrast over background imagery
   - Clarify primary CTA intent (account creation path)
   - Surface clear Login affordance for returning users
 
-- [ ] **[cross-site][QA] Browser-driven E2E proof pack**
+- [x] **[cross-site][QA] Browser-driven E2E proof pack** ✅ 2026-02-21
   - Run desktop + mobile checks on all three sites using agent-browser snapshots
   - Capture M5 Chrome screenshots with `--virtual-time-budget` for SPA reliability
   - Store findings + before/after evidence in `memory/tasks/overnight-ui-audit-2026-02-20.md`
 
 ### Priority 2 — If Time Remains
-- [ ] **[agent-first][BladeKeeper][D5] Apply policy gates design draft**
+- [x] **[agent-first][BladeKeeper][D5] Apply policy gates design draft** ✅ 2026-02-21 (v0 draft added to `knowledge/infrastructure/agent-first-v0-spec.md`)
   - Draft allowlist/risk classes (`safe/sensitive/destructive`) and propose enforcement points in `knowledge/infrastructure/agent-first-v0-spec.md`
 
 - [ ] **[agent-first][BladeKeeper][D6-prep] Test matrix skeleton**
