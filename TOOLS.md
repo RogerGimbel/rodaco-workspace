@@ -18,6 +18,7 @@ Everything environment-specific: commands, paths, IPs, build recipes, workaround
 | Save | `/save` → `bash bin/save "<summary>"` | memory flush + fact extract + git commit |
 | Summarize | `ssh rogergimbel@100.71.128.20 /opt/homebrew/bin/summarize` | Runs on M5 MacBook |
 | jq | `/home/node/workspace/jq` | Static binary, use full path |
+| Rodaco Agent CLI | `bin/rodaco` | Agent-first API parity CLI (discover/query/propose/approve/reject/apply/audit) |
 
 ## 🏗️ Infrastructure
 
@@ -93,6 +94,14 @@ bash bin/remote-screenshot "http://100.124.209.59:<port>" "filename.png"
 - **Agent-browser screenshots:** ALWAYS save to default `/tmp` path, then copy to workspace. Writing directly to workspace Docker volume causes OOM SIGKILL (swap full). Snapshots (text) always work.
 - **Light mode theming:** Never use `text-white/`, `bg-white/`, `border-white/` — use `text-foreground/`, `bg-muted/`, `border-border` for theme-aware colors.
 - **Locally-built images** can't use Watchtower — use app-level self-update.
+
+## 🤖 Agent-First Web Enablement References
+
+- Contract spec: `knowledge/infrastructure/agent-first-v0-spec.md`
+- 30-day roadmap: `knowledge/infrastructure/agent-first-30-day-roadmap.md`
+- Active execution queue: `memory/tasks/agent-abilities-todo.md`
+- D1–D30 board: `memory/tasks/agent-first-d1-d30-execution-board.md`
+- CLI transcripts: `memory/tasks/step5-transcripts/`
 
 ## 🐜 Antfarm Workflows
 

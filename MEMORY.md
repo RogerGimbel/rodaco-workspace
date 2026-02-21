@@ -1,10 +1,10 @@
 ---
 tags: [memory, hot-context, core]
-updated: 2026-02-17
+updated: 2026-02-20
 ---
 # MEMORY.md - Hot Context
 
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-20*
 
 ## 📋 Active Projects
 - **BladeKeeper** — LIVE at bladekeeper.app. Knife collection manager. 31 knives imported. Big sprint 2026-02-19: forgot password, stats dashboard, sort controls, UI overhaul (warm amber), card borders, Features page. **Awaiting Roger to publish from Lovable UI** (latest commit: `4cb6ff4`). Strategy: vertical on knives → marketplace → expand. KB: `knowledge/projects/bladekeeper/summary.md`. Skill: `skills/bladekeeper/SKILL.md`. **Core vision:** snap & identify (photo → AI auto-populates all attributes). 20 European collectors signed up on first launch = proven demand. Personal to Roger (built for his daughter). Replit original: https://knife-collector-28gfhftcmc.replit.app/
@@ -14,6 +14,7 @@ updated: 2026-02-17
 - **rodaco.co** — DEPLOYED. Dark mode + blue/purple gradient, 8 sections. KB: `knowledge/projects/rodaco-site/summary.md`
 - **UGC Campaign Skill** — PRODUCTION READY. Nano Banana Pro + Veo 3.1 pipeline. Full 4-scene campaign in ~3 min for ~$1.50. Presentation: `presentations.rogergimbel.dev/beerpair/ugc/`. KB: `knowledge/projects/ugc-campaign/summary.md`
 - **Infrastructure Overhaul** — Steps 1-5 COMPLETE (Tailscale lockdown, host agent, Pi lockdown).
+- **Agent-First Web Contract rollout** — Week 1 Day 1-4 + Step 3 audit baseline complete across rogergimbel-site, rodaco-site, bladekeeper.app. Step 4 pilot is live on BladeKeeper (2026-02-20): `/proposals/{id}/approve|reject|apply` enabled with one-time approval token + apply kill switch guard; rogergimbel-site/rodaco-site remain propose-only. Deterministic Supabase CLI deploy from OpenClaw Intel is unblocked with PAT secret wiring + runtime refresh. **Step 5 completed (2026-02-20): `bin/rodaco` now provides CLI parity (`discover/meta/query/propose/proposals/approve/reject/apply/audit`) with 3 saved E2E transcripts in `memory/tasks/step5-transcripts/`.** **30-day cycle progress: D1 kickoff/baseline lock complete; D2 durable audit complete and deployed (notifications-backed `agent_audit_v0` due migration-history drift); D3 write-path matrix complete with all actions verified in durable audit (`read|propose|approve|reject|apply_attempt`).** Next phase captured in `knowledge/infrastructure/agent-first-30-day-roadmap.md`; day-by-day execution board lives at `memory/tasks/agent-first-d1-d30-execution-board.md`; actionable queue tracked in `memory/tasks/agent-abilities-todo.md`. 
 
 ## ⚙️ Model & API Status
 - **Primary:** Codex GPT-5.3 (`openai-codex/gpt-5.3-codex`) as daily driver (switched 2026-02-19 to use Roger's monthly subscription billing) | **Opus:** available via `/model opus` for heavy tasks | **Sonnet:** preferred fallback for stability/cost
@@ -74,6 +75,7 @@ updated: 2026-02-17
 - **active-tasks.md is DEPRECATED.** Use `memory/tasks/CURRENT.md` as single source of truth.
 - **Anthropic tier advancement:** $400 cumulative credit purchases → Tier 4 (auto). 1M context requires Tier 4.
 - **Config.patch merges, doesn't delete:** Can't remove stale entries (e.g. old sonnet-4-5 alias) via patch.
+- **Alias drift can silently route paid traffic wrong:** keep `codex -> openai-codex/gpt-5.3-codex` (OAuth/Pro), remove API-key Codex aliases from active config, and pin cron/heartbeat jobs to explicit `openai-codex/gpt-5.3-codex` (not `codex`) so alias drift cannot reroute billing.
 - **Veo 3.1 reference images:** REST predictLongRunning does NOT support them. Must use Python SDK (`google-genai` package, `uv run --with google-genai`).
 - **UGC pipeline economics:** Full 4-scene campaign ~$1.50, ~3 min. Character consistency via reference images is the key insight.
 

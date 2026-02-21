@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalAsked": 15,
+  "totalAsked": 16,
   "questions": [
     {
       "id": 1,
@@ -52,7 +52,7 @@
       "category": "work_style",
       "text": "What's the longest coding session you've ever done in one sitting?",
       "weight": 1,
-      "asked": null,
+      "asked": "2026-02-20T18:00:14.305Z",
       "answered": null,
       "answer": null
     },

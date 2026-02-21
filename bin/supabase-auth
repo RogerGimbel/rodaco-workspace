@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -e
+if [ -f /tmp/secrets/env.sh ]; then
+  . /tmp/secrets/env.sh
+elif [ -f /tmp/secrets/supabase-token ]; then
+  export SUPABASE_ACCESS_TOKEN="$(cat /tmp/secrets/supabase-token)"
+fi
+exec /home/node/workspace/bin/supabase "$@"

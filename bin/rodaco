@@ -1,0 +1,391 @@
+#!/usr/bin/env node
+
+/**
+ * rodaco agent CLI (Step 5 parity scaffold)
+ *
+ * Usage:
+ *   rodaco agent discover <site>
+ *   rodaco agent meta <site>
+ *   rodaco agent query <site> <resource> [--params 'k=v&k2=v2']
+ *   rodaco agent propose <site> <type> --input proposal.json [--idempotency key]
+ *   rodaco agent proposals list <site> [--status pending]
+ *   rodaco agent approve <site> <proposalId>
+ *   rodaco agent reject <site> <proposalId> [--reason "..."]
+ *   rodaco agent apply <site> <proposalId> --approval-token <token>
+ *   rodaco agent audit <site> [--params 'limit=20']
+ */
+
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+
+const BLADEKEEPER_SUPABASE_BASE = 'https://zocftrkoaokqvklugztj.supabase.co/functions/v1/agent-api';
+const BLADEKEEPER_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvY2Z0cmtvYW9rcXZrbHVnenRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjYyMDYsImV4cCI6MjA2MjMwMjIwNn0.q7cMD17Ck3Dvyz_UMiG0HUy_k2xL6qTjxfTQdUcWtDU';
+
+const SITE_CONFIG = {
+  rogergimbel: {
+    aliases: ['roger', 'rogergimbel', 'rogergimbel.dev'],
+    discoveryBase: 'https://rogergimbel.dev',
+    apiBase: process.env.RODACO_AGENT_BASE_ROGERGIMBEL || 'http://localhost:3335/api/agent/v1',
+    discoveryMetaPath: '/api/agent/v1/meta.json',
+    discoveryOpenapiPath: '/api/agent/v1/openapi.json',
+  },
+  rodaco: {
+    aliases: ['rodaco', 'rodaco.co'],
+    discoveryBase: 'https://rodaco.co',
+    apiBase: process.env.RODACO_AGENT_BASE_RODACO || 'http://localhost:3334/api/agent/v1',
+    discoveryMetaPath: '/api/agent/v1/meta.json',
+    discoveryOpenapiPath: '/api/agent/v1/openapi.json',
+  },
+  bladekeeper: {
+    aliases: ['bladekeeper', 'bladekeeper.app', 'bk'],
+    discoveryBase: 'https://bladekeeper.app',
+    apiBase: BLADEKEEPER_SUPABASE_BASE,
+    discoveryMetaPath: '/api/agent/v1/meta.json',
+    discoveryOpenapiPath: '/api/agent/v1/openapi.json',
+    extraHeaders: {
+      apikey: process.env.BLADEKEEPER_ANON_KEY || BLADEKEEPER_ANON_KEY,
+    },
+  },
+};
+
+function usage() {
+  console.log(`Usage:
+  rodaco agent discover <site>
+  rodaco agent meta <site>
+  rodaco agent query <site> <resource> [--params 'k=v&k2=v2']
+  rodaco agent propose <site> <type> --input proposal.json [--idempotency key]
+  rodaco agent proposals list <site> [--status pending]
+  rodaco agent approve <site> <proposalId>
+  rodaco agent reject <site> <proposalId> [--reason "..."]
+  rodaco agent apply <site> <proposalId> --approval-token <token>
+  rodaco agent audit <site> [--params 'limit=20']
+
+Global flags:
+  --token <bearer>
+  --admin-key <value>
+  --agent-id <id>         (default: RODACO_AGENT_ID or rodaco-cli)
+  --run-id <id>           (default: auto)
+`);
+}
+
+function parseArgs(argv) {
+  const pos = [];
+  const flags = {};
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (!a.startsWith('--')) {
+      pos.push(a);
+      continue;
+    }
+
+    const eq = a.indexOf('=');
+    if (eq > -1) {
+      flags[a.slice(2, eq)] = a.slice(eq + 1);
+      continue;
+    }
+
+    const key = a.slice(2);
+    const next = argv[i + 1];
+    if (!next || next.startsWith('--')) {
+      flags[key] = true;
+    } else {
+      flags[key] = next;
+      i += 1;
+    }
+  }
+  return { pos, flags };
+}
+
+function resolveSite(raw) {
+  if (!raw) return null;
+  const needle = raw.toLowerCase();
+  for (const [key, cfg] of Object.entries(SITE_CONFIG)) {
+    if (cfg.aliases.includes(needle)) return { key, ...cfg };
+  }
+  return null;
+}
+
+function parseQueryString(qs) {
+  if (!qs) return '';
+  const trimmed = String(qs).trim();
+  if (!trimmed) return '';
+  return trimmed.startsWith('?') ? trimmed.slice(1) : trimmed;
+}
+
+function randomRunId() {
+  return `run_${Date.now().toString(36)}_${crypto.randomBytes(4).toString('hex')}`;
+}
+
+function randomIdempotencyKey() {
+  return crypto.randomUUID();
+}
+
+function safeJsonParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function siteTokenEnvKey(siteKey) {
+  return `RODACO_AGENT_TOKEN_${siteKey.toUpperCase()}`;
+}
+
+function siteAdminEnvKey(siteKey) {
+  return `RODACO_AGENT_ADMIN_KEY_${siteKey.toUpperCase()}`;
+}
+
+function buildHeaders(site, flags, method) {
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    'X-Agent-Id': flags['agent-id'] || process.env.RODACO_AGENT_ID || 'rodaco-cli',
+    'X-Agent-Run-Id': flags['run-id'] || randomRunId(),
+    ...(site.extraHeaders || {}),
+  };
+
+  const token =
+    flags.token || process.env[siteTokenEnvKey(site.key)] || process.env.RODACO_AGENT_TOKEN || process.env.RODACO_AGENT_BEARER;
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const adminKey = flags['admin-key'] || process.env[siteAdminEnvKey(site.key)] || process.env.RODACO_AGENT_ADMIN_KEY;
+  if (adminKey) headers['X-Agent-Admin-Key'] = adminKey;
+
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+    headers['Idempotency-Key'] = flags.idempotency || randomIdempotencyKey();
+  }
+
+  return headers;
+}
+
+async function httpJson(url, options = {}) {
+  const res = await fetch(url, { ...options, signal: AbortSignal.timeout(25000) });
+  const text = await res.text();
+  const body = safeJsonParse(text);
+  return {
+    ok: res.ok,
+    status: res.status,
+    statusText: res.statusText,
+    headers: Object.fromEntries(res.headers.entries()),
+    body,
+  };
+}
+
+function printResult(result) {
+  console.log(
+    JSON.stringify(
+      {
+        ok: result.ok,
+        status: result.status,
+        statusText: result.statusText,
+        body: result.body,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+async function cmdDiscover(site) {
+  const agentJsonUrl = `${site.discoveryBase}/.well-known/agent.json`;
+  const metaUrl = `${site.discoveryBase}${site.discoveryMetaPath}`;
+  const openapiUrl = `${site.discoveryBase}${site.discoveryOpenapiPath}`;
+
+  const [agentJson, meta, openapi] = await Promise.all([
+    httpJson(agentJsonUrl, { method: 'GET' }),
+    httpJson(metaUrl, { method: 'GET' }),
+    httpJson(openapiUrl, { method: 'GET' }),
+  ]);
+
+  console.log(
+    JSON.stringify(
+      {
+        site: site.key,
+        discovery: {
+          agentJsonUrl,
+          metaUrl,
+          openapiUrl,
+        },
+        responses: {
+          agentJson: { ok: agentJson.ok, status: agentJson.status, body: agentJson.body },
+          meta: { ok: meta.ok, status: meta.status, body: meta.body },
+          openapi: { ok: openapi.ok, status: openapi.status, body: openapi.body },
+        },
+      },
+      null,
+      2,
+    ),
+  );
+
+  if (!agentJson.ok || !meta.ok || !openapi.ok) process.exit(1);
+}
+
+async function cmdMeta(site, flags) {
+  const headers = buildHeaders(site, flags, 'GET');
+  const result = await httpJson(`${site.apiBase}/meta`, { method: 'GET', headers });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdQuery(site, resource, flags) {
+  if (!resource) throw new Error('query requires <resource>');
+  const qs = parseQueryString(flags.params);
+  const url = `${site.apiBase}/${resource}${qs ? `?${qs}` : ''}`;
+  const headers = buildHeaders(site, flags, 'GET');
+  const result = await httpJson(url, { method: 'GET', headers });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdPropose(site, type, flags) {
+  if (!type) throw new Error('propose requires <type>');
+  const inputPath = flags.input;
+  if (!inputPath) throw new Error('propose requires --input <file.json>');
+  const raw = fs.readFileSync(inputPath, 'utf8');
+  const payload = safeJsonParse(raw);
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error('proposal input must be a JSON object');
+  }
+
+  const finalPayload = {
+    ...payload,
+    type,
+  };
+
+  const headers = buildHeaders(site, flags, 'POST');
+  const result = await httpJson(`${site.apiBase}/proposals`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(finalPayload),
+  });
+
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdProposalsList(site, flags) {
+  const params = new URLSearchParams();
+  if (flags.status) params.set('status', String(flags.status));
+  const extra = parseQueryString(flags.params);
+  if (extra) {
+    const p = new URLSearchParams(extra);
+    for (const [k, v] of p.entries()) params.set(k, v);
+  }
+
+  const headers = buildHeaders(site, flags, 'GET');
+  const url = `${site.apiBase}/proposals${params.toString() ? `?${params.toString()}` : ''}`;
+  const result = await httpJson(url, { method: 'GET', headers });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdApprove(site, proposalId, flags) {
+  if (!proposalId) throw new Error('approve requires <proposalId>');
+  const headers = buildHeaders(site, flags, 'POST');
+  const result = await httpJson(`${site.apiBase}/proposals/${encodeURIComponent(proposalId)}/approve`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({}),
+  });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdReject(site, proposalId, flags) {
+  if (!proposalId) throw new Error('reject requires <proposalId>');
+  const headers = buildHeaders(site, flags, 'POST');
+  const reason = typeof flags.reason === 'string' ? flags.reason : null;
+  const result = await httpJson(`${site.apiBase}/proposals/${encodeURIComponent(proposalId)}/reject`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(reason ? { reason } : {}),
+  });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdApply(site, proposalId, flags) {
+  if (!proposalId) throw new Error('apply requires <proposalId>');
+  const approvalToken = flags['approval-token'];
+  if (!approvalToken) throw new Error('apply requires --approval-token <token>');
+
+  const headers = buildHeaders(site, flags, 'POST');
+  headers['X-Agent-Approval-Token'] = String(approvalToken);
+
+  const result = await httpJson(`${site.apiBase}/proposals/${encodeURIComponent(proposalId)}/apply`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({}),
+  });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function cmdAudit(site, flags) {
+  const qs = parseQueryString(flags.params || 'limit=20');
+  const url = `${site.apiBase}/audit${qs ? `?${qs}` : ''}`;
+  const headers = buildHeaders(site, flags, 'GET');
+  const result = await httpJson(url, { method: 'GET', headers });
+  printResult(result);
+  if (!result.ok) process.exit(1);
+}
+
+async function main() {
+  const { pos, flags } = parseArgs(process.argv.slice(2));
+  if (pos.length === 0 || pos[0] === '--help' || flags.help) {
+    usage();
+    process.exit(0);
+  }
+
+  const [root, cmd, ...rest] = pos;
+  if (root !== 'agent') {
+    console.error(`Unknown root command '${root}'. Only 'agent' is supported.`);
+    usage();
+    process.exit(2);
+  }
+
+  if (!cmd) {
+    usage();
+    process.exit(2);
+  }
+
+  if (cmd === 'proposals') {
+    const [sub, siteRaw] = rest;
+    if (sub !== 'list') throw new Error(`Unsupported proposals subcommand '${sub}'. Use: proposals list <site>`);
+    const site = resolveSite(siteRaw);
+    if (!site) throw new Error(`Unknown site '${siteRaw}'. Use one of: rogergimbel, rodaco, bladekeeper`);
+    return cmdProposalsList(site, flags);
+  }
+
+  const [siteRaw, arg2] = rest;
+  const site = resolveSite(siteRaw);
+  if (!site) throw new Error(`Unknown site '${siteRaw}'. Use one of: rogergimbel, rodaco, bladekeeper`);
+
+  switch (cmd) {
+    case 'discover':
+      return cmdDiscover(site);
+    case 'meta':
+      return cmdMeta(site, flags);
+    case 'query':
+      return cmdQuery(site, arg2, flags);
+    case 'propose':
+      return cmdPropose(site, arg2, flags);
+    case 'approve':
+      return cmdApprove(site, arg2, flags);
+    case 'reject':
+      return cmdReject(site, arg2, flags);
+    case 'apply':
+      return cmdApply(site, arg2, flags);
+    case 'audit':
+      return cmdAudit(site, flags);
+    default:
+      throw new Error(`Unsupported command '${cmd}'`);
+  }
+}
+
+main().catch((error) => {
+  console.error(`❌ ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+});

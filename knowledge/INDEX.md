@@ -25,7 +25,9 @@ knowledge/
 │   ├── mission-control/summary.md
 │   ├── network-overview.md
 │   ├── incident-playbook-false-health-alerts.md
-│   └── 30-day-ai-tech-playbook.md
+│   ├── 30-day-ai-tech-playbook.md
+│   ├── agent-first-v0-spec.md
+│   └── agent-first-30-day-roadmap.md
 ├── chat-history/                   # Parsed conversation summaries (256 convos)
 ├── ai-models/
 │   └── gemini-31-pro-preview.md   # Benchmarks, specs, pricing, daily driver assessment
@@ -55,4 +57,4 @@ When spawning sub-agents, include relevant KB paths:
 "Check Pi health. Load: knowledge/infrastructure/raspberry-pi/summary.md"
 ```
 
-*Last updated: 2026-02-19*
+*Last updated: 2026-02-20*

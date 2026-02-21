@@ -1,0 +1,214 @@
+# Workflow 02 — Public read + propose/list (local API surfaces)
+# Time: 2026-02-20T20:34:55Z
+
+$ /home/node/workspace/bin/rodaco agent query rogergimbel projects --params limit=2
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "items": [
+        {
+          "title": "Enterprise SaaS Platform",
+          "category": "B2B SaaS",
+          "summary": "Application for thousands of users with collaboration and analytics workflows.",
+          "tech": [
+            "React",
+            "Node.js",
+            "PostgreSQL",
+            "AWS"
+          ]
+        },
+        {
+          "title": "AI-Powered Web App",
+          "category": "AI Application",
+          "summary": "Automation-focused application integrating modern AI APIs into business workflows.",
+          "tech": [
+            "TypeScript",
+            "Next.js",
+            "AI APIs",
+            "Tailwind"
+          ]
+        }
+      ]
+    },
+    "error": null,
+    "meta": {
+      "requestId": "agent--api-agent-v1-projects",
+      "version": "v0",
+      "query": {
+        "q": "",
+        "sort": null,
+        "limit": 2,
+        "cursor": null
+      },
+      "pagination": {
+        "total": 3,
+        "returned": 2,
+        "hasMore": true,
+        "nextCursor": "Mg"
+      },
+      "ts": "2026-02-20T20:34:55.582Z"
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent query rodaco services --params limit=2
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "items": [
+        {
+          "title": "AI-Powered Products",
+          "summary": "From concept to launch with AI as the core product capability.",
+          "delivery_model": "product_build"
+        },
+        {
+          "title": "Agent-Driven Development",
+          "summary": "Use AI agents to architect, build, and iterate faster than traditional workflows.",
+          "delivery_model": "agentic_delivery"
+        }
+      ]
+    },
+    "error": null,
+    "meta": {
+      "requestId": "agent--api-agent-v1-services",
+      "version": "v0",
+      "query": {
+        "q": "",
+        "sort": null,
+        "limit": 2,
+        "cursor": null
+      },
+      "pagination": {
+        "total": 3,
+        "returned": 2,
+        "hasMore": true,
+        "nextCursor": "Mg"
+      },
+      "ts": "2026-02-20T20:34:55.730Z"
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent propose rodaco content-update --input /tmp/rodaco-step5-proposal.json --idempotency step5-public-1771619695
+{
+  "ok": true,
+  "status": 201,
+  "statusText": "Created",
+  "body": {
+    "ok": true,
+    "data": {
+      "proposal": {
+        "id": "prop-mlvcmi2z-wrwcsv",
+        "site": "rodaco.co",
+        "type": "content-update",
+        "title": "Step5 CLI parity proposal",
+        "status": "pending",
+        "status_history": [
+          {
+            "status": "pending",
+            "at": "2026-02-20T20:34:55.883Z",
+            "actor": "system"
+          }
+        ],
+        "approval_state": {
+          "current": "pending",
+          "allowed": [
+            "pending",
+            "approved",
+            "rejected",
+            "applied"
+          ],
+          "apply_enabled": false,
+          "note": "Week 1 Day 4: status records only, no apply mutation."
+        },
+        "headers": {
+          "agent_id": "rodaco-cli",
+          "agent_run_id": "run_mlvcmi0v_069fecd8",
+          "idempotency_key": "step5-public-1771619695"
+        },
+        "auth_context": {
+          "hasBearer": false,
+          "mode": "none"
+        },
+        "payload": {
+          "title": "Step5 CLI parity proposal",
+          "resource": "homepage",
+          "changes": {
+            "headline": "Agent-first API, human-approved changes"
+          },
+          "type": "content-update"
+        },
+        "created_at": "2026-02-20T20:34:55.883Z",
+        "updated_at": "2026-02-20T20:34:55.883Z"
+      }
+    },
+    "error": null,
+    "meta": {
+      "requestId": "agent-proposal-create-mlvcmi30-jiwohe",
+      "version": "v0",
+      "ts": "2026-02-20T20:34:55.884Z",
+      "idempotentReplay": false
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent proposals list rodaco --params limit=3
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "items": [
+        {
+          "id": "prop-mlvcmi2z-wrwcsv",
+          "type": "content-update",
+          "status": "pending",
+          "created_at": "2026-02-20T20:34:55.883Z",
+          "updated_at": "2026-02-20T20:34:55.883Z",
+          "title": "Step5 CLI parity proposal"
+        }
+      ]
+    },
+    "error": null,
+    "meta": {
+      "requestId": "agent--api-agent-v1-proposals",
+      "version": "v0",
+      "query": {
+        "q": "",
+        "sort": null,
+        "limit": 3,
+        "cursor": null
+      },
+      "pagination": {
+        "total": 1,
+        "returned": 1,
+        "hasMore": false,
+        "nextCursor": null
+      },
+      "ts": "2026-02-20T20:34:56.024Z",
+      "proposals": {
+        "statuses": [
+          "pending",
+          "approved",
+          "rejected",
+          "applied"
+        ],
+        "storage": "tmpfs-json",
+        "authContext": {
+          "hasBearer": false,
+          "mode": "none"
+        }
+      }
+    }
+  }
+}

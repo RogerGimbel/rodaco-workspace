@@ -1,0 +1,524 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "a8d9ff2f-e177-48a8-afe4-54136c680f48",
+      "agentId": "main",
+      "name": "Morning Brief",
+      "enabled": true,
+      "createdAtMs": 1769862258705,
+      "updatedAtMs": 1771588947520,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Morning brief for Roger. Steps:\n\n1. Read memory/cron-status.json — check if overnight build and backup ran successfully\n2. Read memory/tasks/site-health-report.md — any issues from the daily health check?\n3. Read memory/active-tasks.md — any tasks in progress or stalled?\n4. Read GOALS.md (if it exists) for current priorities\n5. Check weather in Denver\n6. Read today's and yesterday's memory/*.md for recent context\n\nSend a concise Telegram summary to Roger (chat ID 1425151324):\n- What happened overnight (build results, backup status, health check)\n- Active tasks status\n- Today's priorities (from GOALS.md or recent context)\n- Weather\n- Anything that needs Roger's attention\n\nKeep it SHORT — 10 lines max. No filler.\n\nThen update memory/cron-status.json: set jobs.morning_brief.lastRun, .status, .note\n\nMEMORY RECALL RULE (MANDATORY): Before answering any question/task involving prior decisions, dates, prior work, preferences, or todos, run memory_search first and use memory_get as needed before final output.",
+        "timeoutSeconds": 180,
+        "model": "codex"
+      },
+      "state": {
+        "nextRunAtMs": 1771675200000,
+        "lastRunAtMs": 1771588800013,
+        "lastStatus": "error",
+        "lastDurationMs": 147507,
+        "consecutiveErrors": 2,
+        "lastError": "cron announce delivery failed"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "telegram",
+        "to": "1425151324"
+      }
+    },
+    {
+      "id": "84165505-c6a4-496f-b916-9cd84af3d3e6",
+      "agentId": "main",
+      "name": "Overnight Build",
+      "enabled": true,
+      "createdAtMs": 1769862265941,
+      "updatedAtMs": 1771605793132,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 2 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "OVERNIGHT BUILD v2 — MULTI-PROJECT FEATURE DEVELOPMENT\n\n## Step 0: Crash Recovery (ALWAYS DO FIRST)\n1. Run `git diff --stat` to detect uncommitted changes from a previous crashed run\n2. Read `memory/tasks/CURRENT.md` — if status is ACTIVE, you're resuming. Pick up where it left off.\n3. If uncommitted changes exist, assess: complete? Build and deploy if so. Revert if broken.\n4. Check all services: `curl -s http://localhost:3333/api/v3/health` — restart if down: `bash /home/node/workspace/mission-control/start.sh`\n\n## Step 1: Read the Queue\nRead `memory/tasks/overnight-queue.md`. Pick the top unchecked item from Priority 1. If P1 is empty, move to P2.\n\n## Step 2: Load Project Context\nBased on the task tag:\n- [MC] → Read key files from `rodaco-mc/src/` and `mission-control/src/`\n- [rodaco.co] → Read `rodaco-site/public/index.html`\n- [rogergimbel.dev] → Read `rogergimbel-site/public/index.html`\n- [tooling] → Read relevant `bin/` or `skills/` files\nAlso read `knowledge/projects/<project>/summary.md` if it exists.\n\n## Step 3: Plan & Track\nWrite your plan to `memory/tasks/CURRENT.md` with status ACTIVE. Update after each sub-step.\n\n## Step 4: Implement\nEdit files, build, test. Build commands:\n- MC frontend: `cd /home/node/workspace/rodaco-mc && npm run build` then `rm -rf /home/node/workspace/mission-control/public/assets && cp -r /home/node/workspace/rodaco-mc/dist/* /home/node/workspace/mission-control/public/`\n- MC API: Stop server first (`SUPERVISOR_PID=$(cat /tmp/mission-control-supervisor.pid 2>/dev/null); [ -n \"$SUPERVISOR_PID\" ] && kill $SUPERVISOR_PID 2>/dev/null; sleep 2; pkill -f 'node src/server.js' 2>/dev/null`), edit, then `bash /home/node/workspace/mission-control/start.sh`\n- rodaco.co / rogergimbel.dev: Edit HTML directly, server auto-serves static files\n\n## Step 5: Verify\nTake screenshots using `bash bin/remote-screenshot URL FILENAME.png` (screenshots land in /tmp/).\nUse the image tool to verify changes look correct.\n\n## Step 6: Summary\nAppend run summary to `memory/YYYY-MM-DD.md`. Mark the task [x] in overnight-queue.md. Set CURRENT.md status to IDLE.\n\n## Step 7: Next Task\nIf <30 minutes used of your 40-minute timeout, pick the next queue item and repeat from Step 2.\n\n## Rules\n- ❌ No git push\n- ❌ No messages (it's 2 AM)\n- ❌ No external API calls\n- ❌ No destructive commands (no rm -rf, prefer trash)\n- ✅ Build and deploy locally\n- ✅ Write to memory files\n- ✅ Take screenshots\n- ✅ Spawn sub-agents for parallel work (e.g. API + frontend simultaneously)\n\nMEMORY RECALL RULE (MANDATORY): Before answering any question/task involving prior decisions, dates, prior work, preferences, or todos, run memory_search first and use memory_get as needed before final output.\n\n## Success Gate (NON-NEGOTIABLE)\nA run only counts as successful if at least ONE of these is true:\n1) You produced a committed, push-ready deliverable (commit locally; do NOT push), OR\n2) You are blocked by a real external dependency and provide a clear blocker report.\n\nIf condition (1): include in the daily note:\n- repo/path\n- commit hash\n- one-line impact summary\n\nIf condition (2): include in the daily note:\n- exact blocker\n- evidence (error/output)\n- next unblocking action\n- smallest fallback task completed meanwhile\n\nIf neither (1) nor (2) happened, treat the run as a failure and write a blunt postmortem in memory/YYYY-MM-DD.md with what went wrong and how tomorrow's run avoids it.",
+        "model": "codex",
+        "timeoutSeconds": 2400
+      },
+      "state": {
+        "nextRunAtMs": 1771657200000,
+        "lastRunAtMs": 1771570800016,
+        "lastStatus": "ok",
+        "lastDurationMs": 193550,
+        "consecutiveErrors": 0
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "description": "Overnight Build with mandatory deliverable/blocker success gate"
+    },
+    {
+      "id": "224622be-91c3-4902-88bd-5ba3a4b141fc",
+      "agentId": "main",
+      "name": "Moltbook Introduction Post",
+      "createdAtMs": 1769898565089,
+      "updatedAtMs": 1770298024197,
+      "schedule": {
+        "kind": "at",
+        "at": "2025-01-31T08:00:00.000Z"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "🦞 MOLTBOOK POST REMINDER: Post your introduction to m/introductions now. Servers should be less hammered. Use: POST /api/v1/posts with submolt='introductions', title='Hey Moltbook! 👋', and your intro content. API key in ~/.config/moltbook/credentials.json"
+      },
+      "state": {
+        "lastRunAtMs": 1770298024198,
+        "lastStatus": "ok",
+        "lastDurationMs": 19
+      },
+      "enabled": false
+    },
+    {
+      "id": "6b7de2ac-8351-4bd2-9281-75f0d55dfe0f",
+      "agentId": "main",
+      "name": "OpenClaw iOS TestFlight Check",
+      "enabled": true,
+      "createdAtMs": 1770668443997,
+      "updatedAtMs": 1771614064451,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 12 * * *",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check if the OpenClaw iOS node app has a public TestFlight link yet. Search the web for 'openclaw ios testflight' and check https://github.com/openclaw/openclaw/pull/11756. If you find a TestFlight link or public release announcement, notify Roger. If nothing new, reply NO_REPLY.",
+        "timeoutSeconds": 120,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce",
+        "to": "1425151324",
+        "channel": "telegram"
+      },
+      "state": {
+        "nextRunAtMs": 1771700400000,
+        "lastRunAtMs": 1771614000021,
+        "lastStatus": "ok",
+        "lastDurationMs": 64430,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "63e3f989-79a8-4837-94bb-6390e7bac4bd",
+      "agentId": "main",
+      "name": "Wikilink Sync",
+      "enabled": true,
+      "createdAtMs": 1770856096567,
+      "updatedAtMs": 1771581621655,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 3 * * *",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the wikilink sync script: `node /home/node/workspace/bin/wikilink-sync`. Log the results to today's daily note. If the script errors, fix it and retry once.",
+        "timeoutSeconds": 120,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1771668000000,
+        "lastRunAtMs": 1771581600013,
+        "lastStatus": "ok",
+        "lastDurationMs": 21642,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "87732e3a-b98a-4b9b-b7e0-462f0c87f0dc",
+      "agentId": "main",
+      "name": "Get to Know Roger (Mon 10AM)",
+      "enabled": true,
+      "createdAtMs": 1770948650115,
+      "updatedAtMs": 1771371109202,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 * * 1",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Read skills/get-to-know-you/SKILL.md for context. Run: bash /home/node/workspace/skills/get-to-know-you/ask.sh — take the question from the JSON output and send it to Roger on Telegram (chat ID 1425151324) in a casual, friendly tone. Do not add preamble like \"here is your question\" — just ask it naturally, like a friend would. If the script returns an error, report it briefly.",
+        "timeoutSeconds": 120,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "telegram",
+        "to": "1425151324"
+      },
+      "state": {
+        "nextRunAtMs": 1771866000000,
+        "lastRunAtMs": 1771261200013,
+        "lastStatus": "ok",
+        "lastDurationMs": 20129,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "2d2cca54-82c8-4604-9c53-e5dd8a3d6a9a",
+      "agentId": "main",
+      "name": "Get to Know Roger (Wed 2PM)",
+      "enabled": true,
+      "createdAtMs": 1770948650172,
+      "updatedAtMs": 1771448422333,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 14 * * 3",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Read skills/get-to-know-you/SKILL.md for context. Run: bash /home/node/workspace/skills/get-to-know-you/ask.sh — take the question from the JSON output and send it to Roger on Telegram (chat ID 1425151324) in a casual, friendly tone. Do not add preamble like \"here is your question\" — just ask it naturally, like a friend would. If the script returns an error, report it briefly.",
+        "timeoutSeconds": 120,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "telegram",
+        "to": "1425151324"
+      },
+      "state": {
+        "nextRunAtMs": 1772053200000,
+        "lastRunAtMs": 1771448400017,
+        "lastStatus": "ok",
+        "lastDurationMs": 22316,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "a4101865-f786-44d0-9a32-055917252f54",
+      "agentId": "main",
+      "name": "Get to Know Roger (Fri 11AM)",
+      "enabled": true,
+      "createdAtMs": 1770948650218,
+      "updatedAtMs": 1771610418846,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 11 * * 5",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Read skills/get-to-know-you/SKILL.md for context. Run: bash /home/node/workspace/skills/get-to-know-you/ask.sh — take the question from the JSON output and send it to Roger on Telegram (chat ID 1425151324) in a casual, friendly tone. Do not add preamble like \"here is your question\" — just ask it naturally, like a friend would. If the script returns an error, report it briefly.",
+        "timeoutSeconds": 120,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "telegram",
+        "to": "1425151324"
+      },
+      "state": {
+        "nextRunAtMs": 1772215200000,
+        "lastRunAtMs": 1771610400012,
+        "lastStatus": "error",
+        "lastDurationMs": 18834,
+        "consecutiveErrors": 1,
+        "lastError": "cron announce delivery failed"
+      }
+    },
+    {
+      "id": "d1a919c2-b9d9-4ab6-a1ce-e4215d559536",
+      "agentId": "main",
+      "name": "Daily Backup (Pi + GitHub)",
+      "enabled": true,
+      "createdAtMs": 1771010294218,
+      "updatedAtMs": 1771585361464,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 4 * * *",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run both backup scripts in order:\n1. bash /home/node/workspace/bin/backup-to-pi\n2. bash /home/node/workspace/bin/backup-to-github\n\nCapture the output of each script. Then update memory/cron-status.json:\n- Set jobs.daily_backup.lastRun to current ISO timestamp\n- Set jobs.daily_backup.status to 'ok' or 'error'\n- Set jobs.daily_backup.note to a brief summary\n\nIf EITHER script exits non-zero or output contains 'ERROR':\n- Send Telegram to Roger (chat ID 1425151324) with error details\n\nIf both succeed, reply NO_REPLY.",
+        "timeoutSeconds": 600,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1771671600000,
+        "lastRunAtMs": 1771585200012,
+        "lastStatus": "ok",
+        "lastDurationMs": 161452,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "fe7d0fce-66a7-43df-82c3-e48c7011ecf9",
+      "agentId": "main",
+      "name": "Weekly Knowledge Synthesis",
+      "enabled": true,
+      "createdAtMs": 1771016325541,
+      "updatedAtMs": 1771543615512,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 0",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Weekly knowledge synthesis: Review all entities in knowledge/ with recent updates (check git log or file modification times). Rewrite their summary.md files for current state. Move outdated info to History sections. Keep summaries under 50 lines. Also review recent memory/*.md files and update MEMORY.md with any durable lessons or decisions worth keeping long-term.\n\nMEMORY RECALL RULE (MANDATORY): Before answering any question/task involving prior decisions, dates, prior work, preferences, or todos, run memory_search first and use memory_get as needed before final output.",
+        "timeoutSeconds": 600,
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1771776000000,
+        "lastRunAtMs": 1771543561454,
+        "lastStatus": "ok",
+        "lastDurationMs": 54058,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "90ec400f-8d4d-4b94-b47b-88c07745ebe4",
+      "agentId": "main",
+      "name": "Monthly Roger Review",
+      "enabled": true,
+      "createdAtMs": 1771225423666,
+      "updatedAtMs": 1771371137952,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 14 1 * *",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the monthly review of what you've learned about Roger. Execute: bash bin/monthly-review.sh. Then read the output and send Roger a brief Telegram summary of coverage gaps and interesting learnings. Chat ID: 1425151324.",
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce"
+      },
+      "state": {
+        "nextRunAtMs": 1772398800000
+      }
+    },
+    {
+      "id": "a8c93721-721f-4129-b933-2700fb96b4fc",
+      "agentId": "main",
+      "name": "Sites Watchdog",
+      "enabled": true,
+      "createdAtMs": 1771340149893,
+      "updatedAtMs": 1771620936420,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 300000,
+        "anchorMs": 1771381229217
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the sites watchdog quietly:\n\nbash /home/node/workspace/bin/sites-watchdog\nrc=$?\n\n# Debounce alerting for repeated failures\nSTATE=/tmp/sites-watchdog.state\ncount=0\nlastAlert=0\n[ -f \"$STATE\" ] && read count lastAlert < \"$STATE\" || true\nnow=$(date +%s)\n\nif [ $rc -eq 0 ]; then\n  echo \"0 $lastAlert\" > \"$STATE\"\n  echo NO_REPLY\n  exit 0\nfi\n\ncount=$((count+1))\nif [ \"$count\" -lt 3 ]; then\n  echo \"$count $lastAlert\" > \"$STATE\"\n  echo NO_REPLY\n  exit 0\nfi\n\ncooldown=1800\nif [ $((now-lastAlert)) -lt $cooldown ]; then\n  echo \"$count $lastAlert\" > \"$STATE\"\n  echo NO_REPLY\n  exit 0\nfi\n\nlastAlert=$now\necho \"$count $lastAlert\" > \"$STATE\"\nlines=$(tail -n 10 /tmp/sites-watchdog.log 2>/dev/null)\necho \"Sites watchdog sustained failure after 3 checks. Recent log:\\n$lines\"",
+        "model": "codex",
+        "timeoutSeconds": 30
+      },
+      "state": {
+        "nextRunAtMs": 1771621229217,
+        "lastRunAtMs": 1771620929231,
+        "lastStatus": "ok",
+        "lastDurationMs": 7189,
+        "consecutiveErrors": 0
+      },
+      "delivery": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "a8738a7d-04d5-4e62-b557-4efa8c252dca",
+      "agentId": "main",
+      "name": "Daily Site Health Check",
+      "enabled": true,
+      "createdAtMs": 1771371041110,
+      "updatedAtMs": 1771585424659,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily deep health check for all 3 sites. Run these checks and compile results:\n\n## 1. HTTP Status (local)\n```bash\nfor port in 3333 3334 3335; do echo \"Port $port: $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:$port/)\"; done\n```\n\n## 2. MC API Health\n```bash\ncurl -s http://127.0.0.1:3333/api/v3/health\n```\n\n## 3. Content Sanity (verify real content, not error pages)\n```bash\necho \"Rodaco mentions: $(curl -s http://127.0.0.1:3334/ | grep -c 'Rodaco')\"\necho \"Roger mentions: $(curl -s http://127.0.0.1:3335/ | grep -c 'Roger')\"\necho \"MC dashboard: $(curl -s http://127.0.0.1:3333/ | grep -c 'Mission Control')\"\n```\n\n## 4. Response Times\n```bash\nfor port in 3333 3334 3335; do echo \"Port $port: $(curl -s -o /dev/null -w '%{time_total}s' http://127.0.0.1:$port/)\"; done\n```\n\n## 5. Production URL Check (SSL + redirects)\n```bash\necho \"rodaco.co: $(curl -s -o /dev/null -w '%{http_code}' -L https://rodaco.co 2>/dev/null || echo 'FAILED')\"\necho \"rogergimbel.dev: $(curl -s -o /dev/null -w '%{http_code}' -L https://rogergimbel.dev 2>/dev/null || echo 'FAILED')\"\n```\n\n## 6. Process Health\n```bash\necho \"Node server processes: $(pgrep -f 'node.*server.cjs' | wc -l)\"\necho \"MC server: $(pgrep -f 'node src/server.js' | wc -l)\"\n```\n\n## Results\nWrite a brief summary to memory/tasks/site-health-report.md (overwrite each day).\nUpdate memory/cron-status.json: set jobs.daily_health_check.lastRun, .status, .note\n\nIf ANY local site returns non-200, restart it:\n- Port 3333: bash /home/node/workspace/mission-control/start.sh\n- Port 3334: cd /home/node/workspace/rodaco-site && node server.cjs &\n- Port 3335: cd /home/node/workspace/rogergimbel-site && node server.cjs &\n\nIf ANY check fails after restart, send Telegram alert to Roger (chat ID 1425151324) with details.\nIf all healthy, reply NO_REPLY.",
+        "model": "codex",
+        "timeoutSeconds": 120
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1771671600000,
+        "lastRunAtMs": 1771585361464,
+        "lastStatus": "ok",
+        "lastDurationMs": 63195,
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "3e2d4edb-e190-4394-a0a0-f6a38b861ad6",
+      "agentId": "main",
+      "name": "Weekly Browser Site Audit",
+      "enabled": true,
+      "createdAtMs": 1771371056724,
+      "updatedAtMs": 1771371056724,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 3 * * 0",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Weekly browser-based site audit. Use bash bin/remote-screenshot and the browser tool to do a full click-through of all 3 sites.\n\n## Site 1: Mission Control (http://100.124.209.59:3333/)\nPages: /, /ops, /agent, /projects, /knowledge, /research\nFor each page:\n1. Take screenshot: `bash bin/remote-screenshot \"http://100.124.209.59:3333/<path>\" \"audit-mc-<page>.png\"`\n2. Use image tool to analyze the screenshot — note any visual bugs, broken layouts, missing data\n3. Take mobile screenshot (375px): `ssh rogergimbel@100.71.128.20 /opt/homebrew/bin/google-chrome-stable --headless --disable-gpu --screenshot=/tmp/audit-mc-<page>-mobile.png --window-size=375,812 --virtual-time-budget=10000 \"http://100.124.209.59:3333/<path>\"` then `scp rogergimbel@100.71.128.20:/tmp/audit-mc-<page>-mobile.png /tmp/`\n\n## Site 2: Rodaco.co (http://100.124.209.59:3334/)\n1. Full page screenshot: `bash bin/remote-screenshot \"http://100.124.209.59:3334/\" \"audit-rodaco.png\"`\n2. Mobile screenshot (375px width)\n3. Analyze both with image tool\n\n## Site 3: rogergimbel.dev (http://100.124.209.59:3335/)\n1. Full page screenshot: `bash bin/remote-screenshot \"http://100.124.209.59:3335/\" \"audit-roger.png\"`\n2. Mobile screenshot (375px width)\n3. Analyze both with image tool\n\n## Report\nWrite findings to memory/tasks/site-health-report.md under a ## Weekly Browser Audit heading with date.\nCategories: Critical (broken), Warning (ugly/degraded), Info (minor/cosmetic).\nAdd any new issues to memory/tasks/overnight-queue.md as appropriate priority.\n\nIf critical issues found, send Telegram to Roger (chat ID 1425151324).\nIf all clean, reply NO_REPLY.",
+        "model": "codex",
+        "timeoutSeconds": 600
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1771747200000
+      }
+    },
+    {
+      "id": "d0c27067-f2d2-4ded-8e49-85e97085536c",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:1425151324",
+      "name": "daily-ai-digest",
+      "enabled": true,
+      "createdAtMs": 1771437790361,
+      "updatedAtMs": 1771599660607,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * *",
+        "tz": "America/Denver"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the daily AI/tech digest for Roger. Execute: bash /home/node/workspace/bin/daily-ai-digest\n\nThen synthesize into a concise, high-signal digest. Structure:\n1. 🔥 Breaking / Major (last 24h — launches, releases, announcements)\n2. 💎 Gems from Engineers (insights from actual devs/engineers at AI companies — these are often MORE valuable than exec posts)\n3. 🔮 Emerging Trends (patterns, new tools, frameworks gaining traction)\n4. 👀 Worth Watching (interesting threads, debates, or things Roger should dig into)\n\nKeep it punchy. Roger is a futurist who wants signal, not noise. Skip fluff, marketing, and crypto spam. Prioritize posts from verified engineers at AI companies (they have company logos in bio/header — not just blue checkmarks).\n\nDo NOT attempt to send the digest yourself. Just write it as your reply — the delivery system will announce it to Roger automatically via Telegram.\n\nMEMORY RECALL RULE (MANDATORY): Before answering any question/task involving prior decisions, dates, prior work, preferences, or todos, run memory_search first and use memory_get as needed before final output.",
+        "model": "codex"
+      },
+      "delivery": {
+        "mode": "announce",
+        "to": "1425151324",
+        "channel": "telegram"
+      },
+      "state": {
+        "nextRunAtMs": 1771686000000,
+        "lastRunAtMs": 1771599600009,
+        "lastStatus": "error",
+        "lastDurationMs": 60598,
+        "consecutiveErrors": 3,
+        "lastError": "cron announce delivery failed"
+      }
+    },
+    {
+      "id": "8cef5e2f-2c43-4058-ac36-cb983ccb1342",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:1425151324",
+      "name": "Homarr Migration Reminder",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1771514649849,
+      "updatedAtMs": 1771514649849,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-02-26T17:00:00.000Z"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "Reminder: Homarr 1.0 migration is pending on the Pi. You're on v0.16.0, current is v1.53.1. Backup already saved at /mnt/media/backups/homarr-backup-20260219-102053.tar.gz. New image is ghcr.io/homarr-labs/homarr (different org from old ajnart/homarr). Check homarr.dev docs for migration guide when ready."
+      },
+      "state": {
+        "nextRunAtMs": 1772125200000
+      }
+    },
+    {
+      "id": "fba72f77-0991-4242-93bf-adf63577bfcb",
+      "agentId": "main",
+      "name": "Mission Control Watchdog",
+      "enabled": true,
+      "createdAtMs": 1771543721447,
+      "updatedAtMs": 1771621014255,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 120000,
+        "anchorMs": 1771543721447
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check Mission Control health endpoint. If healthy (status ok), update memory/system-state.json mc.status=ok and reply NO_REPLY. If unhealthy, run bash /home/node/workspace/mission-control/start.sh, recheck once, and only if still unhealthy output a short alert with last 10 lines of /tmp/mission-control.log. Keep output minimal.",
+        "model": "codex",
+        "timeoutSeconds": 30
+      },
+      "delivery": {
+        "mode": "none",
+        "channel": "last"
+      },
+      "state": {
+        "nextRunAtMs": 1771621121447,
+        "lastRunAtMs": 1771621001465,
+        "lastStatus": "ok",
+        "lastDurationMs": 12790,
+        "consecutiveErrors": 0
+      }
+    }
+  ]
+}

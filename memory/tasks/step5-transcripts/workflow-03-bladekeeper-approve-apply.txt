@@ -1,0 +1,280 @@
+# Workflow 03 — BladeKeeper approve/apply token flow
+# Time: 2026-02-20T20:34:24Z
+
+$ /home/node/workspace/bin/rodaco agent propose bladekeeper data-update --input /tmp/rodaco-step5-bladekeeper-proposal.json --token <redacted> --idempotency <generated>
+{
+  "ok": true,
+  "status": 201,
+  "statusText": "Created",
+  "body": {
+    "ok": true,
+    "data": {
+      "proposal": {
+        "id": "a605c8f0-e1f4-4a2f-97f0-9c29c5b748f0",
+        "site": "bladekeeper.app",
+        "user_id": "d86e224a-f86e-4e63-ba12-48a1a055894d",
+        "type": "data-update",
+        "title": "Step5 BladeKeeper apply flow",
+        "status": "pending",
+        "status_history": [
+          {
+            "status": "pending",
+            "at": "2026-02-20T20:34:07.654Z",
+            "actor": "system"
+          }
+        ],
+        "approval_state": {
+          "current": "pending",
+          "allowed": [
+            "pending",
+            "approved",
+            "rejected",
+            "applied"
+          ],
+          "apply_enabled": false,
+          "note": "Awaiting explicit human approval token issuance before apply.",
+          "token_hash": null,
+          "token_expires_at": null,
+          "token_issued_at": null,
+          "token_issued_by": null,
+          "token_last4": null
+        },
+        "headers": {
+          "agent_id": "rodaco-cli",
+          "agent_run_id": "run_mlvclfxi_a1ffee1b",
+          "idempotency_key": "step5-bk-1771619646"
+        },
+        "payload": {
+          "type": "data-update",
+          "title": "Step5 BladeKeeper apply flow",
+          "changes": {
+            "field": "notes",
+            "value": "step5-cli"
+          },
+          "resource": "blade:metadata"
+        },
+        "idempotency_key": "step5-bk-1771619646",
+        "created_at": "2026-02-20T20:34:07.717591+00:00",
+        "updated_at": "2026-02-20T20:34:07.717591+00:00"
+      }
+    },
+    "error": null,
+    "meta": {
+      "requestId": "proposal-create-mlvclgya-kbl2h9",
+      "version": "v0",
+      "idempotentReplay": false,
+      "auth": {
+        "userId": "d86e224a-f86e-4e63-ba12-48a1a055894d"
+      },
+      "ts": "2026-02-20T20:34:07.763Z"
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent approve bladekeeper a605c8f0-e1f4-4a2f-97f0-9c29c5b748f0 --token <redacted>
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "proposal": {
+        "id": "a605c8f0-e1f4-4a2f-97f0-9c29c5b748f0",
+        "site": "bladekeeper.app",
+        "user_id": "d86e224a-f86e-4e63-ba12-48a1a055894d",
+        "type": "data-update",
+        "title": "Step5 BladeKeeper apply flow",
+        "status": "approved",
+        "status_history": [
+          {
+            "status": "pending",
+            "at": "2026-02-20T20:34:07.654Z",
+            "actor": "system"
+          },
+          {
+            "status": "approved",
+            "at": "2026-02-20T20:34:12.843Z",
+            "actor": "d86e224a-f86e-4e63-ba12-48a1a055894d"
+          }
+        ],
+        "approval_state": {
+          "current": "approved",
+          "allowed": [
+            "pending",
+            "approved",
+            "rejected",
+            "applied"
+          ],
+          "apply_enabled": true,
+          "note": "Approved. Submit apply with a valid approval token.",
+          "token_hash": "4001c692d8e524949465c2bb7719227f643ccf0aa72ac981c8495d70055f63b9",
+          "token_expires_at": "2026-02-20T20:49:12.844Z",
+          "token_issued_at": "2026-02-20T20:34:12.843Z",
+          "token_issued_by": "d86e224a-f86e-4e63-ba12-48a1a055894d",
+          "token_last4": "7ed3"
+        },
+        "headers": {
+          "agent_id": "rodaco-cli",
+          "agent_run_id": "run_mlvclfxi_a1ffee1b",
+          "idempotency_key": "step5-bk-1771619646"
+        },
+        "payload": {
+          "type": "data-update",
+          "title": "Step5 BladeKeeper apply flow",
+          "changes": {
+            "field": "notes",
+            "value": "step5-cli"
+          },
+          "resource": "blade:metadata"
+        },
+        "idempotency_key": "step5-bk-1771619646",
+        "created_at": "2026-02-20T20:34:07.717591+00:00",
+        "updated_at": "2026-02-20T20:34:12.843Z"
+      },
+      "approval": {
+        "token": "<redacted>",
+        "token_header": "X-Agent-Approval-Token",
+        "expires_at": "2026-02-20T20:49:12.844Z",
+        "ttl_seconds": 900,
+        "kill_switch": false
+      }
+    },
+    "error": null,
+    "meta": {
+      "requestId": "proposal-approve-mlvclky3-ujgc0y",
+      "version": "v0",
+      "apply_controls": {
+        "kill_switch": false,
+        "approval_token_header": "X-Agent-Approval-Token",
+        "approval_token_ttl_seconds": 900
+      },
+      "ts": "2026-02-20T20:34:12.843Z"
+    }
+  }
+}
+$ /home/node/workspace/bin/rodaco agent apply bladekeeper a605c8f0-e1f4-4a2f-97f0-9c29c5b748f0 --token <redacted> --approval-token <redacted>
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "proposal": {
+        "id": "a605c8f0-e1f4-4a2f-97f0-9c29c5b748f0",
+        "site": "bladekeeper.app",
+        "user_id": "d86e224a-f86e-4e63-ba12-48a1a055894d",
+        "type": "data-update",
+        "title": "Step5 BladeKeeper apply flow",
+        "status": "applied",
+        "status_history": [
+          {
+            "status": "pending",
+            "at": "2026-02-20T20:34:07.654Z",
+            "actor": "system"
+          },
+          {
+            "status": "approved",
+            "at": "2026-02-20T20:34:12.843Z",
+            "actor": "d86e224a-f86e-4e63-ba12-48a1a055894d"
+          },
+          {
+            "status": "applied",
+            "at": "2026-02-20T20:34:17.058Z",
+            "actor": "d86e224a-f86e-4e63-ba12-48a1a055894d"
+          }
+        ],
+        "approval_state": {
+          "current": "applied",
+          "allowed": [
+            "pending",
+            "approved",
+            "rejected",
+            "applied"
+          ],
+          "apply_enabled": false,
+          "note": "Applied successfully on BladeKeeper Step 4 pilot.",
+          "token_hash": null,
+          "token_expires_at": null,
+          "token_issued_at": null,
+          "token_issued_by": null,
+          "token_last4": null
+        },
+        "headers": {
+          "agent_id": "rodaco-cli",
+          "agent_run_id": "run_mlvclfxi_a1ffee1b",
+          "idempotency_key": "step5-bk-1771619646"
+        },
+        "payload": {
+          "type": "data-update",
+          "title": "Step5 BladeKeeper apply flow",
+          "changes": {
+            "field": "notes",
+            "value": "step5-cli"
+          },
+          "resource": "blade:metadata"
+        },
+        "idempotency_key": "step5-bk-1771619646",
+        "created_at": "2026-02-20T20:34:07.717591+00:00",
+        "updated_at": "2026-02-20T20:34:17.058Z"
+      }
+    },
+    "error": null,
+    "meta": {
+      "requestId": "proposal-apply-mlvclo7i-s1egll",
+      "version": "v0",
+      "apply_controls": {
+        "kill_switch": false,
+        "approval_token_header": "X-Agent-Approval-Token",
+        "approval_token_ttl_seconds": 900
+      },
+      "ts": "2026-02-20T20:34:17.058Z"
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent audit bladekeeper --token <redacted> --params limit=10
+{
+  "ok": true,
+  "status": 200,
+  "statusText": "OK",
+  "body": {
+    "ok": true,
+    "data": {
+      "items": []
+    },
+    "error": null,
+    "meta": {
+      "requestId": "audit-list-mlvclot0-0gkct0",
+      "version": "v0",
+      "query": {
+        "q": "",
+        "sort": null,
+        "limit": 10,
+        "cursor": null,
+        "action": null,
+        "resource": null,
+        "result": null
+      },
+      "pagination": {
+        "total": 0,
+        "returned": 0,
+        "hasMore": false,
+        "nextCursor": null
+      },
+      "fields": [
+        "agentId",
+        "runId",
+        "resource",
+        "action",
+        "result",
+        "proposalId",
+        "requestHash",
+        "ts"
+      ],
+      "adminScoped": true,
+      "ts": "2026-02-20T20:34:17.940Z"
+    }
+  }
+}

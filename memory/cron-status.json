@@ -1,13 +1,13 @@
 {
-  "lastUpdate": "2026-02-18T11:01:00.000Z",
+  "lastUpdate": "2026-02-20T07:00:00-05:00",
   "jobs": [
     {
       "id": "morning_brief",
       "name": "Morning Brief",
       "schedule": "7 AM ET daily",
-      "lastRun": "2026-02-19T23:25:00.000Z",
-      "status": "healthy",
-      "note": "Delivered evening update. Overnight: BladeKeeper forgot/reset password, blade stats dashboard, sort controls; MC site health panel. Backup OK. Health all green. BladeKeeper GitHub pushed — verify Lovable sync/publish."
+      "lastRun": "2026-02-20T12:00:00.000Z",
+      "status": "ok",
+      "note": "Delivered AM brief: overnight MC icon swap, backup OK, health all green, CURRENT idle (MC UI fixes #12/#14 remain), BeerPair primary, BladeKeeper publish pending, Denver 16F now high 34F."
     },
     {
       "id": "overnight_build",
@@ -22,17 +22,17 @@
       "id": "daily_backup",
       "name": "Daily Backup",
       "schedule": "4 AM MT daily",
-      "lastRun": "2026-02-19T11:00:00.000Z",
+      "lastRun": "2026-02-20T06:02:28-05:00",
       "status": "ok",
-      "note": "Pi backup 570M workspace + 194M config ✓ (3.9G total on Pi); GitHub push 70 files changed, new daily note 2026-02-19.md, new knowledge + notes + skills + projects ✓"
+      "note": "Pi backup 570M workspace + 221M config (tar changed file warnings) ✓ total 5.2G on Pi; GitHub push f99a083 (46 files)."
     },
     {
       "id": "daily_health_check",
       "name": "Daily Site Health Check",
       "schedule": "6 AM ET daily",
-      "lastRun": "2026-02-19T11:02:00.000Z",
+      "lastRun": "2026-02-20T11:02:55.392Z",
       "status": "healthy",
-      "note": "All 3 local sites 200. MC API ok (uptime 14167s, heap 15.5MB, disk 2%). Prod SSL 200 (rodaco.co + rogergimbel.dev). Response times <5ms. Processes: 4 node server.cjs, 3 MC server. No action required."
+      "note": "All 3 local sites 200. MC API ok (uptime 40,684s, heap 12.5MB, load 1.78/1.82/1.84, disk 3%). Prod SSL 200 (rodaco.co + rogergimbel.dev). Response times 1.9–3.1ms. Processes: 4 node server.cjs, 3 MC server. Rodaco/Mission Control grep counters 0 due to SPA HTML/case sensitivity; content titles present."
     }
   ]
 }

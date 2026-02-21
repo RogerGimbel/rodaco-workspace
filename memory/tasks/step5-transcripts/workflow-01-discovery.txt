@@ -1,0 +1,873 @@
+# Workflow 01 — Discovery parity across all properties
+# Time: 2026-02-20T20:35:37Z
+
+$ /home/node/workspace/bin/rodaco agent discover rogergimbel
+{
+  "site": "rogergimbel",
+  "discovery": {
+    "agentJsonUrl": "https://rogergimbel.dev/.well-known/agent.json",
+    "metaUrl": "https://rogergimbel.dev/api/agent/v1/meta.json",
+    "openapiUrl": "https://rogergimbel.dev/api/agent/v1/openapi.json"
+  },
+  "responses": {
+    "agentJson": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "name": "rogergimbel.dev",
+        "site": "https://rogergimbel.dev",
+        "agent_api": "https://rogergimbel.dev/api/agent/v1",
+        "version": "v0",
+        "auth": [
+          "none",
+          "bearer"
+        ],
+        "capabilities": [
+          "discover",
+          "read",
+          "propose_content"
+        ],
+        "meta_url": "https://rogergimbel.dev/api/agent/v1/meta",
+        "openapi_url": "https://rogergimbel.dev/api/agent/v1/openapi.json",
+        "llms_txt": "https://rogergimbel.dev/llms.txt"
+      }
+    },
+    "meta": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "site": "rogergimbel.dev",
+        "version": "v0",
+        "status": "active-read",
+        "agent_api": "/api/agent/v1",
+        "auth": {
+          "modes": [
+            "none",
+            "bearer"
+          ],
+          "scopes": [
+            "read:public",
+            "propose:content",
+            "apply:content"
+          ]
+        },
+        "required_headers": [
+          "X-Agent-Id",
+          "X-Agent-Run-Id"
+        ],
+        "idempotency_required_for": [
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "query_contract": {
+          "supported": [
+            "limit",
+            "cursor",
+            "sort",
+            "q"
+          ],
+          "default_limit": 20,
+          "max_limit": 100,
+          "cursor_format": "base64url-offset"
+        },
+        "capabilities": [
+          "discover",
+          "read",
+          "propose_content"
+        ],
+        "read_endpoints_live": [
+          "/api/agent/v1/profile",
+          "/api/agent/v1/projects",
+          "/api/agent/v1/timeline",
+          "/api/agent/v1/posts"
+        ],
+        "endpoints": {
+          "health": "/api/agent/v1/health",
+          "limits": "/api/agent/v1/limits",
+          "meta": "/api/agent/v1/meta",
+          "openapi": "/api/agent/v1/openapi.json",
+          "profile": "/api/agent/v1/profile",
+          "projects": "/api/agent/v1/projects",
+          "timeline": "/api/agent/v1/timeline",
+          "posts": "/api/agent/v1/posts",
+          "proposals": "/api/agent/v1/proposals"
+        },
+        "notes": [
+          "v0 read endpoints are live as static curated payloads.",
+          "List reads support limit/cursor/sort/q query params.",
+          "Write/apply actions remain human-approved."
+        ]
+      }
+    },
+    "openapi": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "rogergimbel.dev Agent API",
+          "version": "v0",
+          "description": "Agent-first API for rogergimbel.dev"
+        },
+        "servers": [
+          {
+            "url": "https://rogergimbel.dev/api/agent/v1"
+          }
+        ],
+        "components": {
+          "parameters": {
+            "limit": {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              }
+            },
+            "cursor": {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "base64url encoded offset"
+            },
+            "sort": {
+              "name": "sort",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "field:asc|desc"
+            },
+            "q": {
+              "name": "q",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "paths": {
+          "/health": {
+            "get": {
+              "summary": "Health check",
+              "responses": {
+                "200": {
+                  "description": "OK"
+                }
+              }
+            }
+          },
+          "/limits": {
+            "get": {
+              "summary": "Read query + limit policy",
+              "responses": {
+                "200": {
+                  "description": "Limits payload"
+                }
+              }
+            }
+          },
+          "/meta": {
+            "get": {
+              "summary": "Contract metadata",
+              "responses": {
+                "200": {
+                  "description": "Metadata"
+                }
+              }
+            }
+          },
+          "/profile": {
+            "get": {
+              "summary": "Read profile",
+              "x-status": "live",
+              "responses": {
+                "200": {
+                  "description": "Profile payload"
+                }
+              }
+            }
+          },
+          "/projects": {
+            "get": {
+              "summary": "Read projects",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Projects payload"
+                }
+              }
+            }
+          },
+          "/timeline": {
+            "get": {
+              "summary": "Read timeline",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Timeline payload"
+                }
+              }
+            }
+          },
+          "/posts": {
+            "get": {
+              "summary": "Read posts",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Posts payload"
+                }
+              }
+            }
+          },
+          "/proposals": {
+            "post": {
+              "summary": "Create proposal",
+              "x-status": "planned",
+              "responses": {
+                "501": {
+                  "description": "Not yet implemented"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent discover rodaco
+{
+  "site": "rodaco",
+  "discovery": {
+    "agentJsonUrl": "https://rodaco.co/.well-known/agent.json",
+    "metaUrl": "https://rodaco.co/api/agent/v1/meta.json",
+    "openapiUrl": "https://rodaco.co/api/agent/v1/openapi.json"
+  },
+  "responses": {
+    "agentJson": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "name": "rodaco.co",
+        "site": "https://rodaco.co",
+        "agent_api": "https://rodaco.co/api/agent/v1",
+        "version": "v0",
+        "auth": [
+          "none",
+          "bearer"
+        ],
+        "capabilities": [
+          "discover",
+          "read",
+          "propose_content",
+          "lead_intake"
+        ],
+        "meta_url": "https://rodaco.co/api/agent/v1/meta",
+        "openapi_url": "https://rodaco.co/api/agent/v1/openapi.json",
+        "llms_txt": "https://rodaco.co/llms.txt"
+      }
+    },
+    "meta": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "site": "rodaco.co",
+        "version": "v0",
+        "status": "active-read",
+        "agent_api": "/api/agent/v1",
+        "auth": {
+          "modes": [
+            "none",
+            "bearer"
+          ],
+          "scopes": [
+            "read:public",
+            "propose:content",
+            "apply:content",
+            "propose:data"
+          ]
+        },
+        "required_headers": [
+          "X-Agent-Id",
+          "X-Agent-Run-Id"
+        ],
+        "idempotency_required_for": [
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "query_contract": {
+          "supported": [
+            "limit",
+            "cursor",
+            "sort",
+            "q"
+          ],
+          "default_limit": 20,
+          "max_limit": 100,
+          "cursor_format": "base64url-offset"
+        },
+        "capabilities": [
+          "discover",
+          "read",
+          "propose_content",
+          "lead_intake"
+        ],
+        "read_endpoints_live": [
+          "/api/agent/v1/services",
+          "/api/agent/v1/case-studies",
+          "/api/agent/v1/offers",
+          "/api/agent/v1/proof-points"
+        ],
+        "endpoints": {
+          "health": "/api/agent/v1/health",
+          "limits": "/api/agent/v1/limits",
+          "meta": "/api/agent/v1/meta",
+          "openapi": "/api/agent/v1/openapi.json",
+          "services": "/api/agent/v1/services",
+          "case_studies": "/api/agent/v1/case-studies",
+          "offers": "/api/agent/v1/offers",
+          "proof_points": "/api/agent/v1/proof-points",
+          "proposals": "/api/agent/v1/proposals",
+          "lead_intake": "/api/agent/v1/actions/lead-intake"
+        },
+        "notes": [
+          "v0 read endpoints are live as static curated payloads.",
+          "List reads support limit/cursor/sort/q query params.",
+          "Lead intake and apply flows remain human-reviewed in v0."
+        ]
+      }
+    },
+    "openapi": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "rodaco.co Agent API",
+          "version": "v0",
+          "description": "Agent-first API for rodaco.co"
+        },
+        "servers": [
+          {
+            "url": "https://rodaco.co/api/agent/v1"
+          }
+        ],
+        "components": {
+          "parameters": {
+            "limit": {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              }
+            },
+            "cursor": {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "base64url encoded offset"
+            },
+            "sort": {
+              "name": "sort",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "field:asc|desc"
+            },
+            "q": {
+              "name": "q",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "paths": {
+          "/health": {
+            "get": {
+              "summary": "Health check",
+              "responses": {
+                "200": {
+                  "description": "OK"
+                }
+              }
+            }
+          },
+          "/limits": {
+            "get": {
+              "summary": "Read query + limit policy",
+              "responses": {
+                "200": {
+                  "description": "Limits payload"
+                }
+              }
+            }
+          },
+          "/meta": {
+            "get": {
+              "summary": "Contract metadata",
+              "responses": {
+                "200": {
+                  "description": "Metadata"
+                }
+              }
+            }
+          },
+          "/services": {
+            "get": {
+              "summary": "Read services",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Services payload"
+                }
+              }
+            }
+          },
+          "/case-studies": {
+            "get": {
+              "summary": "Read case studies",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Case studies payload"
+                }
+              }
+            }
+          },
+          "/offers": {
+            "get": {
+              "summary": "Read offers",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Offers payload"
+                }
+              }
+            }
+          },
+          "/proof-points": {
+            "get": {
+              "summary": "Read proof points",
+              "x-status": "live",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Proof points payload"
+                }
+              }
+            }
+          },
+          "/proposals": {
+            "post": {
+              "summary": "Create proposal",
+              "x-status": "planned",
+              "responses": {
+                "501": {
+                  "description": "Not yet implemented"
+                }
+              }
+            }
+          },
+          "/actions/lead-intake": {
+            "post": {
+              "summary": "Create structured lead intake request",
+              "x-status": "planned",
+              "responses": {
+                "501": {
+                  "description": "Not yet implemented"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+$ /home/node/workspace/bin/rodaco agent discover bladekeeper
+{
+  "site": "bladekeeper",
+  "discovery": {
+    "agentJsonUrl": "https://bladekeeper.app/.well-known/agent.json",
+    "metaUrl": "https://bladekeeper.app/api/agent/v1/meta.json",
+    "openapiUrl": "https://bladekeeper.app/api/agent/v1/openapi.json"
+  },
+  "responses": {
+    "agentJson": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "name": "bladekeeper.app",
+        "site": "https://bladekeeper.app",
+        "agent_api": "https://bladekeeper.app/functions/v1/agent-api",
+        "version": "v0",
+        "auth": [
+          "bearer"
+        ],
+        "capabilities": [
+          "discover",
+          "read",
+          "propose",
+          "apply_with_approval"
+        ],
+        "meta_url": "https://bladekeeper.app/functions/v1/agent-api/meta",
+        "openapi_url": "https://bladekeeper.app/functions/v1/agent-api/openapi",
+        "llms_txt": "https://bladekeeper.app/llms.txt"
+      }
+    },
+    "meta": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "site": "bladekeeper.app",
+        "version": "v0",
+        "status": "active-read-auth-adapter",
+        "agent_api": "/functions/v1/agent-api",
+        "auth": {
+          "modes": [
+            "bearer"
+          ],
+          "scopes": [
+            "read:private",
+            "propose:data",
+            "apply:data"
+          ]
+        },
+        "required_headers": [
+          "Authorization",
+          "X-Agent-Id",
+          "X-Agent-Run-Id"
+        ],
+        "idempotency_required_for": [
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "query_contract": {
+          "supported": [
+            "limit",
+            "cursor",
+            "sort",
+            "q"
+          ],
+          "default_limit": 20,
+          "max_limit": 100,
+          "cursor_format": "base64url-offset"
+        },
+        "capabilities": [
+          "discover",
+          "read",
+          "propose",
+          "apply_with_approval"
+        ],
+        "read_endpoints_live": [
+          "/functions/v1/agent-api/blades",
+          "/functions/v1/agent-api/collections",
+          "/functions/v1/agent-api/stats"
+        ],
+        "endpoints": {
+          "health": "/functions/v1/agent-api/health",
+          "limits": "/functions/v1/agent-api/limits",
+          "meta": "/functions/v1/agent-api/meta",
+          "openapi": "/functions/v1/agent-api/openapi",
+          "blades": "/functions/v1/agent-api/blades",
+          "collections": "/functions/v1/agent-api/collections",
+          "stats": "/functions/v1/agent-api/stats"
+        },
+        "notes": [
+          "Live read adapter is implemented in supabase/functions/agent-api/index.ts.",
+          "Static /api/agent/v1/*.json files remain as fallback contract references.",
+          "Apply operations require explicit human approval."
+        ]
+      }
+    },
+    "openapi": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "BladeKeeper Agent API",
+          "version": "v0",
+          "description": "Agent-first API scaffold for bladekeeper.app"
+        },
+        "servers": [
+          {
+            "url": "https://bladekeeper.app/functions/v1/agent-api"
+          }
+        ],
+        "components": {
+          "parameters": {
+            "limit": {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              }
+            },
+            "cursor": {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "base64url encoded offset"
+            },
+            "sort": {
+              "name": "sort",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "field:asc|desc"
+            },
+            "q": {
+              "name": "q",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "paths": {
+          "/health": {
+            "get": {
+              "summary": "Health check",
+              "responses": {
+                "200": {
+                  "description": "OK"
+                }
+              }
+            }
+          },
+          "/limits": {
+            "get": {
+              "summary": "Read query + limit policy",
+              "responses": {
+                "200": {
+                  "description": "Limits payload"
+                }
+              }
+            }
+          },
+          "/meta": {
+            "get": {
+              "summary": "Contract metadata",
+              "responses": {
+                "200": {
+                  "description": "Metadata"
+                }
+              }
+            }
+          },
+          "/blades": {
+            "get": {
+              "summary": "List/query blades",
+              "x-status": "live_auth",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Blades payload"
+                }
+              }
+            }
+          },
+          "/collections": {
+            "get": {
+              "summary": "List/query collections",
+              "x-status": "live_auth",
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/limit"
+                },
+                {
+                  "$ref": "#/components/parameters/cursor"
+                },
+                {
+                  "$ref": "#/components/parameters/sort"
+                },
+                {
+                  "$ref": "#/components/parameters/q"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Collections payload"
+                }
+              }
+            }
+          },
+          "/stats": {
+            "get": {
+              "summary": "Collection statistics",
+              "x-status": "live_auth",
+              "responses": {
+                "200": {
+                  "description": "Stats payload"
+                }
+              }
+            }
+          },
+          "/proposals": {
+            "post": {
+              "summary": "Create proposal",
+              "x-status": "planned",
+              "responses": {
+                "501": {
+                  "description": "Not yet implemented"
+                }
+              }
+            }
+          },
+          "/proposals/{id}/apply": {
+            "post": {
+              "summary": "Apply approved proposal",
+              "x-status": "planned",
+              "responses": {
+                "501": {
+                  "description": "Not yet implemented"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

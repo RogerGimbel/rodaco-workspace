@@ -1,14 +1,38 @@
 # Current Task
 
 **Status:** IDLE
-**Updated:** 2026-02-20 02:15 ET
-**Task:** MC v3 UI fix — replace emoji in Agent role/identity cards with icons (P1 #9)
+**Updated:** 2026-02-20 21:35 ET
+**Task:** Checkpoint + session bloat cleanup (screenshots/session artifacts)
 
-## What Was Done
-- Replaced Agent hero emoji badge with Lucide Zap icon and fallback role dot with Lucide Circle to avoid missing glyphs in headless/Chrome.
-- Built `rodaco-mc` and deployed dist to `mission-control/public/`.
-- Snapshot captured via `bin/remote-screenshot http://100.124.209.59:3333/agent` (shows app loading; API healthy via curl).
+## Plan
+1. [x] Write checkpoint entry covering recent QMD/Voyage work
+2. [x] Inventory bloat candidates (browser metrics, session archive/reset/deleted files, stale sqlite temp files)
+3. [x] Purge safe bloat targets
+4. [x] Verify reclaimed space + runtime sanity
+5. [x] Mark task IDLE and record summary
 
-## Notes
-- Queue item: Priority 1 (Mission Control v3) → mc-v3-ui-fixes item #9.
-- Remaining in mc-v3-ui-fixes: #12 (scroll affordance), #14 (ops skeleton loaders).
+## Cleanup Completed
+- Purged browser profile metrics artifacts:
+  - `~/.openclaw/browser/openclaw/user-data/DeferredBrowserMetrics/*`
+  - `~/.openclaw/browser/openclaw/user-data/BrowserMetrics/*`
+  - `~/.openclaw/browser/clawd/user-data/BrowserMetrics/*`
+- Purged stale session artifacts:
+  - `~/.openclaw/agents/main/sessions/*.archived`
+  - `~/.openclaw/agents/main/sessions/*.reset.*`
+  - `~/.openclaw/agents/main/sessions/*.deleted.*`
+- Purged stale memory temp DB files:
+  - `~/.openclaw/memory/main.sqlite.tmp*`
+
+## Reclaim Summary
+- Estimated reclaimed: **~219 MB**
+  - Browser metrics: ~58 MB
+  - Session archive/reset/deleted files: ~29.3 MB
+  - SQLite temp files: ~132.8 MB
+- Post-clean sizes:
+  - `~/.openclaw/browser` → 72K
+  - `~/.openclaw/agents/main/sessions` → 34M
+  - `~/.openclaw/memory` → 510M
+- Workspace volume now: **19G used / 937G free**.
+
+## Runtime Sanity
+- `memory_search` still healthy on Voyage (`provider=voyage`, `model=voyage-4-large`).
