@@ -63,3 +63,38 @@
 - [x] Global card border fix — subtle 40% opacity borders in dark mode ✅ 2026-02-19
 - [x] Dark mode polish (card borders, activity items, settings) ✅ 2026-02-19
 - [x] **Features / Learn More page** — public marketing page at `/features` with breadcrumbs, auth-aware CTAs, coming soon section ✅ 2026-02-19
+
+## Tonight's Ambitious Sprint (2026-02-20)
+
+### Priority 1 — Must Ship Tonight
+- [ ] **[agent-first][BladeKeeper][D4] Audit read hardening** *(code complete locally 2026-02-21; deploy/verify blocked: missing `SUPABASE_ACCESS_TOKEN` + admin bearer token in runtime)*
+  - Add stable filter + pagination contract to `/audit` (`action`, `resource`, `result`, `from`, `to`, `limit`, `cursor`)
+  - Ensure admin scope enforcement stays intact
+  - Verify with `bin/rodaco agent audit bladekeeper --params 'limit=20&action=propose' --token <bearer>` and at least one date-range query
+
+- [ ] **[rogergimbel.dev][UI][mobile-first] Hero conversion pass**
+  - Improve H1/subhead readability + spacing rhythm
+  - Clarify CTA hierarchy above the fold (primary = contact intent)
+  - Confirm no mobile clipping/overlap at 390x844 and 430x932
+
+- [ ] **[rodaco.co][UI][mobile-first] Hero hierarchy + CTA legibility**
+  - Reduce logo dominance and rebalance fold toward value prop + CTA
+  - Improve nav/CTA contrast over background media
+  - Confirm CTA tap targets >=44px and text contrast passes visual check
+
+- [ ] **[bladekeeper.app][landing][UX] Above-fold clarity pass**
+  - Increase hero text contrast over background imagery
+  - Clarify primary CTA intent (account creation path)
+  - Surface clear Login affordance for returning users
+
+- [ ] **[cross-site][QA] Browser-driven E2E proof pack**
+  - Run desktop + mobile checks on all three sites using agent-browser snapshots
+  - Capture M5 Chrome screenshots with `--virtual-time-budget` for SPA reliability
+  - Store findings + before/after evidence in `memory/tasks/overnight-ui-audit-2026-02-20.md`
+
+### Priority 2 — If Time Remains
+- [ ] **[agent-first][BladeKeeper][D5] Apply policy gates design draft**
+  - Draft allowlist/risk classes (`safe/sensitive/destructive`) and propose enforcement points in `knowledge/infrastructure/agent-first-v0-spec.md`
+
+- [ ] **[agent-first][BladeKeeper][D6-prep] Test matrix skeleton**
+  - Prepare pass/fail matrix for allowed vs blocked apply payloads so implementation can be executed fast next run
