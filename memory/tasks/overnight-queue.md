@@ -67,7 +67,11 @@
 ## Tonight's Ambitious Sprint (2026-02-20)
 
 ### Priority 1 — Must Ship Tonight
-- [ ] **[agent-first][BladeKeeper][D4] Audit read hardening** *(code complete locally 2026-02-21; deploy/verify blocked: missing `SUPABASE_ACCESS_TOKEN` + admin bearer token in runtime)*
+- [x] **[agent-first][BladeKeeper][D4] Audit read hardening** ✅ 2026-02-21
+  - Production verified with admin bearer:
+    - `action=propose` filter → 200
+    - `from/to` range filter → 200
+    - invalid range guard (`from>to`) → 400 `AUDIT_RANGE_INVALID`
   - Add stable filter + pagination contract to `/audit` (`action`, `resource`, `result`, `from`, `to`, `limit`, `cursor`)
   - Ensure admin scope enforcement stays intact
   - Verify with `bin/rodaco agent audit bladekeeper --params 'limit=20&action=propose' --token <bearer>` and at least one date-range query

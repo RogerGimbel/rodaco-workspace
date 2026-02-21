@@ -74,6 +74,14 @@ bin/rodaco agent audit rogergimbel --params 'limit=20'
   - proposal IDs exercised: A=`8c48d564-3989-4fa9-b701-a6b91ec20f29`, B=`45dcb146-fb6d-4162-9f3a-624e841723d6`
 - D3 done criteria: ✅ complete
 
+### D4 — BladeKeeper audit read hardening (2026-02-21)
+- Deployed BladeKeeper `agent-api` with D4 audit query hardening (date filters + validation).
+- Verified in production with admin bearer token:
+  - `action=propose` filter query → `200 OK`
+  - `from/to` date-range query → `200 OK`
+  - invalid range (`from > to`) → `400 AUDIT_RANGE_INVALID`
+- D4 done criteria: ✅ complete
+
 ---
 
 ## D1–D30 Plan

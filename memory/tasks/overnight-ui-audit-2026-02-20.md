@@ -54,3 +54,47 @@
 - At least 2 of 3 site UI passes committed locally with before/after proof.
 - BladeKeeper D4 audit filter/pagination hardening committed + verified via `bin/rodaco agent audit` queries.
 - Updated `memory/tasks/CURRENT.md` with exact done/not-done state and blocker evidence (if any).
+
+---
+
+## Morning execution update — 2026-02-21
+
+### Shipped UI changes
+
+#### rogergimbel.dev (shipped)
+- Mobile-first hero typography + spacing tightened.
+- CTA hierarchy flipped to contact-first (`Start a Project` primary).
+- Secondary CTA contrast improved with glass background.
+- Mobile nav touch targets and contrast improved.
+
+After evidence:
+- `/tmp/roger-after-mobile.png`
+- `/tmp/roger-after-desktop.png`
+- `/tmp/roger-after2-mobile.png`
+
+#### rodaco.co (shipped)
+- Reduced hero logo visual dominance (smaller headline sizing).
+- Strengthened value-prop copy + readability overlay.
+- CTA hierarchy switched to contact-first (`Start a Project`).
+- Improved nav contrast/tap target sizing; cleaned low-value microcopy on mobile.
+
+After evidence:
+- `/tmp/rodaco-after-mobile.png`
+- `/tmp/rodaco-after-desktop.png`
+- `/tmp/rodaco-after2-mobile.png`
+
+#### bladekeeper.app (code shipped locally; visual deploy pending)
+- Landing hero copy rewritten for clearer value proposition.
+- Added stronger content panel and overlay for readability.
+- Added clearer login affordance in mobile header.
+- CTA clarity improved (`Create Free Account`, explicit `Login`, `See Features`).
+
+After evidence:
+- Code changes in `projects/bladekeeper.app/src/pages/LandingPage.tsx`
+- Production screenshot unchanged until next app publish cycle.
+
+### Agent-first tie-in
+- D4 audit read hardening now production-verified with admin bearer token:
+  - `action=propose` filter => 200
+  - `from/to` filter => 200
+  - invalid range guard => 400 `AUDIT_RANGE_INVALID`
