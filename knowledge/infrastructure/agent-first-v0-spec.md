@@ -264,3 +264,45 @@ Do **not** overbuild “AI magic” first. Ship boring, strict interfaces first:
 - audits
 
 That’s what makes agent-first real, reusable, and production-safe.
+
+---
+
+## 11) D5 Apply Policy Engine (v0 draft)
+
+### Risk Classes
+- **safe**: formatting, ordering, metadata cleanup, non-destructive field edits
+- **sensitive**: value-impacting or visibility-impacting edits (price/value/visibility/sharing)
+- **destructive**: deletes, irreversible state transitions, bulk rewrites
+
+### v0 Enforcement Rules
+1. **safe** changes may be `approve -> apply` with one-time approval token.
+2. **sensitive** changes require explicit human reason at approval time and stricter audit metadata.
+3. **destructive** changes are **blocked in v0** (`POLICY_CLASS_BLOCKED`) even if approved; require rollback-ready v1+ controls.
+4. Apply kill switch always overrides all classes.
+5. Unknown fields default to `destructive` (deny-by-default).
+
+### BladeKeeper Field Policy (pilot)
+
+**safe allowlist (apply permitted)**
+- `name`, `model`, `manufacturer`, `blade_steel`, `handle_material`, `description`, `notes`, `collection_id`, `acquired_date`, `tags`
+
+**sensitive (apply permitted with extra guardrails)**
+- `value_estimate`, `purchase_price`, `visibility`, `for_sale`, `listing_copy`
+
+**destructive (blocked in v0)**
+- `delete_blade`, `delete_collection`, `bulk_replace`, `ownership_transfer`, `hard_reset_images`
+
+### Required Audit Additions for Apply Attempts
+- `policy.classification`: `safe|sensitive|destructive`
+- `policy.decision`: `allow|deny`
+- `policy.reason`: machine + human-readable reason
+- `policy.fields`: normalized list of fields touched
+
+### Error Codes
+- `POLICY_CLASS_BLOCKED`
+- `POLICY_FIELD_NOT_ALLOWLISTED`
+- `POLICY_SENSITIVE_REASON_REQUIRED`
+- `POLICY_KILL_SWITCH_ACTIVE`
+
+### Rollout Note
+- Keep `rogergimbel.dev` + `rodaco.co` propose-only until BladeKeeper pilot shows 7-day clean audit on policy decisions with no unapproved applies.
