@@ -48,6 +48,7 @@
 - Pi monitors every 10 min with WoL fallback
 
 ## History
+- [2026-02-21] Ops hygiene: reclaimed Docker build cache (~15.64GB via `docker builder prune -af`) with no gateway health impact; cron cleanup removed Get-to-Know-Roger jobs and stabilized Daily Site Health Check + Daily AI Digest without changing schedules.
 - [2026-02-16] Gateway port bound to Tailscale IP only (100.124.209.59:18789:18789) — no LAN/localhost access
 - [2026-02-16] OpenClaw upgraded to 2026.2.15
 - [2026-02-16] Infrastructure overhaul started: Tailscale-only access, host management agent, dashboard migration

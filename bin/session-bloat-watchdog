@@ -1,0 +1,181 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+
+const HOME = process.env.HOME || '/home/node';
+const SESS_DIR = path.join(HOME, '.openclaw/agents/main/sessions');
+const STORE = path.join(SESS_DIR, 'sessions.json');
+const MEDIA_DIR = path.join(HOME, '.openclaw/media/inbound');
+
+const args = new Set(process.argv.slice(2));
+const APPLY = args.has('--apply');
+const AS_JSON = args.has('--json');
+
+const FILE_MB_WARN = Number(process.env.SESSION_FILE_MB_WARN || 1.0);
+const LINE_KB_WARN = Number(process.env.SESSION_LINE_KB_WARN || 100);
+const TOTAL_MB_WARN = Number(process.env.SESSION_TOTAL_MB_WARN || 60);
+const ARCHIVE_MIN_AGE_HOURS = Number(process.env.SESSION_ARCHIVE_MIN_AGE_HOURS || 24);
+
+function exists(p) {
+  try { fs.accessSync(p); return true; } catch { return false; }
+}
+function fmtBytes(n) {
+  if (n < 1024) return `${n}B`;
+  if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)}KB`;
+  if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)}MB`;
+  return `${(n / 1024 ** 3).toFixed(2)}GB`;
+}
+
+function scanMaxLineLen(filePath) {
+  const fd = fs.openSync(filePath, 'r');
+  const buf = Buffer.allocUnsafe(1024 * 64);
+  let bytesRead = 0;
+  let max = 0;
+  let cur = 0;
+  try {
+    while ((bytesRead = fs.readSync(fd, buf, 0, buf.length, null)) > 0) {
+      for (let i = 0; i < bytesRead; i++) {
+        if (buf[i] === 10) { // \n
+          if (cur > max) max = cur;
+          cur = 0;
+        } else {
+          cur++;
+        }
+      }
+    }
+    if (cur > max) max = cur;
+  } finally {
+    fs.closeSync(fd);
+  }
+  return max;
+}
+
+if (!exists(SESS_DIR)) {
+  console.error(`Sessions directory not found: ${SESS_DIR}`);
+  process.exit(1);
+}
+
+const now = Date.now();
+const archiveBeforeMs = now - ARCHIVE_MIN_AGE_HOURS * 3600 * 1000;
+
+let activeSessionIds = new Set();
+if (exists(STORE)) {
+  try {
+    const store = JSON.parse(fs.readFileSync(STORE, 'utf8'));
+    for (const v of Object.values(store || {})) {
+      if (v && typeof v.sessionId === 'string') activeSessionIds.add(`${v.sessionId}.jsonl`);
+    }
+  } catch {}
+}
+
+const files = fs.readdirSync(SESS_DIR).filter(f => f.endsWith('.jsonl'));
+let totalBytes = 0;
+const details = [];
+
+for (const f of files) {
+  const p = path.join(SESS_DIR, f);
+  const st = fs.statSync(p);
+  totalBytes += st.size;
+  const maxLine = scanMaxLineLen(p);
+  details.push({
+    file: f,
+    path: p,
+    size: st.size,
+    mtimeMs: st.mtimeMs,
+    maxLine,
+    oversizedFile: st.size >= FILE_MB_WARN * 1024 * 1024,
+    oversizedLine: maxLine >= LINE_KB_WARN * 1024,
+    isActiveSession: activeSessionIds.has(f),
+  });
+}
+
+details.sort((a, b) => b.size - a.size);
+
+const offenders = details.filter(d => d.oversizedFile || d.oversizedLine);
+const archiveCandidates = offenders.filter(d =>
+  !d.isActiveSession &&
+  d.mtimeMs < archiveBeforeMs &&
+  !d.file.endsWith('.archived.jsonl')
+);
+
+const result = {
+  scannedAt: new Date().toISOString(),
+  sessionsDir: SESS_DIR,
+  fileCount: details.length,
+  totalBytes,
+  totalHuman: fmtBytes(totalBytes),
+  thresholds: {
+    fileMbWarn: FILE_MB_WARN,
+    lineKbWarn: LINE_KB_WARN,
+    totalMbWarn: TOTAL_MB_WARN,
+    archiveMinAgeHours: ARCHIVE_MIN_AGE_HOURS,
+  },
+  offenders: offenders.slice(0, 20).map(o => ({
+    file: o.file,
+    size: o.size,
+    sizeHuman: fmtBytes(o.size),
+    maxLine: o.maxLine,
+    maxLineHuman: fmtBytes(o.maxLine),
+    active: o.isActiveSession,
+    modifiedAt: new Date(o.mtimeMs).toISOString(),
+  })),
+  archiveCandidates: archiveCandidates.map(o => ({
+    file: o.file,
+    size: o.size,
+    sizeHuman: fmtBytes(o.size),
+    maxLine: o.maxLine,
+    maxLineHuman: fmtBytes(o.maxLine),
+    modifiedAt: new Date(o.mtimeMs).toISOString(),
+  })),
+};
+
+let archived = [];
+if (APPLY && archiveCandidates.length) {
+  for (const c of archiveCandidates) {
+    const from = c.path;
+    const to = `${from}.archived`;
+    fs.renameSync(from, to); // non-destructive
+    archived.push(path.basename(to));
+  }
+}
+
+let mediaBytes = 0;
+if (exists(MEDIA_DIR)) {
+  for (const f of fs.readdirSync(MEDIA_DIR)) {
+    const p = path.join(MEDIA_DIR, f);
+    try {
+      const st = fs.statSync(p);
+      if (st.isFile()) mediaBytes += st.size;
+    } catch {}
+  }
+}
+
+const severity =
+  totalBytes > TOTAL_MB_WARN * 1024 * 1024 || offenders.length >= 5 ? 'warn' :
+  offenders.length > 0 ? 'notice' : 'ok';
+
+if (AS_JSON) {
+  process.stdout.write(JSON.stringify({ severity, ...result, archived, mediaInboundBytes: mediaBytes, mediaInboundHuman: fmtBytes(mediaBytes) }, null, 2));
+  process.exit(0);
+}
+
+console.log(`Session bloat watchdog: ${severity.toUpperCase()}`);
+console.log(`- Session files: ${result.fileCount} (${result.totalHuman} total)`);
+console.log(`- Media inbound: ${fmtBytes(mediaBytes)}`);
+console.log(`- Offenders: ${offenders.length} (file>=${FILE_MB_WARN}MB or line>=${LINE_KB_WARN}KB)`);
+if (offenders.length) {
+  console.log('- Top offenders:');
+  for (const o of result.offenders.slice(0, 8)) {
+    console.log(`  - ${o.file} | ${o.sizeHuman} | max-line ${o.maxLineHuman}${o.active ? ' | ACTIVE' : ''}`);
+  }
+}
+if (archiveCandidates.length) {
+  console.log(`- Archive candidates (inactive + old): ${archiveCandidates.length}`);
+}
+if (archived.length) {
+  console.log(`- Archived: ${archived.length}`);
+  archived.slice(0, 10).forEach(a => console.log(`  - ${a}`));
+}
+if (!APPLY && archiveCandidates.length) {
+  console.log('Run with --apply to archive inactive/old offender session files (safe rename to .archived).');
+}

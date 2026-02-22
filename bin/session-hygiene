@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MODE="report"
+if [[ "${1:-}" == "--apply" ]]; then
+  MODE="apply"
+fi
+
+echo "🧼 Session hygiene ($MODE)"
+/home/node/workspace/bin/session-bloat-watchdog ${1:-}
+
+echo
+echo "📊 Session status snapshot"
+openclaw sessions --json | node -e '
+const fs=require("fs");
+const d=JSON.parse(fs.readFileSync(0,"utf8"));
+const s=(d.sessions||[]).slice(0,12);
+console.log(`sessions: ${d.sessions?.length||0}`);
+for(const x of s){
+  const t=x.updatedAtMs||x.updatedAt||"";
+  console.log(`- ${x.key} | ${t}`);
+}
+'
+
+echo
+echo "✅ Next-step runbook (no restart):"
+echo "1) /status"
+echo "2) /compact Focus on decisions and current task"
+echo "3) If still degraded: /new continue from memory/tasks/CURRENT.md + today's memory note"
